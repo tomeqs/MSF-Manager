@@ -64,6 +64,11 @@ export class Teams {
     }
   }
 
+  protected retry(): void {
+    this.roster.load();
+    this.teams.load(this.tab(), true);
+  }
+
   protected isFarmed(member: TeamMember): boolean {
     return this.goalIds().has(member.id);
   }

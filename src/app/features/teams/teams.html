@@ -76,7 +76,10 @@
 
 @switch (status()) {
   @case ('error') {
-    <p class="state-message">Nie udało się wczytać danych o drużynach.</p>
+    <div class="card state-message">
+      <p>{{ state().error ?? 'Nie udało się wczytać rosteru.' }}</p>
+      <button type="button" (click)="retry()">Spróbuj ponownie</button>
+    </div>
   }
   @case ('loaded') {
     <h2 class="section-title">Masz cały skład ({{ fits().ready.length }})</h2>

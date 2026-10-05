@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { MsfDataSource } from '../data/msf-data-source';
 import { LoadStatus, TeamTab } from '../models';
@@ -6,6 +7,8 @@ import { MetaTeam, mergeOrderings } from './teams-calc';
 interface TabState {
   status: LoadStatus;
   teams: MetaTeam[];
+  /** User-facing reason when `status` is `error`. */
+  error?: string;
 }
 
 const EMPTY: TabState = { status: 'idle', teams: [] };
@@ -26,7 +29,7 @@ export class TeamsStore {
     this.patch(tab, { status: 'loading' });
     this.data.getTeamOrder(tab).subscribe({
       next: (orders) => this.patch(tab, { status: 'loaded', teams: mergeOrderings(orders) }),
-      error: () => this.patch(tab, { status: 'error' }),
+      error: (error: unknown) => this.patch(tab, { status: 'error', error: describe(error) }),
     });
   }
 
@@ -40,4 +43,15 @@ export class TeamsStore {
   private patch(tab: TeamTab, change: Partial<TabState>): void {
     this._tabs.update((tabs) => ({ ...tabs, [tab]: { ...(tabs[tab] ?? EMPTY), ...change } }));
   }
+}
+
+function describe(error: unknown): string {
+  if (error instanceof HttpErrorResponse) {
+    const subcode = error.error?.error?.subcode;
+    const detail = subcode ? `${error.status} ${subcode}` : `HTTP ${error.status}`;
+    return error.status >= 500
+      ? `Serwer MSF API zwraca błąd (${detail}) dla analizy drużyn. To problem po stronie API (beta) — spróbuj później.`
+      : `Nie udało się pobrać analizy drużyn (${detail}).`;
+  }
+  return 'Nie udało się pobrać analizy drużyn.';
 }

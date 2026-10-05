@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, forkJoin, map, of, switchMap, tap } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
 import { ApiCache } from '../../cache/api-cache.service';
 import { MSF_CONFIG } from '../../config/msf-config';
 import {
@@ -18,6 +18,9 @@ import {
 import { MsfDataSource } from '../msf-data-source';
 
 type QueryParams = Record<string, string>;
+
+/** The spec documents one TeamOrder per tab here; accept arrays too. */
+type AllTeamOrders = Partial<Record<TeamTab, TeamOrder | TeamOrder[]>>;
 
 /** Keeps each page well under the API's 472 kB response limit. */
 const PAGE_SIZE = 100;
@@ -115,10 +118,24 @@ export class ApiMsfDataSource extends MsfDataSource {
   }
 
   getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
-    // No meta hash tracks this analysis, so it is cached by age only.
-    return this.cache.gameData(`teamOrder:${tab}`, null, () =>
-      this.envelope<TeamOrder[]>(`/game/v1/analysis/teamOrder/${tab}`),
-    );
+    // No meta hash tracks this analysis, so it is cached by age only. The per-tab route has
+    // been seen returning 500 for every tab, so on a server error fall back to the
+    // all-tabs route.
+    return this.cache
+      .gameData(`teamOrder:${tab}`, null, () =>
+        this.envelope<TeamOrder[]>(`/game/v1/analysis/teamOrder/${tab}`),
+      )
+      .pipe(
+        catchError((error: unknown) =>
+          error instanceof HttpErrorResponse && error.status >= 500
+            ? this.cache
+                .gameData('teamOrder:all', null, () =>
+                  this.envelope<AllTeamOrders>('/game/v1/analysis/teamOrder'),
+                )
+                .pipe(map((all) => toTeamOrders(all?.[tab])))
+            : throwError(() => error),
+        ),
+      );
   }
 
   private data<T>(path: string, params?: QueryParams): Observable<T> {
@@ -174,4 +191,9 @@ function resolveCostIcons(costs: IndexedCosts | undefined, base: string | undefi
       ),
     ]),
   );
+}
+
+function toTeamOrders(value: TeamOrder | TeamOrder[] | undefined): TeamOrder[] {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
 }

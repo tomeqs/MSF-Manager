@@ -86,3 +86,37 @@ describe('resolveImg', () => {
     expect(resolveImg(undefined, 'https://x')).toBeUndefined();
   });
 });
+
+describe('ApiMsfDataSource.getTeamOrder', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem(
+      'msf.auth.tokens',
+      JSON.stringify({ accessToken: 'AT', expiresAt: Date.now() + 3_600_000 }),
+    );
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), provideMsfData(), provideHttpClientTesting()],
+    });
+  });
+
+  it('falls back to the all-tabs route when the per-tab route fails with 500', async () => {
+    const api = TestBed.inject(ApiMsfDataSource);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const result = firstValueFrom(api.getTeamOrder('war'));
+    await tick();
+
+    httpMock
+      .expectOne(`${API}/game/v1/analysis/teamOrder/war`)
+      .flush(
+        { error: { code: 500, subcode: 'INTERNAL_SERVER_ERROR' } },
+        { status: 500, statusText: 'Internal Server Error' },
+      );
+    await tick();
+    httpMock.expectOne(`${API}/game/v1/analysis/teamOrder`).flush({
+      data: { war: { squad: ['A', 'B'], total: 3 }, arena: [{ squad: ['C'], total: 1 }] },
+      meta: { version: 1 },
+    });
+
+    expect(await result).toEqual([{ squad: ['A', 'B'], total: 3 }]);
+  });
+});
