@@ -18,3 +18,10 @@ export const ABILITY_LABELS: Record<AbilityKey, string> = {
 };
 
 export const MAX_YELLOW_STARS = 7;
+
+/**
+ * Share of the max power for the player's level from which a 7★ character counts as
+ * optimally built: the last few percent (top gear tier, last ability levels) cost far more
+ * than they give, so farming can stop there.
+ */
+export const OPTIMAL_POWER_SHARE = 0.95;

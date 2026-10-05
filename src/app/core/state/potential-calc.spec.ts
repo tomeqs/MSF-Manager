@@ -33,6 +33,8 @@ describe('potential calc', () => {
       target: 1_000_000,
       gap: 300_000,
       upgrades: ['5★→7★', 'poz. 85→90', 'G18→G20', 'umiejętności'],
+      share: 0.7,
+      status: 'developing',
     });
   });
 
@@ -54,5 +56,28 @@ describe('potential calc', () => {
       missing: 300_000,
       complete: false,
     });
+  });
+
+  it('marks 7★ characters at ≥95% of max as optimal, and 100% as maxed', () => {
+    const at = (power: number, yellow = 7) =>
+      memberPower({ ...owned, yellowStars: yellow, power }, MAXED)!;
+    expect(at(960_000).status).toBe('optimal');
+    expect(at(960_000, 6).status).toBe('developing'); // shards still worth farming
+    expect(at(940_000).status).toBe('developing');
+    expect(at(999_500).status).toBe('maxed'); // gap below noise threshold
+    expect(memberPower(locked, MAXED)!.status).toBe('locked');
+  });
+
+  it('reports the team as optimal only when every member is', () => {
+    const optimalA = { ...owned, yellowStars: 7, power: 970_000 };
+    const devB = { ...owned, id: 'B', yellowStars: 7, power: 800_000 };
+    const potential = () => MAXED;
+
+    expect(teamPower([optimalA], potential)).toMatchObject({ optimal: true, toOptimal: 0 });
+    expect(teamPower([optimalA, devB], potential)).toMatchObject({
+      optimal: false,
+      toOptimal: 150_000, // 95% of 1M − 800k
+    });
+    expect(teamPower([optimalA, locked], potential).optimal).toBe(false);
   });
 });

@@ -154,6 +154,30 @@
   }
 }
 
+.stop {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: rgb(62 207 142 / 0.12);
+  color: var(--c-success);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.dev {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
 .shards {
   display: flex;
   flex-direction: column;

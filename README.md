@@ -107,3 +107,11 @@ drużyny; różnica z obecną mocą = „brakuje”. Wyniki są cache'owane (has
 idą po maks. 4 naraz (`PotentialStore`). „Farmuj” tworzy cel: odblokowanie albo 7★ + docelowe
 poziomy umiejętności. Farmienie dzieli cele na „Do odblokowania” i „Do ulepszenia”.
 Gear (G→G) jest pokazywany jako brak, ale kalkulator materiałów gearu jeszcze go nie liczy.
+
+## Kiedy przestać farmić
+
+Status rozwoju postaci względem maks. mocy na poziomie gracza (`potential-calc.ts`):
+**wymaksowana** (100%), **optymalna** (7★ i ≥ `OPTIMAL_POWER_SHARE` = 95% — ostatnie procenty
+kosztują nieproporcjonalnie dużo, można przestać farmić), **w rozwoju**, **zablokowana**.
+Widoczny w Drużynach (✓ przy postaci, „drużyna optymalnie rozwinięta”), w Farmieniu (sekcja
+„Gotowe — możesz przestać farmić”) i w szczegółach postaci.

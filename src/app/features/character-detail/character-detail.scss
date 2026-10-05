@@ -42,6 +42,48 @@
   gap: 4px;
 }
 
+.dev {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+
+  p {
+    margin: 0;
+  }
+
+  button {
+    align-self: flex-start;
+  }
+
+  &[data-status='optimal'],
+  &[data-status='maxed'] {
+    border-color: rgb(62 207 142 / 0.5);
+
+    .dev-label {
+      color: var(--c-success);
+    }
+  }
+}
+
+.dev-head,
+.dev-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dev-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-warning);
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
 .panels {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

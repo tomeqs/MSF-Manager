@@ -21,6 +21,28 @@
       }
     </header>
 
+    @if (devOf(plan.entry); as d) {
+      @if (d.status === 'optimal' || d.status === 'maxed') {
+        <div class="stop">
+          <span>✓ {{ statusLabels[d.status] }}</span>
+          <span class="muted small">
+            {{ (d.share * 100).toFixed(0) }}% maksymalnej mocy na Twoim poziomie
+          </span>
+        </div>
+      } @else if (d.status === 'developing') {
+        <div class="dev">
+          <div class="row">
+            <span>Rozwój</span>
+            <span>{{ (d.share * 100).toFixed(0) }}% maks.</span>
+          </div>
+          <app-progress-bar [value]="d.share" [max]="1" style="--bar-color: var(--c-success)" />
+          @if (d.upgrades.length) {
+            <span class="muted small">Brakuje: {{ d.upgrades.join(' · ') }}</span>
+          }
+        </div>
+      }
+    }
+
     @if (plan.shards.needed > 0) {
       <div class="shards">
         <div class="row">

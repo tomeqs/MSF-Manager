@@ -1,8 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { AbilityKey } from '../../core/models';
+import { AbilityKey, RosterEntry } from '../../core/models';
+import { GoalPlan } from '../../core/state/farming-calc';
 import { FarmingStore } from '../../core/state/farming.store';
+import { PlayerStore } from '../../core/state/player.store';
+import { DEV_STATUS_LABELS, MemberPower, memberPower } from '../../core/state/potential-calc';
+import { PotentialStore } from '../../core/state/potential.store';
 import {
   ABILITY_KEYS,
   ABILITY_LABELS,
@@ -27,6 +38,11 @@ const range = (from: number, to: number) =>
 export class Farming {
   protected readonly store = inject(FarmingStore);
   private readonly roster = inject(RosterStore);
+  private readonly player = inject(PlayerStore);
+  private readonly potentials = inject(PotentialStore);
+
+  protected readonly statusLabels = DEV_STATUS_LABELS;
+  private readonly playerLevel = computed(() => this.player.card()?.level?.completedTier);
 
   protected readonly abilityKeys = ABILITY_KEYS;
   protected readonly abilityLabels = ABILITY_LABELS;
@@ -52,12 +68,23 @@ export class Farming {
     range(Math.max(1, this.selected()?.yellowStars ?? 1), MAX_YELLOW_STARS),
   );
 
-  /** Goals split into characters to unlock and characters to upgrade. */
+  /**
+   * Goals split into characters to unlock, to upgrade, and done — goal reached or the
+   * character already optimally built for the player's level, so farming can stop.
+   */
   protected readonly groups = computed(() => {
-    const plans = this.store.plans();
+    const unlock: GoalPlan[] = [];
+    const upgrade: GoalPlan[] = [];
+    const done: GoalPlan[] = [];
+    for (const plan of this.store.plans()) {
+      if (!plan.entry.unlocked) unlock.push(plan);
+      else if (plan.reached || this.isDone(plan.entry)) done.push(plan);
+      else upgrade.push(plan);
+    }
     return [
-      { id: 'unlock', label: 'Do odblokowania', plans: plans.filter((p) => !p.entry.unlocked) },
-      { id: 'upgrade', label: 'Do ulepszenia', plans: plans.filter((p) => p.entry.unlocked) },
+      { id: 'unlock', label: 'Do odblokowania', plans: unlock },
+      { id: 'upgrade', label: 'Do ulepszenia', plans: upgrade },
+      { id: 'done', label: 'Gotowe — możesz przestać farmić', plans: done },
     ];
   });
 
@@ -67,6 +94,31 @@ export class Farming {
 
   constructor() {
     this.store.load();
+    this.player.load();
+    effect(() => {
+      const playerStatus = this.player.status();
+      if (
+        this.store.status() !== 'loaded' ||
+        playerStatus === 'idle' ||
+        playerStatus === 'loading'
+      ) {
+        return;
+      }
+      this.potentials.ensure(
+        this.store.plans().map((p) => p.entry),
+        this.playerLevel(),
+      );
+    });
+  }
+
+  /** Development vs the max power for the player's level (once loaded). */
+  protected devOf(entry: RosterEntry): MemberPower | undefined {
+    return memberPower(entry, this.potentials.get(entry, this.playerLevel()));
+  }
+
+  private isDone(entry: RosterEntry): boolean {
+    const status = this.devOf(entry)?.status;
+    return status === 'maxed' || status === 'optimal';
   }
 
   protected abilityOptions(key: AbilityKey): number[] {

@@ -46,7 +46,12 @@
           />
           <span class="member-name">{{ m.name }}</span>
           @if (m.owned) {
-            <span class="muted tiny">{{ m.entry.power | compactNumber }}</span>
+            <span class="muted tiny">
+              {{ m.entry.power | compactNumber }}
+              @if (isDone(fit.team.key, m.id)) {
+                <span class="ok" title="Optymalnie rozwinięta — można przestać farmić">✓</span>
+              }
+            </span>
           } @else if (m.unknown) {
             <span class="tiny muted">❓ nierozpoznana</span>
           } @else {
@@ -79,13 +84,18 @@
         />
         @if (!p.complete) {
           <span class="muted tiny">Liczę docelową moc…</span>
-        } @else if (p.missing > 0) {
-          <span class="tiny">
-            Brakuje <strong class="gap">{{ p.missing | compactNumber }}</strong> mocy do maksimum na
-            Twoim poziomie
+        } @else if (p.optimal && !fit.missing.length) {
+          <span class="tiny ok done-note">
+            ✓ Drużyna optymalnie rozwinięta — możesz przestać ją farmić
+            @if (p.missing > 0) {
+              <span class="muted">(do pełnego maksimum {{ p.missing | compactNumber }})</span>
+            }
           </span>
         } @else {
-          <span class="tiny ok">Skład wymaksowany na Twoim poziomie ✓</span>
+          <span class="tiny">
+            Do optimum brakuje <strong class="gap">{{ p.toOptimal | compactNumber }}</strong> mocy
+            <span class="muted">· do maksimum {{ p.missing | compactNumber }}</span>
+          </span>
         }
       }
     </div>

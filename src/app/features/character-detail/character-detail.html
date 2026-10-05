@@ -35,6 +35,40 @@
   </header>
 
   @if (e.unlocked) {
+    <section class="card dev" [attr.data-status]="dev()?.status">
+      <div class="dev-head">
+        <h2>Stan rozwoju</h2>
+        @if (dev(); as d) {
+          <span class="dev-label">{{ statusLabels[d.status] }}</span>
+        }
+      </div>
+      @if (dev(); as d) {
+        <div class="dev-row">
+          <span>
+            {{ d.current | compactNumber }} / maks. {{ d.target | compactNumber }} na Twoim poziomie
+          </span>
+          <strong>{{ (d.share * 100).toFixed(0) }}%</strong>
+        </div>
+        <app-progress-bar [value]="d.share" [max]="1" style="--bar-color: var(--c-success)" />
+        @if (d.status === 'developing') {
+          <p class="muted small">
+            Brakuje: {{ d.upgrades.join(' · ') }}. Optimum od 7★ i {{ optimalPct }}% maksimum.
+          </p>
+          @if (inFarming()) {
+            <a routerLink="/farming" class="small">W farmieniu ✓</a>
+          } @else {
+            <button type="button" (click)="farm()">Dodaj do farmienia</button>
+          }
+        } @else {
+          <p class="muted small">
+            Dalsze ulepszanie daje już niewiele — zasoby lepiej przeznaczyć na inne postacie.
+          </p>
+        }
+      } @else {
+        <p class="muted small">Liczę maksymalną moc na Twoim poziomie…</p>
+      }
+    </section>
+
     <div class="panels">
       <section class="card">
         <h2>Rozwój</h2>

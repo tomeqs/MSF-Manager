@@ -129,6 +129,7 @@ export class Teams {
   protected details(kind: TodoKind, power: MemberPower): string {
     const parts = kind === 'unlock' ? ['potencjał przy 7★ i maks. gearze'] : [...power.upgrades];
     if (power.gap) parts.push(`+${COMPACT.format(power.gap)} mocy`);
+    if (kind === 'upgrade') parts.push(`${Math.round(power.share * 100)}% maks.`);
     return parts.join(' · ');
   }
 
@@ -136,7 +137,13 @@ export class Teams {
     return this.powers().get(key);
   }
 
-  /** Members that need work: locked, below their max power, or not recognised. */
+  /** Owned member that is maxed or optimally built (no more farming needed). */
+  protected isDone(teamKey: string, memberId: string): boolean {
+    const status = this.powers().get(teamKey)?.byId.get(memberId)?.status;
+    return status === 'maxed' || status === 'optimal';
+  }
+
+  /** Members that need work: locked, still developing, or not recognised. */
   protected todo(fit: TeamFit): TodoRow[] {
     const power = this.powers().get(fit.team.key);
     const rows: TodoRow[] = [];
@@ -144,7 +151,7 @@ export class Teams {
       const mp = power?.byId.get(member.id);
       if (member.unknown) rows.push({ member, kind: 'unknown' });
       else if (!member.owned) rows.push({ member, kind: 'unlock', power: mp });
-      else if (mp && mp.gap > 0) rows.push({ member, kind: 'upgrade', power: mp });
+      else if (mp?.status === 'developing') rows.push({ member, kind: 'upgrade', power: mp });
     }
     const order: Record<TodoKind, number> = { unlock: 0, upgrade: 1, unknown: 2 };
     return rows.sort(
