@@ -143,33 +143,110 @@
         <button type="button" (click)="retry()">Sprawdź API ponownie</button>
       </aside>
     }
-    <h2 class="section-title">Masz cały skład ({{ fits().ready.length }})</h2>
-    <div class="grid">
-      @for (fit of fits().ready; track fit.team.key) {
-        <ng-container *ngTemplateOutlet="teamCard; context: { $implicit: fit }" />
-      } @empty {
-        <p class="muted">Nie masz jeszcze kompletu żadnej z tych drużyn w tym trybie.</p>
-      }
-    </div>
+    @if (eventTab()) {
+      <h2 class="section-title">Eventy i ich wymagania ({{ eventPlans().length }})</h2>
+      <div class="events">
+        @for (ep of eventPlans(); track ep.event.id) {
+          <article class="card event-plan" [class.upcoming]="!ep.active">
+            <header class="event-head">
+              <div>
+                <h3>{{ ep.event.name }}</h3>
+                <span class="muted tiny">
+                  {{
+                    ep.active
+                      ? 'Trwa · koniec za ' + timeLeft(ep.event.endTime)
+                      : 'Start za ' + timeLeft(ep.event.startTime)
+                  }}
+                </span>
+              </div>
+              <span class="chip">{{ ep.plan.qualifying }} postaci spełnia</span>
+            </header>
+            <p class="req"><span class="muted">Wymagania:</span> {{ ep.requirements }}</p>
 
-    <h2 class="section-title">Brakuje 1–{{ maxMissing }} postaci ({{ fits().almost.length }})</h2>
-    <div class="grid">
-      @for (fit of fits().almost; track fit.team.key) {
-        <ng-container *ngTemplateOutlet="teamCard; context: { $implicit: fit }" />
-      } @empty {
-        <p class="muted">Brak drużyn bliskich skompletowania.</p>
-      }
-    </div>
+            @for (squad of ep.plan.squads; track $index) {
+              <div class="squad">
+                <div class="row">
+                  <span class="muted">{{
+                    ep.plan.squads.length > 1 ? 'Drużyna ' + ($index + 1) : 'Najlepszy skład'
+                  }}</span>
+                  <strong>{{ squad.power | compactNumber }}</strong>
+                </div>
+                <div class="members compact">
+                  @for (e of squad.members; track e.id) {
+                    <a class="member" [routerLink]="['/roster', e.id]" [title]="e.name">
+                      <app-character-avatar
+                        [name]="e.name"
+                        [portrait]="e.portrait"
+                        [traits]="e.traits"
+                        style="--avatar-size: 40px"
+                      />
+                      <span class="member-name">{{ e.name }}</span>
+                    </a>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <p class="muted tiny">Nie masz jeszcze pełnego składu spełniającego wymagania.</p>
+            }
 
-    @if (fits().hidden) {
-      <p class="muted note">
-        Pominięte drużyny, w których brakuje Ci więcej postaci: {{ fits().hidden }}.
-      </p>
+            @if (ep.plan.nearMisses.length) {
+              <div class="todo">
+                <span class="muted tiny">Pasują do eventu, ale nie spełniają wymagań:</span>
+                @for (nm of ep.plan.nearMisses.slice(0, 6); track nm.entry.id) {
+                  <div class="todo-row">
+                    <div class="grow todo-main">
+                      <strong>{{ nm.entry.name }}</strong>
+                      <span class="muted tiny">{{ nm.shortfalls.join(' · ') }}</span>
+                    </div>
+                    @if (isGoal(nm.entry)) {
+                      <a routerLink="/farming" class="farmed">W farmieniu ✓</a>
+                    } @else if (canFarmFor(nm.entry, nm.minYellow)) {
+                      <button type="button" (click)="farmFor(nm.entry, nm.minYellow)">
+                        Farmuj
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </article>
+        } @empty {
+          <p class="muted">
+            Brak trwających ani zapowiedzianych eventów tego typu — sprawdź później.
+          </p>
+        }
+      </div>
     }
-    @if (fits().unmatched.length) {
-      <p class="muted note">
-        Nie udało się zbudować z danych gry: {{ fits().unmatched.join(', ') }}.
-      </p>
+
+    @if (showTeamLists()) {
+      <h2 class="section-title">Masz cały skład ({{ fits().ready.length }})</h2>
+      <div class="grid">
+        @for (fit of fits().ready; track fit.team.key) {
+          <ng-container *ngTemplateOutlet="teamCard; context: { $implicit: fit }" />
+        } @empty {
+          <p class="muted">Nie masz jeszcze kompletu żadnej z tych drużyn w tym trybie.</p>
+        }
+      </div>
+
+      <h2 class="section-title">Brakuje 1–{{ maxMissing }} postaci ({{ fits().almost.length }})</h2>
+      <div class="grid">
+        @for (fit of fits().almost; track fit.team.key) {
+          <ng-container *ngTemplateOutlet="teamCard; context: { $implicit: fit }" />
+        } @empty {
+          <p class="muted">Brak drużyn bliskich skompletowania.</p>
+        }
+      </div>
+
+      @if (fits().hidden) {
+        <p class="muted note">
+          Pominięte drużyny, w których brakuje Ci więcej postaci: {{ fits().hidden }}.
+        </p>
+      }
+      @if (fits().unmatched.length) {
+        <p class="muted note">
+          Nie udało się zbudować z danych gry: {{ fits().unmatched.join(', ') }}.
+        </p>
+      }
     }
     @if (fits().unrecognized.length) {
       <p class="muted note">

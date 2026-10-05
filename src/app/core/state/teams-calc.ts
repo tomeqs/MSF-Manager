@@ -1,5 +1,6 @@
 import { KnownTeam } from '../data/known-meta';
 import { RosterEntry, TeamOrder, TeamTab } from '../models';
+import { traitKey } from './roster.mapper';
 
 /** A squad (any ordering) with its combined popularity. */
 export interface MetaTeam {
@@ -46,8 +47,8 @@ export const MAX_MISSING = 2;
 
 export const TEAM_SIZE = 5;
 
-/** Modes where any team can be useful, so every known team is listed. */
-const ANY_TEAM_TABS: TeamTab[] = ['blitz', 'tower'];
+/** Blitz scores any team by power, so every known team is listed there. */
+const ANY_TEAM_TABS: TeamTab[] = ['blitz'];
 
 export interface KnownTeamFits extends TeamFits {
   /** Known teams that could not be built from the game data at all. */
@@ -103,13 +104,6 @@ export function fitTeams(teams: MetaTeam[], roster: RosterEntry[]): TeamFits {
   return result;
 }
 
-/** Case/punctuation-insensitive trait key; a trailing "s" is ignored ("Eternals" = "Eternal"). */
-export function traitKey(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '')
-    .replace(/s$/, '');
-}
 
 /** Case/punctuation-insensitive character name key ("Spider-Man (Pavitr)" = "spidermanpavitr"). */
 export function nameKey(value: string): string {
@@ -183,10 +177,8 @@ function lineupMembers(
 }
 
 function traitMembers(traits: string[], roster: RosterEntry[]): TeamMember[] {
-  const keys = new Set(traits.map(traitKey));
-  const pool = roster.filter((e) =>
-    e.traits.some((t) => keys.has(traitKey(t.id)) || keys.has(traitKey(t.name ?? ''))),
-  );
+  const keys = traits.map(traitKey);
+  const pool = roster.filter((e) => keys.some((k) => e.traitKeys.includes(k)));
   const size = Math.min(TEAM_SIZE, pool.length);
   const owned = pool.filter((e) => e.unlocked).sort((a, b) => b.power - a.power);
   return [...owned.slice(0, size), ...pool.filter((e) => !e.unlocked)]

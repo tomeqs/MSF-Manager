@@ -115,3 +115,12 @@ Status rozwoju postaci względem maks. mocy na poziomie gracza (`potential-calc.
 kosztują nieproporcjonalnie dużo, można przestać farmić), **w rozwoju**, **zablokowana**.
 Widoczny w Drużynach (✓ przy postaci, „drużyna optymalnie rozwinięta”), w Farmieniu (sekcja
 „Gotowe — możesz przestać farmić”) i w szczegółach postaci.
+
+## Blitz i Wieża
+
+Zakładki Blitz i Wieża zaczynają od trwających i zapowiedzianych eventów tego typu
+(`/player/v1/events`, pola `blitz.requirements` / `tower.requirements`). Dla każdego eventu
+(`requirements.ts`): opis wymagań, Twoje najmocniejsze rozłączne składy spełniające wymagania
+(Blitz: do 3, Wieża: 1) i postacie, które pasują cechami, ale nie spełniają minimów
+(gwiazdki, gear, poziom, czerwone gwiazdki, ISO-8) — z „Farmuj” do wymaganych gwiazdek.
+Cechy porównywane są łącznie z niewidocznymi i eventowymi (`traitKeys`).

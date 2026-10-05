@@ -208,7 +208,52 @@
   }
 }
 
+.events {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.event-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &.upcoming {
+    opacity: 0.8;
+  }
+
+  h3 {
+    font-size: 1rem;
+  }
+}
+
+.event-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.req {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.squad {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.members.compact .member-name {
+  font-size: 0.7rem;
+}
+
 @media (max-width: 480px) {
+  .events,
   .grid {
     grid-template-columns: 1fr;
   }

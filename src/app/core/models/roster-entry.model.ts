@@ -26,4 +26,6 @@ export interface RosterEntry {
   shardItemId?: string;
   /** Yellow stars a locked character unlocks at. */
   unlockStars?: number;
+  /** Normalised keys (see `traitKey`) of all traits incl. invisible and event traits. */
+  traitKeys: string[];
 }

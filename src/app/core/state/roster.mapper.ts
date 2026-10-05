@@ -11,6 +11,14 @@ import {
 
 const NO_SLOTS = [false, false, false, false, false, false];
 
+/** Case/punctuation-insensitive trait key; a trailing "s" is ignored ("Eternals" = "Eternal"). */
+export function traitKey(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .replace(/s$/, '');
+}
+
 export function normalizeTrait(trait: Trait): TraitObject {
   return typeof trait === 'string'
     ? { id: trait, name: trait }
@@ -58,6 +66,14 @@ export function toRosterEntry(info: CharacterInfo, instance?: CharacterInstance)
     power: instance?.power ?? 0,
     shardItemId: itemId(info.starItems?.[0]),
     unlockStars: info.unlockStars,
+    traitKeys: [
+      ...new Set(
+        [...(info.traits ?? []), ...(info.invisibleTraits ?? []), ...(info.eventTraits ?? [])]
+          .map(normalizeTrait)
+          .flatMap((t) => [traitKey(t.id), traitKey(t.name ?? '')])
+          .filter(Boolean),
+      ),
+    ],
   };
 }
 

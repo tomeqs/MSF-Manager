@@ -14,7 +14,7 @@ import { TeamTab } from '../models';
  */
 export interface KnownTeam {
   name: string;
-  /** Modes the sources call the team strong in. Blitz and Tower list every team. */
+  /** Modes the sources call the team strong in. Blitz lists every team. */
   modes: TeamTab[];
   members?: string[];
   traits?: string[];

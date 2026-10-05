@@ -27,13 +27,16 @@ export function mockEvents(nowMs: number): EventInfo[] {
       },
     },
     {
-      id: 'mock-blitz-xmen',
+      id: 'mock-blitz-mutant',
       type: 'blitz',
-      name: 'X-Men Blitz',
-      subName: 'Wymagane: X-Men',
+      name: 'Mutant Blitz',
+      subName: 'Wymagane: Mutant, min. 6★',
       startTime: now - 6 * HOUR,
       endTime: now + 1 * DAY + 18 * HOUR,
       blitz: {
+        requirements: {
+          anyCharacterFilters: [{ allTraits: [{ id: 'Mutant', name: 'Mutant' }], activeYellow: 6 }],
+        },
         brackets: [
           {
             objective: {
@@ -65,9 +68,30 @@ export function mockEvents(nowMs: number): EventInfo[] {
       id: 'mock-tower-wakanda',
       type: 'tower',
       name: 'Survival Tower: Wakanda',
-      subName: 'Startuje wkrótce',
-      startTime: now + 2 * DAY,
-      endTime: now + 9 * DAY,
+      subName: 'Wymagane: Wakandan, min. 6★',
+      startTime: now - 1 * DAY,
+      endTime: now + 6 * DAY,
+      tower: {
+        requirements: {
+          minCharacters: 3,
+          anyCharacterFilters: [
+            { allTraits: [{ id: 'Wakandan', name: 'Wakandan' }], activeYellow: 6 },
+          ],
+        },
+      },
+    },
+    {
+      id: 'mock-blitz-heroes',
+      type: 'blitz',
+      name: 'Hero Blitz',
+      subName: 'Wymagane: Hero, min. G15',
+      startTime: now + 1 * DAY,
+      endTime: now + 3 * DAY,
+      blitz: {
+        requirements: {
+          anyCharacterFilters: [{ allTraits: [{ id: 'Hero', name: 'Hero' }], gearTier: 15 }],
+        },
+      },
     },
     {
       id: 'mock-raid-season',
