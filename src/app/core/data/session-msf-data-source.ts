@@ -1,7 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
-import { CharacterInfo, CharacterInstance, EventInfo, PlayerCard } from '../models';
+import {
+  CharacterInfo,
+  CharacterInstance,
+  EventInfo,
+  ItemQuantity,
+  PlayerCard,
+  UpgradeData,
+} from '../models';
 import { ApiMsfDataSource } from './api/api-msf-data-source';
 import { MockMsfDataSource } from './mock/mock-msf-data-source';
 import { MsfDataSource } from './msf-data-source';
@@ -31,5 +38,13 @@ export class SessionMsfDataSource extends MsfDataSource {
 
   getEvents(): Observable<EventInfo[]> {
     return this.source.getEvents();
+  }
+
+  getInventory(): Observable<ItemQuantity[]> {
+    return this.source.getInventory();
+  }
+
+  getUpgradeData(): Observable<UpgradeData> {
+    return this.source.getUpgradeData();
   }
 }

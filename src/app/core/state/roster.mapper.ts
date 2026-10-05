@@ -3,6 +3,7 @@ import {
   CharacterInstance,
   Iso8,
   IsoClass,
+  itemId,
   RosterEntry,
   Trait,
   TraitObject,
@@ -55,6 +56,7 @@ export function toRosterEntry(info: CharacterInfo, instance?: CharacterInstance)
     },
     iso: isoSummary(instance?.iso8),
     power: instance?.power ?? 0,
+    shardItemId: itemId(info.starItems?.[0]),
   };
 }
 

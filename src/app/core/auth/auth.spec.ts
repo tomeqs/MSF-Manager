@@ -126,9 +126,11 @@ describe('AuthService + msfApiInterceptor', () => {
     const api = TestBed.inject(ApiMsfDataSource);
 
     const result = firstValueFrom(api.getCharacters());
+    await new Promise((resolve) => setTimeout(resolve)); // cache lookup is async
     const req = httpMock.expectOne((r) => r.url === `${API}/game/v1/characters`);
     expect(req.request.params.get('status')).toBe('playable');
     expect(req.request.params.get('abilityKits')).toBe('none');
+    expect(req.request.params.get('starItems')).toBe('full');
     req.flush({ data: [{ id: 'Storm' }], meta: { version: 1 } });
 
     expect(await result).toEqual([{ id: 'Storm' }]);

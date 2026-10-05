@@ -12,6 +12,7 @@ import {
   throwError,
   timer,
 } from 'rxjs';
+import { ApiCache } from '../cache/api-cache.service';
 import { MSF_CONFIG } from '../config/msf-config';
 import { codeChallenge, randomString } from './pkce';
 
@@ -87,6 +88,7 @@ function writeJson(storage: Storage | undefined, key: string, value: unknown): v
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly config = inject(MSF_CONFIG);
+  private readonly cache = inject(ApiCache);
   private readonly window = inject(DOCUMENT).defaultView;
 
   private readonly local = this.window?.localStorage;
@@ -158,6 +160,8 @@ export class AuthService {
         headers: FORM_HEADERS,
       }),
     );
+    // A different account may log in on this browser.
+    await this.cache.clearPlayerData();
     this.storeTokens(response);
     this.setDemo(false);
     return pending.returnUrl;
@@ -168,9 +172,10 @@ export class AuthService {
   }
 
   /** Forgets tokens and demo mode locally. */
-  logout(): void {
+  async logout(): Promise<void> {
     this.setTokens(null);
     this.setDemo(false);
+    await this.cache.clearPlayerData();
   }
 
   /** A valid access token, refreshing it first if needed; `null` when not logged in. */

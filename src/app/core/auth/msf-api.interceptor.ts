@@ -25,7 +25,7 @@ export const msfApiInterceptor: HttpInterceptorFn = (req, next) => {
     ),
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse && error.status === 401) {
-        auth.logout();
+        void auth.logout();
         void router.navigate(['/login'], { queryParams: { expired: 1 } });
       }
       return throwError(() => error);

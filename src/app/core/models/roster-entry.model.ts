@@ -22,4 +22,6 @@ export interface RosterEntry {
   abilities: { basic: number; special: number; ultimate: number; passive: number };
   iso: { active?: IsoClass; level: number; matrix?: IsoMatrix };
   power: number;
+  /** Inventory item id of this character's yellow-star shards. */
+  shardItemId?: string;
 }

@@ -1,12 +1,18 @@
 import { Observable } from 'rxjs';
-import { CharacterInfo, CharacterInstance, EventInfo, PlayerCard } from '../models';
+import {
+  CharacterInfo,
+  CharacterInstance,
+  EventInfo,
+  ItemQuantity,
+  PlayerCard,
+  UpgradeData,
+} from '../models';
 
 /**
  * Single seam between the app and the MSF API.
  *
- * Stores depend only on this abstraction. Today it is backed by `MockMsfDataSource`;
- * an `ApiMsfDataSource` (HttpClient + OAuth) can replace it in `provideMsfData()`
- * without touching stores or components. Method names map 1:1 to API routes.
+ * Stores depend only on this abstraction; `SessionMsfDataSource` picks `ApiMsfDataSource`
+ * (logged in) or `MockMsfDataSource` (demo). Method names map 1:1 to API routes.
  */
 export abstract class MsfDataSource {
   /** GET /player/v1/card */
@@ -20,4 +26,10 @@ export abstract class MsfDataSource {
 
   /** GET /player/v1/events */
   abstract getEvents(): Observable<EventInfo[]>;
+
+  /** GET /player/v1/inventory */
+  abstract getInventory(): Observable<ItemQuantity[]>;
+
+  /** GET /game/v1/upgradeData */
+  abstract getUpgradeData(): Observable<UpgradeData>;
 }

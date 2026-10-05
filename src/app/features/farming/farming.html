@@ -1,0 +1,158 @@
+<header class="page-header">
+  <div>
+    <h1>Farmienie</h1>
+    <p>Ustaw cele dla postaci. Policzę, ile shardów i materiałów brakuje do nich w inwentarzu.</p>
+  </div>
+</header>
+
+<section class="card form">
+  <h2>Nowy cel</h2>
+  <div class="form-row">
+    <select aria-label="Postać" [value]="selectedId()" (change)="select($any($event.target).value)">
+      <option value="">Wybierz postać…</option>
+      @for (c of characters(); track c.id) {
+        <option [value]="c.id">
+          {{ c.name }} {{ c.unlocked ? '· ' + c.yellowStars + '★' : '· zablokowana' }}
+        </option>
+      }
+    </select>
+
+    @if (selected(); as s) {
+      <label class="field">
+        <span>Gwiazdki</span>
+        <select [value]="targetYellow()" (change)="targetYellow.set(+$any($event.target).value)">
+          @for (n of yellowOptions(); track n) {
+            <option [value]="n">{{ n }}★</option>
+          }
+        </select>
+      </label>
+
+      @if (s.unlocked) {
+        @for (key of abilityKeys; track key) {
+          <label class="field">
+            <span>{{ abilityLabels[key] }}</span>
+            <select
+              [value]="targetAbilities()[key]"
+              (change)="setAbility(key, +$any($event.target).value)"
+            >
+              @for (n of abilityOptions(key); track n) {
+                <option [value]="n">{{ n }}</option>
+              }
+            </select>
+          </label>
+        }
+      }
+
+      <button type="button" class="primary" (click)="save()">Zapisz cel</button>
+    }
+  </div>
+</section>
+
+@switch (store.status()) {
+  @case ('error') {
+    <p class="state-message">Nie udało się wczytać inwentarza lub danych ulepszeń.</p>
+  }
+  @case ('loaded') {
+    @if (store.plans().length) {
+      <section class="card totals">
+        <h2>Brakuje łącznie</h2>
+        @if (missingTotals().length) {
+          <table>
+            <thead>
+              <tr>
+                <th>Materiał</th>
+                <th>Potrzeba</th>
+                <th>Masz</th>
+                <th>Brakuje</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of missingTotals(); track line.itemId) {
+                <tr>
+                  <td class="item">
+                    @if (line.icon) {
+                      <img [src]="line.icon" alt="" />
+                    }
+                    {{ line.name }}
+                  </td>
+                  <td>{{ line.needed | compactNumber: 'full' }}</td>
+                  <td>{{ line.owned | compactNumber: 'full' }}</td>
+                  <td class="missing">{{ line.missing | compactNumber: 'full' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="ok">Masz wszystkie materiały na zapisane cele (bez shardów). ✓</p>
+        }
+      </section>
+
+      <section class="goals">
+        @for (plan of store.plans(); track plan.goal.characterId) {
+          <article class="card goal" [class.ready]="plan.affordable && !plan.reached">
+            <header class="goal-head">
+              <app-character-avatar
+                [name]="plan.entry.name"
+                [portrait]="plan.entry.portrait"
+                [traits]="plan.entry.traits"
+                style="--avatar-size: 44px"
+              />
+              <div class="goal-title">
+                <a [routerLink]="['/roster', plan.entry.id]">{{ plan.entry.name }}</a>
+                <span class="muted">
+                  {{ plan.entry.unlocked ? plan.entry.yellowStars + '★' : 'zablokowana' }} →
+                  {{ plan.goal.targetYellow }}★
+                </span>
+              </div>
+              @if (plan.reached) {
+                <span class="badge done">Cel osiągnięty</span>
+              } @else if (plan.affordable) {
+                <span class="badge ready">Gotowe do ulepszenia</span>
+              }
+            </header>
+
+            @if (plan.shards.needed > 0) {
+              <div class="shards">
+                <div class="row">
+                  <span>Shardy</span>
+                  <span>
+                    {{ plan.shards.owned | compactNumber: 'full' }} /
+                    {{ plan.shards.needed | compactNumber: 'full' }}
+                  </span>
+                </div>
+                <app-progress-bar [value]="plan.shards.owned" [max]="plan.shards.needed" />
+                @if (plan.shards.missing > 0) {
+                  <span class="missing small">Brakuje {{ plan.shards.missing }} shardów</span>
+                }
+                @if (!plan.shards.tracked) {
+                  <span class="muted small">Nie znam ID shardów tej postaci — stan nieznany.</span>
+                }
+              </div>
+            }
+
+            @if (plan.materials.length) {
+              <ul class="materials">
+                @for (m of plan.materials; track m.itemId) {
+                  <li [class.short]="m.missing > 0">
+                    <span>{{ m.name }}</span>
+                    <span>{{ m.needed | compactNumber }}</span>
+                  </li>
+                }
+              </ul>
+            }
+
+            <footer class="goal-actions">
+              <button type="button" (click)="edit(plan.goal.characterId)">Edytuj</button>
+              <button type="button" (click)="store.removeGoal(plan.goal.characterId)">Usuń</button>
+            </footer>
+          </article>
+        }
+      </section>
+    } @else {
+      <p class="state-message">Nie masz jeszcze celów. Wybierz postać powyżej.</p>
+    }
+  }
+  @default {
+    <p class="state-message">Wczytywanie inwentarza…</p>
+  }
+}

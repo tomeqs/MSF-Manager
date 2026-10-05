@@ -30,6 +30,11 @@ export class PlayerStore {
       .sort((a, b) => a.startTime - b.startTime);
   });
 
+  /** Reloads only if something was loaded before. */
+  refresh(): void {
+    if (this._status() !== 'idle') this.load(true);
+  }
+
   load(force = false): void {
     const status = this._status();
     if (!force && (status === 'loading' || status === 'loaded')) return;

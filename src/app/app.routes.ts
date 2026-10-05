@@ -45,11 +45,7 @@ export const routes: Routes = [
       {
         path: 'farming',
         title: 'Farmienie · MSF Assistant',
-        data: {
-          heading: 'Farmienie',
-          description: 'Kalkulator brakujących shardów i materiałów do wybranych celów.',
-        },
-        loadComponent: () => import('./features/coming-soon/coming-soon').then((m) => m.ComingSoon),
+        loadComponent: () => import('./features/farming/farming').then((m) => m.Farming),
       },
       {
         path: 'alliance',

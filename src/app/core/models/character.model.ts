@@ -1,3 +1,5 @@
+import { Item } from './item.model';
+
 /**
  * Character models mirroring the MSF API schemas (CharacterInfo, CharacterInstance, Trait, Iso8).
  * Only the fields the app uses are declared; the API may return more.
@@ -26,6 +28,8 @@ export interface CharacterInfo {
   traits?: Trait[];
   invisibleTraits?: Trait[];
   eventTraits?: Trait[];
+  /** [0] = yellow-star shard item, [1-7] red star items, [8-10] diamond items. */
+  starItems?: Item[];
 }
 
 export type IsoClass = 'striker' | 'fortifier' | 'healer' | 'skirmisher' | 'raider';

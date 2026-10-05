@@ -33,6 +33,9 @@
   <header class="topbar">
     <button class="menu-btn" aria-label="Menu" (click)="menuOpen.set(!menuOpen())">☰</button>
     <div class="spacer"></div>
+    <button type="button" class="session-btn" title="Pobierz świeże dane" (click)="refresh()">
+      ⟳ Odśwież
+    </button>
     @if (auth.mode() === 'demo') {
       <span class="demo-badge">Demo</span>
       <button type="button" class="session-btn" (click)="login()">Zaloguj kontem Scopely</button>

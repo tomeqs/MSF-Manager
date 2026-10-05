@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, DOCUMENT, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { FarmingStore } from '../../core/state/farming.store';
 import { PlayerStore } from '../../core/state/player.store';
+import { RosterStore } from '../../core/state/roster.store';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 
 interface NavItem {
@@ -24,12 +26,14 @@ export class Shell {
   protected readonly menuOpen = signal(false);
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
+  private readonly roster = inject(RosterStore);
+  private readonly farming = inject(FarmingStore);
 
   protected readonly nav: NavItem[] = [
     { path: '/dashboard', label: 'Pulpit', icon: '◈' },
     { path: '/roster', label: 'Roster', icon: '☰' },
     { path: '/events', label: 'Eventy', icon: '⚑' },
-    { path: '/farming', label: 'Farmienie', icon: '⛏', soon: true },
+    { path: '/farming', label: 'Farmienie', icon: '⛏' },
     { path: '/alliance', label: 'Sojusz', icon: '⚔', soon: true },
   ];
 
@@ -37,12 +41,19 @@ export class Shell {
     this.player.load();
   }
 
+  /** Re-fetches player data (cheap thanks to `since`) and revalidates cached game data. */
+  protected refresh(): void {
+    this.player.refresh();
+    this.roster.refresh();
+    this.farming.refresh();
+  }
+
   protected login(): void {
     void this.auth.login(this.router.url);
   }
 
-  protected logout(): void {
-    this.auth.logout();
+  protected async logout(): Promise<void> {
+    await this.auth.logout();
     // Full reload so stores loaded for this session are discarded.
     this.document.location.assign('/login');
   }

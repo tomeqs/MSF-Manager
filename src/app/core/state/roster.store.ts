@@ -43,6 +43,11 @@ export class RosterStore {
     [...this.unlocked()].sort((a, b) => b.power - a.power).slice(0, 5),
   );
 
+  /** Reloads only if something was loaded before. */
+  refresh(): void {
+    if (this._status() !== 'idle') this.load(true);
+  }
+
   /** Loads once; pass `force` to refresh. */
   load(force = false): void {
     const status = this._status();

@@ -26,6 +26,7 @@ const c = (id: string, name: string, traits: TraitObject[]): CharacterInfo => ({
   name,
   status: 'playable',
   traits,
+  starItems: [`SHARD_${id}`],
 });
 
 /** Shape of GET /game/v1/characters?status=playable&charInfo=full (subset). */

@@ -1,9 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Observable, delay, of } from 'rxjs';
-import { CharacterInfo, CharacterInstance, EventInfo, PlayerCard } from '../../models';
+import {
+  CharacterInfo,
+  CharacterInstance,
+  EventInfo,
+  ItemQuantity,
+  PlayerCard,
+  UpgradeData,
+} from '../../models';
 import { MsfDataSource } from '../msf-data-source';
 import { MOCK_CHARACTERS } from './mock-characters';
 import { mockEvents } from './mock-events';
+import { MOCK_INVENTORY, MOCK_UPGRADE_DATA } from './mock-farming';
 import { MOCK_PLAYER } from './mock-player';
 import { MOCK_ROSTER } from './mock-roster';
 
@@ -26,5 +34,13 @@ export class MockMsfDataSource extends MsfDataSource {
 
   getEvents(): Observable<EventInfo[]> {
     return of(mockEvents(Date.now())).pipe(delay(LATENCY_MS));
+  }
+
+  getInventory(): Observable<ItemQuantity[]> {
+    return of(MOCK_INVENTORY).pipe(delay(LATENCY_MS));
+  }
+
+  getUpgradeData(): Observable<UpgradeData> {
+    return of(MOCK_UPGRADE_DATA).pipe(delay(LATENCY_MS));
   }
 }
