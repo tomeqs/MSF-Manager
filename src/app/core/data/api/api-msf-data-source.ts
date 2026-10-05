@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { ApiCache } from '../../cache/api-cache.service';
 import { MSF_CONFIG } from '../../config/msf-config';
 import {
@@ -8,6 +8,7 @@ import {
   CharacterInfo,
   CharacterInstance,
   EventInfo,
+  IndexedCosts,
   ItemQuantity,
   PlayerCard,
   TeamOrder,
@@ -18,6 +19,9 @@ import { MsfDataSource } from '../msf-data-source';
 
 type QueryParams = Record<string, string>;
 
+/** Keeps each page well under the API's 472 kB response limit. */
+const PAGE_SIZE = 100;
+
 /** Real MSF API. Auth headers are added by `msfApiInterceptor`, caching by `ApiCache`. */
 @Injectable({ providedIn: 'root' })
 export class ApiMsfDataSource extends MsfDataSource {
@@ -26,7 +30,14 @@ export class ApiMsfDataSource extends MsfDataSource {
   private readonly baseUrl = inject(MSF_CONFIG).apiBaseUrl;
 
   getPlayerCard(): Observable<PlayerCard> {
-    return this.data<PlayerCard>('/player/v1/card');
+    return this.envelope<PlayerCard>('/player/v1/card').pipe(
+      tap((res) => this.cache.noteMeta(res.meta)),
+      map(({ data, meta }) => ({
+        ...data,
+        icon: resolveImg(data.icon, meta?.baseImgUrl),
+        frame: resolveImg(data.frame, meta?.baseImgUrl),
+      })),
+    );
   }
 
   getRoster(): Observable<CharacterInstance[]> {
@@ -36,9 +47,10 @@ export class ApiMsfDataSource extends MsfDataSource {
   }
 
   getCharacters(): Observable<CharacterInfo[]> {
-    // Trim the payload to what the UI uses; a full response risks 472 RESPONSE_TOO_LARGE.
+    // Trimmed to what the UI uses, and paged: all ~400 characters in one response exceed
+    // the 472 kB limit (472 RESPONSE_TOO_LARGE).
     return this.cache.gameData('characters', 'chars', () =>
-      this.envelope<CharacterInfo[]>('/game/v1/characters', {
+      this.pagedEnvelope<CharacterInfo>('/game/v1/characters', {
         status: 'playable',
         itemFormat: 'id',
         costumes: 'none',
@@ -46,7 +58,12 @@ export class ApiMsfDataSource extends MsfDataSource {
         gearTiers: 'none',
         pieceInfo: 'none',
         starItems: 'full',
-      }),
+      }).pipe(
+        map(({ data, meta }) => ({
+          meta,
+          data: data.map((c) => ({ ...c, portrait: resolveImg(c.portrait, meta?.baseImgUrl) })),
+        })),
+      ),
     );
   }
 
@@ -61,14 +78,39 @@ export class ApiMsfDataSource extends MsfDataSource {
   }
 
   getUpgradeData(): Observable<UpgradeData> {
+    // Only the fields the calculator uses, one request each (the whole object is large).
     // Item objects (names, icons) are kept so costs can be labelled; sub-pieces are not needed.
+    const params = {
+      pieceInfo: 'full',
+      pieceDirectCost: 'none',
+      pieceFlatCost: 'none',
+      subPieceInfo: 'none',
+    };
+    const field = <K extends keyof UpgradeData>(id: K) =>
+      this.envelope<UpgradeData[K]>(`/game/v1/upgradeData/${id}`, params);
+
     return this.cache.gameData('upgradeData', 'chars', () =>
-      this.envelope<UpgradeData>('/game/v1/upgradeData', {
-        pieceInfo: 'full',
-        pieceDirectCost: 'none',
-        pieceFlatCost: 'none',
-        subPieceInfo: 'none',
-      }),
+      forkJoin({
+        shards: field('yellowStarTotalShards'),
+        stars: field('yellowStarTotalCosts'),
+        abilities: field('abilityUpgradeCosts'),
+      }).pipe(
+        map(({ shards, stars, abilities }): ApiResponse<UpgradeData> => {
+          const base = shards.meta?.baseImgUrl;
+          return {
+            meta: shards.meta,
+            data: {
+              yellowStarTotalShards: shards.data,
+              yellowStarTotalCosts: resolveCostIcons(stars.data, base),
+              abilityUpgradeCosts: abilities.data
+                ? Object.fromEntries(
+                    Object.entries(abilities.data).map(([k, v]) => [k, resolveCostIcons(v, base)]),
+                  )
+                : undefined,
+            },
+          };
+        }),
+      ),
     );
   }
 
@@ -86,6 +128,25 @@ export class ApiMsfDataSource extends MsfDataSource {
     );
   }
 
+  /** Fetches page 1, then the remaining pages (from `meta.perTotal`) in parallel. */
+  private pagedEnvelope<T>(path: string, params: QueryParams): Observable<ApiResponse<T[]>> {
+    const page = (n: number) =>
+      this.envelope<T[]>(path, { ...params, page: String(n), perPage: String(PAGE_SIZE) });
+    return page(1).pipe(
+      switchMap((first) => {
+        const pages = Math.ceil((first.meta?.perTotal ?? 0) / PAGE_SIZE);
+        if (pages <= 1) return of(first);
+        const rest = Array.from({ length: pages - 1 }, (_, i) => page(i + 2));
+        return forkJoin(rest).pipe(
+          map((more) => ({
+            meta: first.meta,
+            data: [first.data, ...more.map((r) => r.data)].flat(),
+          })),
+        );
+      }),
+    );
+  }
+
   private envelope<T>(path: string, params?: QueryParams): Observable<ApiResponse<T>> {
     return this.http.get<ApiResponse<T>>(`${this.baseUrl}${path}`, { params });
   }
@@ -93,4 +154,24 @@ export class ApiMsfDataSource extends MsfDataSource {
 
 function withSince(params: QueryParams, since?: string): QueryParams {
   return since ? { ...params, since } : params;
+}
+
+/** Prefixes relative image paths with `meta.baseImgUrl`; absolute URLs pass through. */
+export function resolveImg(path: string | undefined, base: string | undefined): string | undefined {
+  if (!path || !base || /^https?:\/\//.test(path)) return path;
+  return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
+}
+
+function resolveCostIcons(costs: IndexedCosts | undefined, base: string | undefined) {
+  if (!costs) return costs;
+  return Object.fromEntries(
+    Object.entries(costs).map(([level, list]) => [
+      level,
+      list.map((cost) =>
+        typeof cost.item === 'object'
+          ? { ...cost, item: { ...cost.item, icon: resolveImg(cost.item.icon, base) } }
+          : cost,
+      ),
+    ]),
+  );
 }

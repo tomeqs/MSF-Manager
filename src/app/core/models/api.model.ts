@@ -19,6 +19,8 @@ export interface Meta {
   refreshAt?: DateTime;
   /** Pass to a later request's `since` param to get 344 UNCHANGED when nothing changed. */
   asOf?: string;
+  /** Prefix for relative image paths in the response (e.g. `portrait`). */
+  baseImgUrl?: string;
 }
 
 /** Seconds since 1970 UTC (API `DateTime`). */
