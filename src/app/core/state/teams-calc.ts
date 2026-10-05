@@ -104,7 +104,6 @@ export function fitTeams(teams: MetaTeam[], roster: RosterEntry[]): TeamFits {
   return result;
 }
 
-
 /** Case/punctuation-insensitive character name key ("Spider-Man (Pavitr)" = "spidermanpavitr"). */
 export function nameKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, '');
