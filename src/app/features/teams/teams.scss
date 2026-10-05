@@ -121,8 +121,47 @@
   text-decoration: none;
 }
 
-.hidden-note {
+.note {
+  margin: 0 0 8px;
   font-size: 0.85rem;
+}
+
+.team-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.team-name {
+  font-size: 1rem;
+}
+
+.source {
+  font-size: 0.75rem;
+  color: var(--c-text-muted);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--c-text);
+  }
+}
+
+.fallback-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-color: rgb(245 165 36 / 0.5);
+  background: rgb(245 165 36 / 0.08);
+
+  p {
+    flex: 1 1 320px;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
 }
 
 @media (max-width: 480px) {

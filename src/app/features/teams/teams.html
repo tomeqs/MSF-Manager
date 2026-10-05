@@ -2,8 +2,12 @@
   <div>
     <h1>Drużyny</h1>
     <p>
-      Najczęściej ustawiane składy wśród graczy, dopasowane do Twojego rosteru. Pomijam drużyny, w
-      których brakuje Ci więcej niż {{ maxMissing }} postaci.
+      @if (source() === 'known') {
+        Drużyny polecane obecnie przez poradniki społeczności, porównane z Twoim rosterem.
+      } @else {
+        Najczęściej ustawiane składy wśród graczy, dopasowane do Twojego rosteru.
+      }
+      Pomijam drużyny, w których brakuje Ci więcej niż {{ maxMissing }} postaci.
     </p>
   </div>
 </header>
@@ -18,6 +22,14 @@
 
 <ng-template #teamCard let-fit>
   <article class="card team" [class.ready]="!fit.missing.length">
+    @if (fit.team.name) {
+      <header class="team-head">
+        <h3 class="team-name">{{ fit.team.name }}</h3>
+        @if (fit.team.source) {
+          <a class="source" [href]="fit.team.source" target="_blank" rel="noopener">źródło ↗</a>
+        }
+      </header>
+    }
     <div class="members">
       @for (m of fit.members; track m.id) {
         <a
@@ -35,6 +47,8 @@
           <span class="member-name">{{ m.name }}</span>
           @if (m.owned) {
             <span class="muted tiny">{{ m.entry.power | compactNumber }}</span>
+          } @else if (m.unknown) {
+            <span class="tiny muted">❓ nierozpoznana</span>
           } @else {
             <span class="tiny lock">🔒 brak</span>
           }
@@ -43,11 +57,13 @@
     </div>
 
     <div class="meta">
-      <div class="row">
-        <span class="muted">Popularność</span>
-        <span>{{ fit.team.popularity | compactNumber }}</span>
-      </div>
-      <app-progress-bar [value]="fit.team.share" [max]="1" />
+      @if (source() === 'api') {
+        <div class="row">
+          <span class="muted">Popularność</span>
+          <span>{{ fit.team.popularity | compactNumber }}</span>
+        </div>
+        <app-progress-bar [value]="fit.team.share" [max]="1" />
+      }
       @if (!fit.missing.length) {
         <div class="row">
           <span class="muted">Moc składu</span>
@@ -60,7 +76,7 @@
       <div class="todo">
         @for (m of fit.missing; track m.id) {
           <div class="todo-row">
-            <span class="muted">Brakuje:</span>
+            <span class="muted">{{ m.unknown ? 'Nie rozpoznano:' : 'Brakuje:' }}</span>
             <strong class="grow">{{ m.name }}</strong>
             @if (isFarmed(m)) {
               <a routerLink="/farming" class="farmed">W farmieniu ✓</a>
@@ -77,17 +93,27 @@
 @switch (status()) {
   @case ('error') {
     <div class="card state-message">
-      <p>{{ state().error ?? 'Nie udało się wczytać rosteru.' }}</p>
+      <p>Nie udało się wczytać rosteru.</p>
       <button type="button" (click)="retry()">Spróbuj ponownie</button>
     </div>
   }
   @case ('loaded') {
+    @if (source() === 'known') {
+      <aside class="card fallback-note">
+        <p>
+          <strong>Lista z poradników ({{ knownAsOf }}).</strong> Analiza drużyn z MSF API jest
+          niedostępna ({{ state().apiError }}), więc pokazuję drużyny polecane przez poradniki
+          społeczności (głównie marvel.church). To nie są dane na żywo — meta się zmienia.
+        </p>
+        <button type="button" (click)="retry()">Sprawdź API ponownie</button>
+      </aside>
+    }
     <h2 class="section-title">Masz cały skład ({{ fits().ready.length }})</h2>
     <div class="grid">
       @for (fit of fits().ready; track fit.team.key) {
         <ng-container *ngTemplateOutlet="teamCard; context: { $implicit: fit }" />
       } @empty {
-        <p class="muted">Nie masz jeszcze kompletu żadnej popularnej drużyny w tym trybie.</p>
+        <p class="muted">Nie masz jeszcze kompletu żadnej z tych drużyn w tym trybie.</p>
       }
     </div>
 
@@ -101,8 +127,19 @@
     </div>
 
     @if (fits().hidden) {
-      <p class="muted hidden-note">
-        Pominięte popularne drużyny, w których brakuje Ci więcej postaci: {{ fits().hidden }}.
+      <p class="muted note">
+        Pominięte drużyny, w których brakuje Ci więcej postaci: {{ fits().hidden }}.
+      </p>
+    }
+    @if (fits().unmatched.length) {
+      <p class="muted note">
+        Nie udało się zbudować z danych gry: {{ fits().unmatched.join(', ') }}.
+      </p>
+    }
+    @if (fits().unrecognized.length) {
+      <p class="muted note">
+        Postacie z listy, których nazw nie znalazłem w danych gry (do poprawy w
+        <code>known-meta.ts</code>): {{ fits().unrecognized.join(', ') }}.
       </p>
     }
   }

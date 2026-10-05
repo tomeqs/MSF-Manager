@@ -24,6 +24,7 @@ src/app/
                    + RosterEntry — płaski model widoku
     config/        MSF_CONFIG: client_id, api key, adresy OAuth, zakresy
     auth/          AuthService (PKCE), interceptor, sessionGuard
+    data/known-meta.ts  lista drużyn z poradników (fallback dla drużyn) — do ręcznej edycji
     cache/         KvStore (IndexedDB) + ApiCache (meta.hashes, since/344)
     data/
       msf-data-source.ts      abstrakcja źródła danych; metody 1:1 z trasami API
@@ -45,7 +46,8 @@ src/app/
     roster/            siatka postaci z filtrami (cecha, ★, gear, ulubione) i sortowaniem
     character-detail/  szczegóły postaci: gwiazdki, gear sloty, umiejętności, ISO-8
     events/            trwające i nadchodzące eventy z postępem
-    teams/             meta drużyny per tryb gry dopasowane do rosteru (gotowe / brakuje 1–2)
+    teams/             drużyny per tryb gry dopasowane do rosteru (gotowe / brakuje 1–2);
+                       źródło: analiza MSF API, a gdy ta nie działa — lista z poradników
     farming/           kalkulator: cele (gwiazdki, umiejętności) → shardy i materiały vs inwentarz
     login/             ekran logowania / wejście w tryb demo
     auth-callback/     obsługa powrotu z Scopely (wymiana code → token)
@@ -87,3 +89,11 @@ Komponenty nie znają kształtu odpowiedzi API — operują na `RosterEntry` z m
 - Shard postaci to `starItems[0]` z `/game/v1/characters?starItems=full`.
 - `teamOrder.total` liczy wystąpienia danej kolejności składu; różne kolejności tego samego
   składu są sumowane.
+
+## Drużyny: fallback
+
+`/game/v1/analysis/teamOrder` (per tryb i zbiorczo) zwraca obecnie 500. Wtedy widok drużyn
+używa `core/data/known-meta.ts` — imiennych składów z poradników (marvel.church i in.,
+październik 2026), z linkiem do źródła przy każdej drużynie. Slot `"A|B"` = A albo B, jeśli A
+nie posiadasz. Nazwy postaci, których nie ma w danych gry, są wypisywane pod listą — wystarczy
+poprawić pisownię w pliku. Przycisk „Sprawdź API ponownie” wraca do danych z API, gdy zadziała.

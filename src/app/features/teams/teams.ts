@@ -5,7 +5,14 @@ import { TeamTab } from '../../core/models';
 import { FarmingStore } from '../../core/state/farming.store';
 import { MAX_YELLOW_STARS } from '../../core/state/game-rules';
 import { RosterStore } from '../../core/state/roster.store';
-import { MAX_MISSING, TeamMember, fitTeams } from '../../core/state/teams-calc';
+import { KNOWN_META, KNOWN_META_AS_OF } from '../../core/data/known-meta';
+import {
+  KnownTeamFits,
+  MAX_MISSING,
+  TeamMember,
+  fitTeams,
+  knownTeamFits,
+} from '../../core/state/teams-calc';
 import { TeamsStore } from '../../core/state/teams.store';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 import { CharacterAvatar } from '../../shared/ui/character-avatar';
@@ -26,6 +33,7 @@ export class Teams {
   private readonly farming = inject(FarmingStore);
 
   protected readonly maxMissing = MAX_MISSING;
+  protected readonly knownAsOf = KNOWN_META_AS_OF;
   protected readonly tabs: { id: TeamTab; label: string }[] = [
     { id: 'arena', label: 'Arena' },
     { id: 'war', label: 'Wojna' },
@@ -37,13 +45,18 @@ export class Teams {
 
   protected readonly tab = signal<TeamTab>(readTab() ?? 'arena');
   protected readonly state = computed(() => this.teams.tab(this.tab()));
+  protected readonly source = computed(() => this.state().source);
   protected readonly status = computed(() => {
     const roster = this.roster.status();
-    const own = this.state().status;
-    if (roster === 'error' || own === 'error') return 'error';
-    return roster === 'loaded' && own === 'loaded' ? 'loaded' : 'loading';
+    if (roster === 'error') return 'error';
+    return roster === 'loaded' && this.state().status === 'loaded' ? 'loaded' : 'loading';
   });
-  protected readonly fits = computed(() => fitTeams(this.state().teams, this.roster.entries()));
+  protected readonly fits = computed<KnownTeamFits>(() => {
+    const roster = this.roster.entries();
+    return this.source() === 'known'
+      ? knownTeamFits(KNOWN_META, this.tab(), roster)
+      : { ...fitTeams(this.state().teams, roster), unmatched: [], unrecognized: [] };
+  });
 
   private readonly goalIds = computed(
     () => new Set(this.farming.goals().map((g) => g.characterId)),
