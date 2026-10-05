@@ -39,8 +39,11 @@ export class TeamsStore {
     }
     this.patch(tab, { status: 'loading' });
     this.data.getTeamOrder(tab).subscribe({
-      next: (orders) =>
-        this.patch(tab, { status: 'loaded', source: 'api', teams: mergeOrderings(orders) }),
+      next: (orders) => {
+        const teams = mergeOrderings(orders);
+        if (teams.length) this.patch(tab, { status: 'loaded', source: 'api', teams });
+        else this.useFallback(tab, 'MSF API zwraca pustą analizę drużyn dla tego trybu');
+      },
       error: (error: unknown) => {
         const reason = describe(error);
         if (error instanceof HttpErrorResponse && error.status >= 500) this.apiDown = reason;

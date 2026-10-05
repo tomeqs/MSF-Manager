@@ -41,4 +41,11 @@ describe('TeamsStore', () => {
     store.load('war', true); // explicit retry asks the API again
     expect(spy).toHaveBeenCalledTimes(2);
   });
+
+  it('treats an empty analysis as unavailable', () => {
+    const { store } = setup(() => of([]));
+    store.load('raids');
+    expect(store.tab('raids')).toMatchObject({ status: 'loaded', source: 'known' });
+    expect(store.tab('raids').apiError).toContain('pustą');
+  });
 });

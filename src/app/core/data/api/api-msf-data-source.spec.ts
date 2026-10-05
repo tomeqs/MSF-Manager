@@ -119,4 +119,21 @@ describe('ApiMsfDataSource.getTeamOrder', () => {
 
     expect(await result).toEqual([{ squad: ['A', 'B'], total: 3 }]);
   });
+
+  it('surfaces the original 500 when the all-tabs route has nothing for the tab', async () => {
+    const api = TestBed.inject(ApiMsfDataSource);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const result = firstValueFrom(api.getTeamOrder('arena')).catch((e) => e);
+    await tick();
+
+    httpMock
+      .expectOne(`${API}/game/v1/analysis/teamOrder/arena`)
+      .flush({ error: { code: 500 } }, { status: 500, statusText: 'Internal Server Error' });
+    await tick();
+    httpMock
+      .expectOne(`${API}/game/v1/analysis/teamOrder`)
+      .flush({ data: { arena: { squad: [], total: 0 } }, meta: { version: 1 } });
+
+    expect((await result).status).toBe(500);
+  });
 });

@@ -40,18 +40,24 @@ export class ApiCache {
     Object.assign(this.knownHashes, meta?.hashes ?? {});
   }
 
+  /**
+   * @param isUsable Results failing this check (e.g. empty) are neither served from nor
+   *   written to the cache, so one bad response cannot stick for the whole TTL.
+   */
   gameData<T>(
     key: string,
     hashName: HashName | null,
     fetch: () => Observable<ApiResponse<T>>,
+    isUsable: (data: T) => boolean = () => true,
   ): Observable<T> {
     const cacheKey = GAME_PREFIX + key;
     return from(this.kv.get<GameEntry<T>>(cacheKey)).pipe(
       switchMap((entry) => {
-        if (entry && this.isFresh(entry, hashName)) return of(entry.data);
+        if (entry && this.isFresh(entry, hashName) && isUsable(entry.data)) return of(entry.data);
         return fetch().pipe(
           tap((res) => {
             this.noteMeta(res.meta);
+            if (!isUsable(res.data)) return;
             void this.kv.set(cacheKey, {
               data: res.data,
               hash: hashName ? res.meta?.hashes?.[hashName] : undefined,

@@ -118,23 +118,35 @@ export class ApiMsfDataSource extends MsfDataSource {
   }
 
   getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
-    // No meta hash tracks this analysis, so it is cached by age only. The per-tab route has
-    // been seen returning 500 for every tab, so on a server error fall back to the
-    // all-tabs route.
+    // No meta hash tracks this analysis, so it is cached by age only (empty results never).
+    // The per-tab route has been seen returning 500 for every tab; on a server error try the
+    // all-tabs route, and if that has nothing for this tab either, surface the original error.
     return this.cache
-      .gameData(`teamOrder:${tab}`, null, () =>
-        this.envelope<TeamOrder[]>(`/game/v1/analysis/teamOrder/${tab}`),
+      .gameData(
+        `teamOrder:v2:${tab}`,
+        null,
+        () => this.envelope<TeamOrder[]>(`/game/v1/analysis/teamOrder/${tab}`),
+        (orders) => toTeamOrders(orders).length > 0,
       )
       .pipe(
-        catchError((error: unknown) =>
-          error instanceof HttpErrorResponse && error.status >= 500
-            ? this.cache
-                .gameData('teamOrder:all', null, () =>
-                  this.envelope<AllTeamOrders>('/game/v1/analysis/teamOrder'),
-                )
-                .pipe(map((all) => toTeamOrders(all?.[tab])))
-            : throwError(() => error),
-        ),
+        map(toTeamOrders),
+        catchError((error: unknown) => {
+          if (!(error instanceof HttpErrorResponse && error.status >= 500)) {
+            return throwError(() => error);
+          }
+          return this.cache
+            .gameData(
+              'teamOrder:v2:all',
+              null,
+              () => this.envelope<AllTeamOrders>('/game/v1/analysis/teamOrder'),
+              (all) => Object.values(all ?? {}).some((v) => toTeamOrders(v).length > 0),
+            )
+            .pipe(
+              map((all) => toTeamOrders(all?.[tab])),
+              switchMap((orders) => (orders.length ? of(orders) : throwError(() => error))),
+              catchError(() => throwError(() => error)),
+            );
+        }),
       );
   }
 
@@ -193,7 +205,8 @@ function resolveCostIcons(costs: IndexedCosts | undefined, base: string | undefi
   );
 }
 
-function toTeamOrders(value: TeamOrder | TeamOrder[] | undefined): TeamOrder[] {
-  if (!value) return [];
-  return Array.isArray(value) ? value : [value];
+/** Accepts one TeamOrder or a list and drops entries without a squad. */
+function toTeamOrders(value: TeamOrder | TeamOrder[] | null | undefined): TeamOrder[] {
+  const list = Array.isArray(value) ? value : value ? [value] : [];
+  return list.filter((o) => Array.isArray(o?.squad) && o.squad.length > 0);
 }

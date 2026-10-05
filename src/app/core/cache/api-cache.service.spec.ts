@@ -59,4 +59,18 @@ describe('ApiCache', () => {
     await firstValueFrom(cache.playerData('inventory', fetch));
     expect(sinceSeen).toEqual([undefined, undefined]);
   });
+
+  it('does not cache results rejected by isUsable', async () => {
+    let calls = 0;
+    const fetch = () => {
+      calls++;
+      return response<string[]>(calls === 1 ? [] : ['team'], { version: 1 });
+    };
+    const notEmpty = (d: string[]) => d.length > 0;
+
+    expect(await firstValueFrom(cache.gameData('t', null, fetch, notEmpty))).toEqual([]);
+    expect(await firstValueFrom(cache.gameData('t', null, fetch, notEmpty))).toEqual(['team']);
+    expect(await firstValueFrom(cache.gameData('t', null, fetch, notEmpty))).toEqual(['team']);
+    expect(calls).toBe(2);
+  });
 });
