@@ -52,12 +52,6 @@ export const routes: Routes = [
         title: 'Farmienie · MSF Assistant',
         loadComponent: () => import('./features/farming/farming').then((m) => m.Farming),
       },
-      {
-        path: 'alliance',
-        title: 'Sojusz · MSF Assistant',
-        data: { heading: 'Sojusz', description: 'Członkowie sojuszu i ich rostery.' },
-        loadComponent: () => import('./features/coming-soon/coming-soon').then((m) => m.ComingSoon),
-      },
       { path: '**', redirectTo: 'dashboard' },
     ],
   },

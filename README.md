@@ -49,7 +49,6 @@ src/app/
     farming/           kalkulator: cele (gwiazdki, umiejętności) → shardy i materiały vs inwentarz
     login/             ekran logowania / wejście w tryb demo
     auth-callback/     obsługa powrotu z Scopely (wymiana code → token)
-    coming-soon/       placeholder (Sojusz)
   shared/
     ui/            star-rating, character-avatar, gear-badge, stat-tile, progress-bar
     pipes/         compactNumber (8,73 mln)

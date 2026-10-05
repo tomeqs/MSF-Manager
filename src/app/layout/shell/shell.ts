@@ -11,7 +11,6 @@ interface NavItem {
   path: string;
   label: string;
   icon: string;
-  soon?: boolean;
 }
 
 @Component({
@@ -37,7 +36,6 @@ export class Shell {
     { path: '/events', label: 'Eventy', icon: '⚑' },
     { path: '/teams', label: 'Drużyny', icon: '★' },
     { path: '/farming', label: 'Farmienie', icon: '⛏' },
-    { path: '/alliance', label: 'Sojusz', icon: '⚔', soon: true },
   ];
 
   constructor() {

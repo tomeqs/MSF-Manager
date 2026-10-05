@@ -9,9 +9,6 @@
       <a [routerLink]="item.path" routerLinkActive="active" (click)="menuOpen.set(false)">
         <span class="icon" aria-hidden="true">{{ item.icon }}</span>
         <span>{{ item.label }}</span>
-        @if (item.soon) {
-          <span class="soon">wkrótce</span>
-        }
       </a>
     }
   </nav>
