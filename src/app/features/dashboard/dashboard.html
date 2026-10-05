@@ -1,0 +1,100 @@
+<header class="page-header">
+  <div>
+    <h1>Pulpit</h1>
+    <p>Podsumowanie konta i bieżących eventów.</p>
+  </div>
+</header>
+
+@if (player.card(); as card) {
+  <section class="tiles">
+    <app-stat-tile label="TCP" [value]="card.tcp | compactNumber" hint="Total collection power" />
+    <app-stat-tile label="STP" [value]="card.stp | compactNumber" hint="Najsilniejsza drużyna" />
+    <app-stat-tile
+      label="Postacie"
+      [value]="roster.summary().unlocked + ' / ' + roster.summary().total"
+      [hint]="card.charactersAtMaxStarRank + ' na max gwiazdkach'"
+    />
+    <app-stat-tile
+      label="Średni gear"
+      [value]="'G' + (roster.summary().averageGear | number: '1.1-1')"
+      [hint]="roster.summary().withDiamonds + ' z diamentami'"
+    />
+    <app-stat-tile
+      label="Arena"
+      [value]="'#' + card.latestArena"
+      [hint]="'Najlepsza: #' + card.bestArena"
+    />
+    <app-stat-tile
+      label="Blitz"
+      [value]="'#' + card.latestBlitz"
+      [hint]="(card.blitzWins | compactNumber: 'full') + ' wygranych'"
+    />
+  </section>
+} @else if (player.status() === 'error') {
+  <p class="state-message">Nie udało się wczytać profilu.</p>
+} @else {
+  <p class="state-message">Wczytywanie…</p>
+}
+
+<div class="columns">
+  <section class="card">
+    <div class="section-head">
+      <h2>Najsilniejsze postacie</h2>
+      <a routerLink="/roster" class="link">Cały roster →</a>
+    </div>
+    <ol class="top-list">
+      @for (entry of roster.topByPower(); track entry.id) {
+        <li>
+          <a [routerLink]="['/roster', entry.id]" class="top-item">
+            <app-character-avatar
+              [name]="entry.name"
+              [portrait]="entry.portrait"
+              [traits]="entry.traits"
+              style="--avatar-size: 40px"
+            />
+            <div class="top-main">
+              <span class="name">{{ entry.name }}</span>
+              <app-star-rating
+                [yellow]="entry.yellowStars"
+                [red]="entry.redStars"
+                [diamonds]="entry.diamonds"
+                style="--star-size: 0.65rem"
+              />
+            </div>
+            <app-gear-badge [tier]="entry.gearTier" />
+            <span class="power">{{ entry.power | compactNumber }}</span>
+          </a>
+        </li>
+      } @empty {
+        <li class="muted">Brak danych.</li>
+      }
+    </ol>
+  </section>
+
+  <section class="card">
+    <div class="section-head">
+      <h2>Aktywne eventy</h2>
+      <a routerLink="/events" class="link">Wszystkie →</a>
+    </div>
+    <ul class="event-list">
+      @for (event of player.activeEvents(); track event.id) {
+        <li>
+          <div class="event-row">
+            <span class="chip">{{ typeLabels[event.type] ?? event.type }}</span>
+            <span class="name">{{ event.name }}</span>
+            <span class="muted time">⏱ {{ timeLeft(event.endTime) }}</span>
+          </div>
+          @if (progressOf(event); as p) {
+            <app-progress-bar [value]="p.points ?? 0" [max]="p.goal ?? 0" />
+            <span class="muted small">
+              Próg {{ p.goalTier }}: {{ p.points | compactNumber: 'full' }} /
+              {{ p.goal | compactNumber: 'full' }}
+            </span>
+          }
+        </li>
+      } @empty {
+        <li class="muted">Brak aktywnych eventów.</li>
+      }
+    </ul>
+  </section>
+</div>

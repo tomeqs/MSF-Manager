@@ -1,0 +1,42 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { PlayerStore } from '../../core/state/player.store';
+import { RosterStore } from '../../core/state/roster.store';
+import { EVENT_TYPE_LABELS, eventProgress, formatTimeLeft } from '../../core/state/event.utils';
+import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
+import { CharacterAvatar } from '../../shared/ui/character-avatar';
+import { GearBadge } from '../../shared/ui/gear-badge';
+import { ProgressBar } from '../../shared/ui/progress-bar';
+import { StarRating } from '../../shared/ui/star-rating';
+import { StatTile } from '../../shared/ui/stat-tile';
+
+@Component({
+  selector: 'app-dashboard',
+  imports: [
+    RouterLink,
+    DecimalPipe,
+    CompactNumberPipe,
+    StatTile,
+    CharacterAvatar,
+    StarRating,
+    GearBadge,
+    ProgressBar,
+  ],
+  templateUrl: './dashboard.html',
+  styleUrl: './dashboard.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class Dashboard {
+  protected readonly player = inject(PlayerStore);
+  protected readonly roster = inject(RosterStore);
+
+  protected readonly typeLabels = EVENT_TYPE_LABELS;
+  protected readonly progressOf = eventProgress;
+  protected readonly timeLeft = formatTimeLeft;
+
+  constructor() {
+    this.player.load();
+    this.roster.load();
+  }
+}

@@ -1,0 +1,97 @@
+<header class="page-header">
+  <div>
+    <h1>Roster</h1>
+    <p>{{ visible().length }} postaci · łączna moc {{ visiblePower() | compactNumber }}</p>
+  </div>
+</header>
+
+<section class="filters card">
+  <input
+    type="search"
+    placeholder="Szukaj postaci…"
+    aria-label="Szukaj postaci"
+    [value]="filters().search"
+    (input)="patch('search', $any($event.target).value)"
+  />
+
+  <select
+    aria-label="Cecha"
+    [value]="filters().traitId"
+    (change)="patch('traitId', $any($event.target).value)"
+  >
+    <option value="">Wszystkie cechy</option>
+    @for (trait of store.traits(); track trait.id) {
+      <option [value]="trait.id">{{ trait.name }}</option>
+    }
+  </select>
+
+  <select
+    aria-label="Minimalne gwiazdki"
+    [value]="filters().minYellow"
+    (change)="patch('minYellow', +$any($event.target).value)"
+  >
+    @for (stars of starOptions; track stars) {
+      <option [value]="stars">{{ stars ? 'Min. ' + stars + '★' : 'Dowolne ★' }}</option>
+    }
+  </select>
+
+  <select
+    aria-label="Minimalny gear tier"
+    [value]="filters().minGear"
+    (change)="patch('minGear', +$any($event.target).value)"
+  >
+    @for (gear of gearOptions; track gear) {
+      <option [value]="gear">{{ gear ? 'Min. G' + gear : 'Dowolny gear' }}</option>
+    }
+  </select>
+
+  <select
+    aria-label="Sortowanie"
+    [value]="filters().sort"
+    (change)="patch('sort', $any($event.target).value)"
+  >
+    @for (opt of sortOptions; track opt.value) {
+      <option [value]="opt.value">Sortuj: {{ opt.label }}</option>
+    }
+  </select>
+
+  <label class="toggle">
+    <input
+      type="checkbox"
+      [checked]="filters().favoritesOnly"
+      (change)="patch('favoritesOnly', $any($event.target).checked)"
+    />
+    Ulubione
+  </label>
+
+  <label class="toggle">
+    <input
+      type="checkbox"
+      [checked]="filters().showLocked"
+      (change)="patch('showLocked', $any($event.target).checked)"
+    />
+    Zablokowane
+  </label>
+
+  @if (isFiltered()) {
+    <button type="button" (click)="reset()">Wyczyść</button>
+  }
+</section>
+
+@switch (store.status()) {
+  @case ('error') {
+    <p class="state-message">Nie udało się wczytać rosteru.</p>
+  }
+  @case ('loaded') {
+    <section class="grid">
+      @for (entry of visible(); track entry.id) {
+        <app-character-card [entry]="entry" />
+      } @empty {
+        <p class="state-message">Żadna postać nie spełnia filtrów.</p>
+      }
+    </section>
+  }
+  @default {
+    <p class="state-message">Wczytywanie rosteru…</p>
+  }
+}

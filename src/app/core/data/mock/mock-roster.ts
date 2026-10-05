@@ -1,0 +1,80 @@
+import { CharacterInstance, IsoClass } from '../../models';
+
+const ALL_SLOTS = [true, true, true, true, true, true];
+
+function inst(
+  id: string,
+  level: number,
+  yellow: number,
+  red: number,
+  gearTier: number,
+  slotsEquipped: number,
+  [basic, special, ultimate, passive]: [number, number, number, number],
+  power: number,
+  iso?: { active: IsoClass; level: number },
+  favorite = false,
+): CharacterInstance {
+  return {
+    id,
+    level,
+    activeYellow: yellow,
+    activeRed: red,
+    gearTier,
+    gearSlots: ALL_SLOTS.map((_, i) => i < slotsEquipped),
+    basic,
+    special,
+    ultimate,
+    passive,
+    power,
+    favorite,
+    iso8: iso ? { matrix: 'purple', active: iso.active, [iso.active]: iso.level } : undefined,
+  };
+}
+
+/** Shape of GET /player/v1/roster (statsFormat=object). Doctor Doom is locked. */
+export const MOCK_ROSTER: CharacterInstance[] = [
+  inst(
+    'CaptainAmerica',
+    90,
+    7,
+    7,
+    19,
+    3,
+    [7, 7, 7, 5],
+    612_400,
+    { active: 'fortifier', level: 12 },
+    true,
+  ),
+  inst('IronMan', 90, 7, 6, 18, 6, [7, 7, 7, 5], 548_900, { active: 'striker', level: 10 }),
+  inst('Thor', 85, 7, 5, 17, 2, [6, 6, 7, 5], 463_200, { active: 'raider', level: 9 }),
+  inst('BlackWidow', 85, 6, 4, 16, 4, [6, 6, 6, 4], 371_800, { active: 'skirmisher', level: 7 }),
+  inst('Hulk', 80, 6, 3, 15, 0, [5, 5, 6, 4], 302_500),
+  inst(
+    'SpiderMan',
+    95,
+    7,
+    9,
+    20,
+    4,
+    [8, 8, 8, 6],
+    721_300,
+    { active: 'skirmisher', level: 15 },
+    true,
+  ),
+  inst('MilesMorales', 95, 7, 8, 20, 1, [8, 7, 8, 6], 689_100, { active: 'raider', level: 14 }),
+  inst('GhostSpider', 90, 7, 7, 19, 5, [7, 7, 7, 5], 598_700, { active: 'skirmisher', level: 12 }),
+  inst('Wolverine', 88, 7, 6, 18, 2, [7, 7, 7, 5], 534_000, { active: 'raider', level: 11 }),
+  inst('Storm', 88, 7, 6, 18, 3, [7, 7, 7, 5], 541_600, { active: 'striker', level: 11 }),
+  inst('Cyclops', 85, 7, 5, 17, 6, [6, 7, 7, 5], 489_300, { active: 'striker', level: 9 }),
+  inst('Phoenix', 88, 7, 7, 18, 0, [7, 7, 7, 5], 556_200, { active: 'healer', level: 11 }, true),
+  inst('BlackPanther', 75, 5, 3, 14, 3, [5, 5, 5, 3], 241_900),
+  inst('Shuri', 75, 5, 2, 14, 1, [5, 5, 5, 3], 228_400),
+  inst('Okoye', 70, 5, 2, 13, 5, [4, 5, 5, 3], 205_100),
+  inst('StarLord', 65, 4, 1, 12, 2, [4, 4, 4, 3], 151_700),
+  inst('Rocket', 65, 4, 1, 12, 0, [4, 4, 4, 2], 146_300),
+  inst('Groot', 60, 4, 0, 11, 4, [3, 4, 4, 2], 128_800),
+  inst('Magneto', 85, 7, 5, 17, 3, [6, 6, 7, 5], 497_600, { active: 'fortifier', level: 9 }),
+  inst('Loki', 70, 5, 3, 13, 1, [5, 5, 5, 3], 214_700),
+  inst('Thanos', 80, 6, 4, 15, 5, [6, 6, 6, 4], 336_900, { active: 'fortifier', level: 6 }),
+  { id: 'DoctorDoom' },
+];

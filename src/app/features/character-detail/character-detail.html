@@ -1,0 +1,88 @@
+<a routerLink="/roster" class="back">← Roster</a>
+
+@if (entry(); as e) {
+  <header class="hero card">
+    <app-character-avatar
+      [name]="e.name"
+      [portrait]="e.portrait"
+      [traits]="e.traits"
+      style="--avatar-size: 96px"
+    />
+    <div class="hero-main">
+      <h1>{{ e.name }}</h1>
+      @if (e.unlocked) {
+        <app-star-rating
+          [yellow]="e.yellowStars"
+          [red]="e.redStars"
+          [diamonds]="e.diamonds"
+          style="--star-size: 1.1rem"
+        />
+      } @else {
+        <span class="muted">🔒 Postać zablokowana</span>
+      }
+      <div class="traits">
+        @for (trait of e.traits; track trait.id) {
+          <span class="chip">{{ trait.name }}</span>
+        }
+      </div>
+    </div>
+    @if (e.unlocked) {
+      <div class="hero-power">
+        <span class="muted">Moc</span>
+        <strong>{{ e.power | compactNumber: 'full' }}</strong>
+      </div>
+    }
+  </header>
+
+  @if (e.unlocked) {
+    <div class="panels">
+      <section class="card">
+        <h2>Rozwój</h2>
+        <dl class="facts">
+          <dt>Poziom</dt>
+          <dd>{{ e.level }}</dd>
+          <dt>Gear tier</dt>
+          <dd><app-gear-badge [tier]="e.gearTier" /></dd>
+          <dt>ISO-8</dt>
+          <dd>
+            @if (e.iso.active) {
+              {{ isoLabels[e.iso.active] }} · poz. {{ e.iso.level }}
+            } @else {
+              <span class="muted">brak</span>
+            }
+          </dd>
+        </dl>
+
+        <h3>Sloty gearu ({{ equippedSlots() }}/6)</h3>
+        <div class="slots">
+          @for (slot of e.gearSlots; track $index) {
+            <span
+              class="slot"
+              [class.on]="slot"
+              [attr.aria-label]="slot ? 'założony' : 'pusty'"
+            ></span>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Umiejętności</h2>
+        <ul class="abilities">
+          @for (a of abilities(); track a.key) {
+            <li>
+              <div class="ability-row">
+                <span>{{ a.label }}</span>
+                <span class="muted">{{ a.level }} / {{ a.max }}</span>
+              </div>
+              <app-progress-bar [value]="a.level" [max]="a.max" />
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+} @else if (status() === 'loaded') {
+  <p class="state-message">Nie znaleziono postaci „{{ id() }}”.</p>
+} @else {
+  <p class="state-message">Wczytywanie…</p>
+}

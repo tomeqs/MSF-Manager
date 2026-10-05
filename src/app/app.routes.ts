@@ -1,0 +1,59 @@
+import { Routes } from '@angular/router';
+import { Shell } from './layout/shell/shell';
+
+export const routes: Routes = [
+  {
+    path: '',
+    component: Shell,
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        title: 'Pulpit · MSF Assistant',
+        loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'roster',
+        title: 'Roster · MSF Assistant',
+        loadComponent: () => import('./features/roster/roster').then((m) => m.Roster),
+      },
+      {
+        path: 'roster/:id',
+        title: 'Postać · MSF Assistant',
+        loadComponent: () =>
+          import('./features/character-detail/character-detail').then((m) => m.CharacterDetail),
+      },
+      {
+        path: 'events',
+        title: 'Eventy · MSF Assistant',
+        loadComponent: () => import('./features/events/events').then((m) => m.Events),
+      },
+      {
+        path: 'farming',
+        title: 'Farmienie · MSF Assistant',
+        data: {
+          heading: 'Farmienie',
+          description: 'Kalkulator brakujących shardów i materiałów do wybranych celów.',
+        },
+        loadComponent: () => import('./features/coming-soon/coming-soon').then((m) => m.ComingSoon),
+      },
+      {
+        path: 'alliance',
+        title: 'Sojusz · MSF Assistant',
+        data: { heading: 'Sojusz', description: 'Członkowie sojuszu i ich rostery.' },
+        loadComponent: () => import('./features/coming-soon/coming-soon').then((m) => m.ComingSoon),
+      },
+      {
+        // OAuth2 redirect registered in the MSF Developer Portal. Will host the PKCE code exchange.
+        path: 'auth/callback',
+        title: 'Logowanie · MSF Assistant',
+        data: {
+          heading: 'Logowanie',
+          description: 'Obsługa logowania kontem Scopely (OAuth2 PKCE).',
+        },
+        loadComponent: () => import('./features/coming-soon/coming-soon').then((m) => m.ComingSoon),
+      },
+      { path: '**', redirectTo: 'dashboard' },
+    ],
+  },
+];

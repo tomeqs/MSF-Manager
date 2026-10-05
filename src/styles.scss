@@ -1,0 +1,147 @@
+/* Global theme tokens and base element styles. Component styles stay local. */
+
+:root {
+  color-scheme: dark;
+
+  --c-bg: #0b0d17;
+  --c-surface: #131628;
+  --c-surface-2: #1b1f36;
+  --c-surface-3: #262b48;
+  --c-border: #262b45;
+  --c-text: #e6e8f2;
+  --c-text-muted: #8c92b4;
+  --c-accent: #e2363d;
+  --c-accent-soft: rgb(226 54 61 / 0.16);
+  --c-success: #3ecf8e;
+  --c-warning: #f5a524;
+
+  --c-star-off: #343a5c;
+  --c-star-yellow: #ffc83d;
+  --c-star-red: #ff4b4b;
+  --c-diamond: #7fd8ff;
+
+  --c-origin-bio: #2f9e5a;
+  --c-origin-mutant: #c9a227;
+  --c-origin-mystic: #8b4fd1;
+  --c-origin-skill: #d1702c;
+  --c-origin-tech: #2f7fd1;
+
+  --c-gear-1: #8fd17a;
+  --c-gear-5: #5fa8ff;
+  --c-gear-9: #b07cff;
+  --c-gear-13: #ffa94d;
+  --c-gear-17: #4fd1c5;
+  --c-gear-20: #ff6b9a;
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 1.6rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  padding: 8px 14px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface-2);
+
+  &:hover {
+    background: var(--c-surface-3);
+  }
+}
+
+input,
+select {
+  padding: 8px 12px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface-2);
+
+  &:focus {
+    outline: 2px solid var(--c-accent);
+    outline-offset: -1px;
+  }
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  p {
+    margin: 4px 0 0;
+    color: var(--c-text-muted);
+  }
+}
+
+.card {
+  padding: 16px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+}
+
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--c-surface-3);
+  color: var(--c-text-muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--c-text-muted);
+}
+
+.state-message {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--c-text-muted);
+}

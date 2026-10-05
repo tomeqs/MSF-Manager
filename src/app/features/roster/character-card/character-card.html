@@ -1,0 +1,33 @@
+@let e = entry();
+<a class="card-link" [routerLink]="['/roster', e.id]" [class.locked]="!e.unlocked">
+  <div class="top">
+    <app-character-avatar [name]="e.name" [portrait]="e.portrait" [traits]="e.traits" />
+    <div class="head">
+      <span class="name">
+        {{ e.name }}
+        @if (e.favorite) {
+          <span class="fav" title="Ulubiona">♥</span>
+        }
+      </span>
+      @if (e.unlocked) {
+        <app-star-rating [yellow]="e.yellowStars" [red]="e.redStars" [diamonds]="e.diamonds" />
+      } @else {
+        <span class="muted">🔒 Zablokowana</span>
+      }
+    </div>
+  </div>
+
+  @if (e.unlocked) {
+    <div class="stats">
+      <span class="power">{{ e.power | compactNumber }}</span>
+      <span class="muted">Poz. {{ e.level }}</span>
+      <app-gear-badge [tier]="e.gearTier" />
+    </div>
+  }
+
+  <div class="traits">
+    @for (trait of e.traits; track trait.id) {
+      <span class="chip">{{ trait.name }}</span>
+    }
+  </div>
+</a>

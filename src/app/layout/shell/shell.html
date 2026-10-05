@@ -1,0 +1,46 @@
+<aside class="sidebar" [class.open]="menuOpen()">
+  <a class="brand" routerLink="/dashboard" (click)="menuOpen.set(false)">
+    <span class="logo">MSF</span>
+    <span class="brand-name">Assistant</span>
+  </a>
+
+  <nav>
+    @for (item of nav; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active" (click)="menuOpen.set(false)">
+        <span class="icon" aria-hidden="true">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
+        @if (item.soon) {
+          <span class="soon">wkrótce</span>
+        }
+      </a>
+    }
+  </nav>
+
+  <p class="footer">Dane testowe (mock)</p>
+</aside>
+
+@if (menuOpen()) {
+  <button class="backdrop" aria-label="Zamknij menu" (click)="menuOpen.set(false)"></button>
+}
+
+<div class="main">
+  <header class="topbar">
+    <button class="menu-btn" aria-label="Menu" (click)="menuOpen.set(!menuOpen())">☰</button>
+    <div class="spacer"></div>
+    @if (player.card(); as card) {
+      <div class="commander">
+        <div class="commander-text">
+          <span class="commander-name">{{ card.name }}</span>
+          <span class="commander-meta">
+            Poz. {{ card.level?.completedTier }} · TCP {{ card.tcp | compactNumber }}
+          </span>
+        </div>
+        <span class="commander-avatar" aria-hidden="true">{{ card.name[0] }}</span>
+      </div>
+    }
+  </header>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>
