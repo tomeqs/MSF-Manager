@@ -31,7 +31,7 @@ function inst(
   };
 }
 
-/** Shape of GET /player/v1/roster (statsFormat=object). Doctor Doom is locked. */
+/** Shape of GET /player/v1/roster (statsFormat=object). Doctor Doom, Drax and Mantis are locked. */
 export const MOCK_ROSTER: CharacterInstance[] = [
   inst(
     'CaptainAmerica',

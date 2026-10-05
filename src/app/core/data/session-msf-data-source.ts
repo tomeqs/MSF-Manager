@@ -7,6 +7,8 @@ import {
   EventInfo,
   ItemQuantity,
   PlayerCard,
+  TeamOrder,
+  TeamTab,
   UpgradeData,
 } from '../models';
 import { ApiMsfDataSource } from './api/api-msf-data-source';
@@ -46,5 +48,9 @@ export class SessionMsfDataSource extends MsfDataSource {
 
   getUpgradeData(): Observable<UpgradeData> {
     return this.source.getUpgradeData();
+  }
+
+  getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
+    return this.source.getTeamOrder(tab);
   }
 }

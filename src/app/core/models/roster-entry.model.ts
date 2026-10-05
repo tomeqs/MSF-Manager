@@ -24,4 +24,6 @@ export interface RosterEntry {
   power: number;
   /** Inventory item id of this character's yellow-star shards. */
   shardItemId?: string;
+  /** Yellow stars a locked character unlocks at. */
+  unlockStars?: number;
 }

@@ -4,6 +4,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { FarmingStore } from '../../core/state/farming.store';
 import { PlayerStore } from '../../core/state/player.store';
 import { RosterStore } from '../../core/state/roster.store';
+import { TeamsStore } from '../../core/state/teams.store';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 
 interface NavItem {
@@ -28,11 +29,13 @@ export class Shell {
   private readonly document = inject(DOCUMENT);
   private readonly roster = inject(RosterStore);
   private readonly farming = inject(FarmingStore);
+  private readonly teams = inject(TeamsStore);
 
   protected readonly nav: NavItem[] = [
     { path: '/dashboard', label: 'Pulpit', icon: '◈' },
     { path: '/roster', label: 'Roster', icon: '☰' },
     { path: '/events', label: 'Eventy', icon: '⚑' },
+    { path: '/teams', label: 'Drużyny', icon: '★' },
     { path: '/farming', label: 'Farmienie', icon: '⛏' },
     { path: '/alliance', label: 'Sojusz', icon: '⚔', soon: true },
   ];
@@ -46,6 +49,7 @@ export class Shell {
     this.player.refresh();
     this.roster.refresh();
     this.farming.refresh();
+    this.teams.refresh();
   }
 
   protected login(): void {

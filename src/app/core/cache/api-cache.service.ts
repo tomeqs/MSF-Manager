@@ -26,7 +26,8 @@ const PLAYER_PREFIX = 'player:';
  * Caching policy for MSF API responses.
  *
  * - Game data is reused while `meta.hashes[hashName]` (seen on any response this session)
- *   still matches the hash it was saved with; with no hash seen yet, a TTL applies.
+ *   still matches the hash it was saved with; with no hash seen yet (or `hashName` null),
+ *   a TTL applies.
  * - Player data is re-requested with `since=<meta.asOf>`; 344 UNCHANGED serves the cache.
  */
 @Injectable({ providedIn: 'root' })
@@ -41,7 +42,7 @@ export class ApiCache {
 
   gameData<T>(
     key: string,
-    hashName: HashName,
+    hashName: HashName | null,
     fetch: () => Observable<ApiResponse<T>>,
   ): Observable<T> {
     const cacheKey = GAME_PREFIX + key;
@@ -53,7 +54,7 @@ export class ApiCache {
             this.noteMeta(res.meta);
             void this.kv.set(cacheKey, {
               data: res.data,
-              hash: res.meta?.hashes?.[hashName],
+              hash: hashName ? res.meta?.hashes?.[hashName] : undefined,
               savedAt: Date.now(),
             } satisfies GameEntry<T>);
           }),
@@ -95,8 +96,8 @@ export class ApiCache {
     return this.kv.deletePrefix(PLAYER_PREFIX);
   }
 
-  private isFresh(entry: GameEntry<unknown>, hashName: HashName): boolean {
-    const known = this.knownHashes[hashName];
+  private isFresh(entry: GameEntry<unknown>, hashName: HashName | null): boolean {
+    const known = hashName ? this.knownHashes[hashName] : undefined;
     if (known) return entry.hash === known;
     return Date.now() - entry.savedAt < GAME_TTL_MS;
   }

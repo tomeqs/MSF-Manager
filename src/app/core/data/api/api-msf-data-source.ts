@@ -10,6 +10,8 @@ import {
   EventInfo,
   ItemQuantity,
   PlayerCard,
+  TeamOrder,
+  TeamTab,
   UpgradeData,
 } from '../../models';
 import { MsfDataSource } from '../msf-data-source';
@@ -67,6 +69,13 @@ export class ApiMsfDataSource extends MsfDataSource {
         pieceFlatCost: 'none',
         subPieceInfo: 'none',
       }),
+    );
+  }
+
+  getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
+    // No meta hash tracks this analysis, so it is cached by age only.
+    return this.cache.gameData(`teamOrder:${tab}`, null, () =>
+      this.envelope<TeamOrder[]>(`/game/v1/analysis/teamOrder/${tab}`),
     );
   }
 

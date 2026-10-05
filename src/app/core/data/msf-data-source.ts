@@ -5,6 +5,8 @@ import {
   EventInfo,
   ItemQuantity,
   PlayerCard,
+  TeamOrder,
+  TeamTab,
   UpgradeData,
 } from '../models';
 
@@ -32,4 +34,7 @@ export abstract class MsfDataSource {
 
   /** GET /game/v1/upgradeData */
   abstract getUpgradeData(): Observable<UpgradeData>;
+
+  /** GET /game/v1/analysis/teamOrder/{tab} — most common saved squads across players. */
+  abstract getTeamOrder(tab: TeamTab): Observable<TeamOrder[]>;
 }

@@ -193,8 +193,13 @@ nav {
     display: block;
   }
 
-  .commander-text {
+  .commander-text,
+  .label {
     display: none;
+  }
+
+  .topbar {
+    gap: 8px;
   }
 
   .topbar,

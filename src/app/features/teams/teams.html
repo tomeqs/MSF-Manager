@@ -1,0 +1,109 @@
+<header class="page-header">
+  <div>
+    <h1>Drużyny</h1>
+    <p>
+      Najczęściej ustawiane składy wśród graczy, dopasowane do Twojego rosteru. Pomijam drużyny, w
+      których brakuje Ci więcej niż {{ maxMissing }} postaci.
+    </p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Tryb gry">
+  @for (t of tabs; track t.id) {
+    <button type="button" [class.active]="tab() === t.id" (click)="select(t.id)">
+      {{ t.label }}
+    </button>
+  }
+</nav>
+
+<ng-template #teamCard let-fit>
+  <article class="card team" [class.ready]="!fit.missing.length">
+    <div class="members">
+      @for (m of fit.members; track m.id) {
+        <a
+          class="member"
+          [class.missing]="!m.owned"
+          [routerLink]="m.entry ? ['/roster', m.id] : null"
+          [title]="m.name"
+        >
+          <app-character-avatar
+            [name]="m.name"
+            [portrait]="m.entry?.portrait"
+            [traits]="m.entry?.traits ?? []"
+            style="--avatar-size: 48px"
+          />
+          <span class="member-name">{{ m.name }}</span>
+          @if (m.owned) {
+            <span class="muted tiny">{{ m.entry.power | compactNumber }}</span>
+          } @else {
+            <span class="tiny lock">🔒 brak</span>
+          }
+        </a>
+      }
+    </div>
+
+    <div class="meta">
+      <div class="row">
+        <span class="muted">Popularność</span>
+        <span>{{ fit.team.popularity | compactNumber }}</span>
+      </div>
+      <app-progress-bar [value]="fit.team.share" [max]="1" />
+      @if (!fit.missing.length) {
+        <div class="row">
+          <span class="muted">Moc składu</span>
+          <strong>{{ fit.power | compactNumber }}</strong>
+        </div>
+      }
+    </div>
+
+    @if (fit.missing.length) {
+      <div class="todo">
+        @for (m of fit.missing; track m.id) {
+          <div class="todo-row">
+            <span class="muted">Brakuje:</span>
+            <strong class="grow">{{ m.name }}</strong>
+            @if (isFarmed(m)) {
+              <a routerLink="/farming" class="farmed">W farmieniu ✓</a>
+            } @else if (m.entry) {
+              <button type="button" (click)="farm(m)">Farmuj</button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </article>
+</ng-template>
+
+@switch (status()) {
+  @case ('error') {
+    <p class="state-message">Nie udało się wczytać danych o drużynach.</p>
+  }
+  @case ('loaded') {
+    <h2 class="section-title">Masz cały skład ({{ fits().ready.length }})</h2>
+    <div class="grid">
+      @for (fit of fits().ready; track fit.team.key) {
+        <ng-container *ngTemplateOutlet="teamCard; context: { $implicit: fit }" />
+      } @empty {
+        <p class="muted">Nie masz jeszcze kompletu żadnej popularnej drużyny w tym trybie.</p>
+      }
+    </div>
+
+    <h2 class="section-title">Brakuje 1–{{ maxMissing }} postaci ({{ fits().almost.length }})</h2>
+    <div class="grid">
+      @for (fit of fits().almost; track fit.team.key) {
+        <ng-container *ngTemplateOutlet="teamCard; context: { $implicit: fit }" />
+      } @empty {
+        <p class="muted">Brak drużyn bliskich skompletowania.</p>
+      }
+    </div>
+
+    @if (fits().hidden) {
+      <p class="muted hidden-note">
+        Pominięte popularne drużyny, w których brakuje Ci więcej postaci: {{ fits().hidden }}.
+      </p>
+    }
+  }
+  @default {
+    <p class="state-message">Wczytywanie…</p>
+  }
+}

@@ -6,6 +6,8 @@ import {
   EventInfo,
   ItemQuantity,
   PlayerCard,
+  TeamOrder,
+  TeamTab,
   UpgradeData,
 } from '../../models';
 import { MsfDataSource } from '../msf-data-source';
@@ -14,6 +16,7 @@ import { mockEvents } from './mock-events';
 import { MOCK_INVENTORY, MOCK_UPGRADE_DATA } from './mock-farming';
 import { MOCK_PLAYER } from './mock-player';
 import { MOCK_ROSTER } from './mock-roster';
+import { MOCK_TEAM_ORDER } from './mock-teams';
 
 /** Simulated network latency so loading states are visible during development. */
 const LATENCY_MS = 250;
@@ -42,5 +45,9 @@ export class MockMsfDataSource extends MsfDataSource {
 
   getUpgradeData(): Observable<UpgradeData> {
     return of(MOCK_UPGRADE_DATA).pipe(delay(LATENCY_MS));
+  }
+
+  getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
+    return of(MOCK_TEAM_ORDER[tab] ?? []).pipe(delay(LATENCY_MS));
   }
 }

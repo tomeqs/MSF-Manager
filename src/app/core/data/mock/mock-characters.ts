@@ -49,6 +49,8 @@ export const MOCK_CHARACTERS: CharacterInfo[] = [
   c('StarLord', 'Star-Lord', [HERO, SKILL, BLASTER, GUARDIANS]),
   c('Rocket', 'Rocket Raccoon', [HERO, TECH, BLASTER, GUARDIANS]),
   c('Groot', 'Groot', [HERO, BIO, PROTECTOR, GUARDIANS]),
+  c('Drax', 'Drax', [HERO, BIO, BRAWLER, GUARDIANS]),
+  c('Mantis', 'Mantis', [HERO, MYSTIC, SUPPORT, GUARDIANS]),
   c('Magneto', 'Magneto', [VILLAIN, MUTANT, CONTROLLER]),
   c('Loki', 'Loki', [VILLAIN, MYSTIC, CONTROLLER, ASGARD]),
   c('Thanos', 'Thanos', [VILLAIN, BIO, BRAWLER]),

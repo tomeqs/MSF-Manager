@@ -33,12 +33,20 @@
   <header class="topbar">
     <button class="menu-btn" aria-label="Menu" (click)="menuOpen.set(!menuOpen())">☰</button>
     <div class="spacer"></div>
-    <button type="button" class="session-btn" title="Pobierz świeże dane" (click)="refresh()">
-      ⟳ Odśwież
+    <button
+      type="button"
+      class="session-btn"
+      title="Pobierz świeże dane"
+      aria-label="Odśwież"
+      (click)="refresh()"
+    >
+      ⟳<span class="label"> Odśwież</span>
     </button>
     @if (auth.mode() === 'demo') {
       <span class="demo-badge">Demo</span>
-      <button type="button" class="session-btn" (click)="login()">Zaloguj kontem Scopely</button>
+      <button type="button" class="session-btn" (click)="login()">
+        Zaloguj<span class="label"> kontem Scopely</span>
+      </button>
     }
     @if (player.card(); as card) {
       <div class="commander">
@@ -55,8 +63,13 @@
         }
       </div>
     }
-    <button type="button" class="session-btn" (click)="logout()">
-      {{ auth.mode() === 'api' ? 'Wyloguj' : 'Wyjdź z demo' }}
+    <button
+      type="button"
+      class="session-btn"
+      [attr.aria-label]="auth.mode() === 'api' ? 'Wyloguj' : 'Wyjdź z demo'"
+      (click)="logout()"
+    >
+      ⎋<span class="label"> {{ auth.mode() === 'api' ? 'Wyloguj' : 'Wyjdź z demo' }}</span>
     </button>
   </header>
 

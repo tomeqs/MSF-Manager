@@ -57,6 +57,7 @@ export function toRosterEntry(info: CharacterInfo, instance?: CharacterInstance)
     iso: isoSummary(instance?.iso8),
     power: instance?.power ?? 0,
     shardItemId: itemId(info.starItems?.[0]),
+    unlockStars: info.unlockStars,
   };
 }
 
