@@ -1,8 +1,12 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { msfApiInterceptor } from '../auth/msf-api.interceptor';
 import { MsfDataSource } from './msf-data-source';
-import { MockMsfDataSource } from './mock/mock-msf-data-source';
+import { SessionMsfDataSource } from './session-msf-data-source';
 
-/** Swap the implementation here once the real API client exists. */
 export function provideMsfData(): EnvironmentProviders {
-  return makeEnvironmentProviders([{ provide: MsfDataSource, useClass: MockMsfDataSource }]);
+  return makeEnvironmentProviders([
+    provideHttpClient(withInterceptors([msfApiInterceptor])),
+    { provide: MsfDataSource, useClass: SessionMsfDataSource },
+  ]);
 }

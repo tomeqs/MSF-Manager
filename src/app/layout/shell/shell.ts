@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DOCUMENT, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 import { PlayerStore } from '../../core/state/player.store';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 
@@ -18,8 +19,11 @@ interface NavItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Shell {
+  protected readonly auth = inject(AuthService);
   protected readonly player = inject(PlayerStore);
   protected readonly menuOpen = signal(false);
+  private readonly router = inject(Router);
+  private readonly document = inject(DOCUMENT);
 
   protected readonly nav: NavItem[] = [
     { path: '/dashboard', label: 'Pulpit', icon: '◈' },
@@ -31,5 +35,15 @@ export class Shell {
 
   constructor() {
     this.player.load();
+  }
+
+  protected login(): void {
+    void this.auth.login(this.router.url);
+  }
+
+  protected logout(): void {
+    this.auth.logout();
+    // Full reload so stores loaded for this session are discarded.
+    this.document.location.assign('/login');
   }
 }

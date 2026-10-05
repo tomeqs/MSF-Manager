@@ -1,10 +1,24 @@
 import { Routes } from '@angular/router';
+import { sessionGuard } from './core/auth/session.guard';
 import { Shell } from './layout/shell/shell';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    title: 'Logowanie · MSF Assistant',
+    loadComponent: () => import('./features/login/login').then((m) => m.Login),
+  },
+  {
+    // OAuth2 redirect registered in the MSF Developer Portal.
+    path: 'auth/callback',
+    title: 'Logowanie · MSF Assistant',
+    loadComponent: () =>
+      import('./features/auth-callback/auth-callback').then((m) => m.AuthCallback),
+  },
+  {
     path: '',
     component: Shell,
+    canActivate: [sessionGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
@@ -41,16 +55,6 @@ export const routes: Routes = [
         path: 'alliance',
         title: 'Sojusz · MSF Assistant',
         data: { heading: 'Sojusz', description: 'Członkowie sojuszu i ich rostery.' },
-        loadComponent: () => import('./features/coming-soon/coming-soon').then((m) => m.ComingSoon),
-      },
-      {
-        // OAuth2 redirect registered in the MSF Developer Portal. Will host the PKCE code exchange.
-        path: 'auth/callback',
-        title: 'Logowanie · MSF Assistant',
-        data: {
-          heading: 'Logowanie',
-          description: 'Obsługa logowania kontem Scopely (OAuth2 PKCE).',
-        },
         loadComponent: () => import('./features/coming-soon/coming-soon').then((m) => m.ComingSoon),
       },
       { path: '**', redirectTo: 'dashboard' },

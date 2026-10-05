@@ -10,7 +10,7 @@ import { MOCK_ROSTER } from './mock-roster';
 /** Simulated network latency so loading states are visible during development. */
 const LATENCY_MS = 250;
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class MockMsfDataSource extends MsfDataSource {
   getPlayerCard(): Observable<PlayerCard> {
     return of(MOCK_PLAYER).pipe(delay(LATENCY_MS));

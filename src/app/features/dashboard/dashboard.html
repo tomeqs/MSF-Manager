@@ -12,7 +12,7 @@
     <app-stat-tile
       label="Postacie"
       [value]="roster.summary().unlocked + ' / ' + roster.summary().total"
-      [hint]="card.charactersAtMaxStarRank + ' na max gwiazdkach'"
+      [hint]="(card.charactersAtMaxStarRank ?? '–') + ' na max gwiazdkach'"
     />
     <app-stat-tile
       label="Średni gear"
@@ -21,12 +21,12 @@
     />
     <app-stat-tile
       label="Arena"
-      [value]="'#' + card.latestArena"
-      [hint]="'Najlepsza: #' + card.bestArena"
+      [value]="'#' + (card.latestArena ?? '–')"
+      [hint]="'Najlepsza: #' + (card.bestArena ?? '–')"
     />
     <app-stat-tile
       label="Blitz"
-      [value]="'#' + card.latestBlitz"
+      [value]="'#' + (card.latestBlitz ?? '–')"
       [hint]="(card.blitzWins | compactNumber: 'full') + ' wygranych'"
     />
   </section>

@@ -135,9 +135,25 @@ nav {
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  object-fit: cover;
   background: var(--c-accent);
   color: #fff;
   font-weight: 700;
+}
+
+.demo-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--c-warning);
+  color: #1a1300;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.session-btn {
+  padding: 6px 12px;
+  font-size: 0.85rem;
 }
 
 .content {
@@ -175,6 +191,10 @@ nav {
 
   .menu-btn {
     display: block;
+  }
+
+  .commander-text {
+    display: none;
   }
 
   .topbar,

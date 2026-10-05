@@ -1,0 +1,26 @@
+<main class="login card">
+  <div class="brand">
+    <span class="logo">MSF</span>
+    <span class="brand-name">Assistant</span>
+  </div>
+
+  <h1>Pomocnik do Marvel Strike Force</h1>
+  <p class="muted">
+    Zaloguj się kontem Scopely, aby zobaczyć swój roster, eventy i sojusz. Aplikacja tylko odczytuje
+    dane — nie wykonuje akcji w grze.
+  </p>
+
+  @if (expired()) {
+    <p class="notice">Sesja wygasła. Zaloguj się ponownie.</p>
+  }
+
+  <button type="button" class="primary" [disabled]="redirecting()" (click)="login()">
+    {{ redirecting() ? 'Przekierowywanie…' : 'Zaloguj kontem Scopely' }}
+  </button>
+  <button type="button" (click)="demo()">Wypróbuj na danych testowych</button>
+
+  <p class="links muted">
+    <a href="/privacy.html">Polityka prywatności</a> ·
+    <a href="/tos.html">Warunki korzystania</a>
+  </p>
+</main>

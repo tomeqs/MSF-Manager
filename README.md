@@ -1,7 +1,8 @@
 # MSF Assistant
 
 Pomocnik do gry **Marvel Strike Force** — Angular 21 (standalone components, signals, zoneless).
-Na razie działa na danych testowych (mock); integracja z [MSF API](https://developer.marvelstrikeforce.com/beta/index.html) jest przygotowana architektonicznie.
+Logowanie kontem Scopely (OAuth2 + PKCE) i dane z [MSF API](https://developer.marvelstrikeforce.com/beta/index.html),
+albo tryb demo na danych testowych.
 
 ## Uruchomienie
 
@@ -21,9 +22,13 @@ src/app/
   core/
     models/        typy odwzorowujące schematy MSF API (CharacterInfo, CharacterInstance, PlayerCard, EventInfo…)
                    + RosterEntry — płaski model widoku
+    config/        MSF_CONFIG: client_id, api key, adresy OAuth, zakresy
+    auth/          AuthService (PKCE), interceptor, sessionGuard
     data/
       msf-data-source.ts      abstrakcja źródła danych; metody 1:1 z trasami API
-      provide-msf-data.ts     JEDYNE miejsce wyboru implementacji (mock ↔ API)
+      provide-msf-data.ts     HttpClient + interceptor + wybór implementacji
+      session-msf-data-source.ts  API gdy zalogowany, mock w trybie demo
+      api/                    ApiMsfDataSource (HttpClient)
       mock/                   MockMsfDataSource + dane testowe
     state/
       roster.store.ts         roster (signals): wpisy, cechy, podsumowania
@@ -36,7 +41,9 @@ src/app/
     roster/            siatka postaci z filtrami (cecha, ★, gear, ulubione) i sortowaniem
     character-detail/  szczegóły postaci: gwiazdki, gear sloty, umiejętności, ISO-8
     events/            trwające i nadchodzące eventy z postępem
-    coming-soon/       placeholder (Farmienie, Sojusz, /auth/callback)
+    login/             ekran logowania / wejście w tryb demo
+    auth-callback/     obsługa powrotu z Scopely (wymiana code → token)
+    coming-soon/       placeholder (Farmienie, Sojusz)
   shared/
     ui/            star-rating, character-avatar, gear-badge, stat-tile, progress-bar
     pipes/         compactNumber (8,73 mln)
@@ -47,11 +54,14 @@ public/
 **Przepływ danych:** komponent → store (signals) → `MsfDataSource` → (mock | API).
 Komponenty nie znają kształtu odpowiedzi API — operują na `RosterEntry` z mappera.
 
-## Następny krok: MSF API
+## Logowanie i MSF API
 
-1. Klient SPA zarejestrowany w MSF Developer Portal: domena `localhost:4200`, redirect `/auth/callback`.
-2. `AuthService` — OAuth2 Authorization Code + PKCE (`hydra-public.prod.m3.scopelypv.com`),
-   zakresy `m3p.f.pr.pro m3p.f.pr.ros m3p.f.pr.inv m3p.f.pr.act m3p.f.ar.pro openid offline`.
-   Refresh token jest jednorazowy — odświeżać z jednego miejsca (ew. `/util/v1/gatedRefresh`).
-3. `HttpInterceptor` — nagłówki `x-api-key` i `Authorization: Bearer`, obsługa 344 UNCHANGED (`since`/`asOf`) i 552/553.
-4. `ApiMsfDataSource` implementujące `MsfDataSource` i podmiana w `provideMsfData()`.
+- Klient SPA w MSF Developer Portal: domena `localhost:4200`, redirect `/auth/callback`,
+  polityka `/privacy.html`, regulamin `/tos.html`. Konfiguracja: `core/config/msf-config.ts`.
+- `core/auth/auth.service.ts` — Authorization Code + PKCE (S256) na `hydra-public.prod.m3.scopelypv.com`.
+  Tokeny w `localStorage`, synchronizowane między kartami. Refresh token jest jednorazowy,
+  więc odświeżanie jest deduplikowane i idzie przez `/util/v1/gatedRefresh` (473 → bierze tokeny z innej karty).
+- `core/auth/msf-api.interceptor.ts` — `x-api-key` + `Authorization: Bearer` dla `api.marvelstrikeforce.com`;
+  401 kończy sesję i wraca do `/login`.
+- `core/data/session-msf-data-source.ts` — zalogowany → `ApiMsfDataSource`, tryb demo → `MockMsfDataSource`.
+- `sessionGuard` — strony aplikacji wymagają logowania albo trybu demo.
