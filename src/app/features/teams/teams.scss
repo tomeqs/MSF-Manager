@@ -113,6 +113,46 @@
 
 .grow {
   flex: 1;
+  min-width: 0;
+}
+
+.todo-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.tag {
+  flex-shrink: 0;
+  min-width: 74px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+
+  &.unlock {
+    background: var(--c-accent-soft);
+    color: var(--c-accent);
+  }
+
+  &.upgrade {
+    background: rgb(62 207 142 / 0.15);
+    color: var(--c-success);
+  }
+
+  &.unknown {
+    background: var(--c-surface-3);
+    color: var(--c-text-muted);
+  }
+}
+
+.gap {
+  color: var(--c-warning);
+}
+
+.ok {
+  color: var(--c-success);
 }
 
 .farmed {

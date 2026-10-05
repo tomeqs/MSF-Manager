@@ -1,3 +1,63 @@
+<ng-template #goalCard let-plan>
+  <article class="card goal" [class.ready]="plan.affordable && !plan.reached">
+    <header class="goal-head">
+      <app-character-avatar
+        [name]="plan.entry.name"
+        [portrait]="plan.entry.portrait"
+        [traits]="plan.entry.traits"
+        style="--avatar-size: 44px"
+      />
+      <div class="goal-title">
+        <a [routerLink]="['/roster', plan.entry.id]">{{ plan.entry.name }}</a>
+        <span class="muted">
+          {{ plan.entry.unlocked ? plan.entry.yellowStars + '★' : 'zablokowana' }} →
+          {{ plan.goal.targetYellow }}★
+        </span>
+      </div>
+      @if (plan.reached) {
+        <span class="badge done">Cel osiągnięty</span>
+      } @else if (plan.affordable) {
+        <span class="badge ready">Gotowe do ulepszenia</span>
+      }
+    </header>
+
+    @if (plan.shards.needed > 0) {
+      <div class="shards">
+        <div class="row">
+          <span>Shardy</span>
+          <span>
+            {{ plan.shards.owned | compactNumber: 'full' }} /
+            {{ plan.shards.needed | compactNumber: 'full' }}
+          </span>
+        </div>
+        <app-progress-bar [value]="plan.shards.owned" [max]="plan.shards.needed" />
+        @if (plan.shards.missing > 0) {
+          <span class="missing small">Brakuje {{ plan.shards.missing }} shardów</span>
+        }
+        @if (!plan.shards.tracked) {
+          <span class="muted small">Nie znam ID shardów tej postaci — stan nieznany.</span>
+        }
+      </div>
+    }
+
+    @if (plan.materials.length) {
+      <ul class="materials">
+        @for (m of plan.materials; track m.itemId) {
+          <li [class.short]="m.missing > 0">
+            <span>{{ m.name }}</span>
+            <span>{{ m.needed | compactNumber }}</span>
+          </li>
+        }
+      </ul>
+    }
+
+    <footer class="goal-actions">
+      <button type="button" (click)="edit(plan.goal.characterId)">Edytuj</button>
+      <button type="button" (click)="store.removeGoal(plan.goal.characterId)">Usuń</button>
+    </footer>
+  </article>
+</ng-template>
+
 <header class="page-header">
   <div>
     <h1>Farmienie</h1>
@@ -87,67 +147,16 @@
         }
       </section>
 
-      <section class="goals">
-        @for (plan of store.plans(); track plan.goal.characterId) {
-          <article class="card goal" [class.ready]="plan.affordable && !plan.reached">
-            <header class="goal-head">
-              <app-character-avatar
-                [name]="plan.entry.name"
-                [portrait]="plan.entry.portrait"
-                [traits]="plan.entry.traits"
-                style="--avatar-size: 44px"
-              />
-              <div class="goal-title">
-                <a [routerLink]="['/roster', plan.entry.id]">{{ plan.entry.name }}</a>
-                <span class="muted">
-                  {{ plan.entry.unlocked ? plan.entry.yellowStars + '★' : 'zablokowana' }} →
-                  {{ plan.goal.targetYellow }}★
-                </span>
-              </div>
-              @if (plan.reached) {
-                <span class="badge done">Cel osiągnięty</span>
-              } @else if (plan.affordable) {
-                <span class="badge ready">Gotowe do ulepszenia</span>
-              }
-            </header>
-
-            @if (plan.shards.needed > 0) {
-              <div class="shards">
-                <div class="row">
-                  <span>Shardy</span>
-                  <span>
-                    {{ plan.shards.owned | compactNumber: 'full' }} /
-                    {{ plan.shards.needed | compactNumber: 'full' }}
-                  </span>
-                </div>
-                <app-progress-bar [value]="plan.shards.owned" [max]="plan.shards.needed" />
-                @if (plan.shards.missing > 0) {
-                  <span class="missing small">Brakuje {{ plan.shards.missing }} shardów</span>
-                }
-                @if (!plan.shards.tracked) {
-                  <span class="muted small">Nie znam ID shardów tej postaci — stan nieznany.</span>
-                }
-              </div>
+      @for (group of groups(); track group.id) {
+        @if (group.plans.length) {
+          <h2 class="section-title">{{ group.label }} ({{ group.plans.length }})</h2>
+          <section class="goals">
+            @for (plan of group.plans; track plan.goal.characterId) {
+              <ng-container *ngTemplateOutlet="goalCard; context: { $implicit: plan }" />
             }
-
-            @if (plan.materials.length) {
-              <ul class="materials">
-                @for (m of plan.materials; track m.itemId) {
-                  <li [class.short]="m.missing > 0">
-                    <span>{{ m.name }}</span>
-                    <span>{{ m.needed | compactNumber }}</span>
-                  </li>
-                }
-              </ul>
-            }
-
-            <footer class="goal-actions">
-              <button type="button" (click)="edit(plan.goal.characterId)">Edytuj</button>
-              <button type="button" (click)="store.removeGoal(plan.goal.characterId)">Usuń</button>
-            </footer>
-          </article>
+          </section>
         }
-      </section>
+      }
     } @else {
       <p class="state-message">Nie masz jeszcze celów. Wybierz postać powyżej.</p>
     }

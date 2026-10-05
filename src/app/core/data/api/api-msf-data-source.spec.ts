@@ -78,6 +78,55 @@ describe('ApiMsfDataSource', () => {
   });
 });
 
+describe('ApiMsfDataSource.getPotential', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem(
+      'msf.auth.tokens',
+      JSON.stringify({ accessToken: 'AT', expiresAt: Date.now() + 3_600_000 }),
+    );
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), provideMsfData(), provideHttpClientTesting()],
+    });
+  });
+
+  it('asks for 7 yellow stars at the player level with current red stars and max ISO-8', async () => {
+    const api = TestBed.inject(ApiMsfDataSource);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const result = firstValueFrom(
+      api.getPotential('Storm', { level: 89, red: 9, isoClass: 'striker' }),
+    );
+    await tick();
+
+    const req = httpMock.expectOne((r) => r.url === `${API}/game/v1/characterInstances/Storm`);
+    expect(req.request.params.get('yellow')).toBe('7');
+    expect(req.request.params.get('level')).toBe('89');
+    expect(req.request.params.get('red')).toBe('9');
+    expect(req.request.params.get('iso8')).toBe('striker,max');
+    expect(req.request.params.has('gearTier')).toBe(false);
+    req.flush({
+      data: {
+        id: 'Storm',
+        level: 89,
+        gearTier: 19,
+        basic: 7,
+        special: 7,
+        ultimate: 7,
+        passive: 5,
+        power: 950_000,
+      },
+      meta: { version: 1 },
+    });
+
+    expect(await result).toEqual({
+      power: 950_000,
+      level: 89,
+      gearTier: 19,
+      abilities: { basic: 7, special: 7, ultimate: 7, passive: 5 },
+    });
+  });
+});
+
 describe('resolveImg', () => {
   it('joins base and path with exactly one slash', () => {
     expect(resolveImg('/a/b.png', 'https://x/imgs/')).toBe('https://x/imgs/a/b.png');

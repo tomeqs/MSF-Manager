@@ -64,28 +64,53 @@
         </div>
         <app-progress-bar [value]="fit.team.share" [max]="1" />
       }
-      @if (!fit.missing.length) {
+      @if (powerOf(fit.team.key); as p) {
         <div class="row">
-          <span class="muted">Moc składu</span>
-          <strong>{{ fit.power | compactNumber }}</strong>
+          <span class="muted">Moc</span>
+          <span>
+            <strong>{{ p.current | compactNumber }}</strong>
+            <span class="muted"> / docelowo {{ p.target | compactNumber }}</span>
+          </span>
         </div>
+        <app-progress-bar
+          [value]="p.current"
+          [max]="p.target"
+          style="--bar-color: var(--c-success)"
+        />
+        @if (!p.complete) {
+          <span class="muted tiny">Liczę docelową moc…</span>
+        } @else if (p.missing > 0) {
+          <span class="tiny">
+            Brakuje <strong class="gap">{{ p.missing | compactNumber }}</strong> mocy do maksimum na
+            Twoim poziomie
+          </span>
+        } @else {
+          <span class="tiny ok">Skład wymaksowany na Twoim poziomie ✓</span>
+        }
       }
     </div>
 
-    @if (fit.missing.length) {
-      <div class="todo">
-        @for (m of fit.missing; track m.id) {
-          <div class="todo-row">
-            <span class="muted">{{ m.unknown ? 'Nie rozpoznano:' : 'Brakuje:' }}</span>
-            <strong class="grow">{{ m.name }}</strong>
-            @if (isFarmed(m)) {
-              <a routerLink="/farming" class="farmed">W farmieniu ✓</a>
-            } @else if (m.entry) {
-              <button type="button" (click)="farm(m)">Farmuj</button>
-            }
-          </div>
-        }
-      </div>
+    @if (todo(fit); as rows) {
+      @if (rows.length) {
+        <div class="todo">
+          @for (row of rows; track row.member.id) {
+            <div class="todo-row">
+              <span class="tag" [class]="row.kind">{{ kindLabels[row.kind] }}</span>
+              <div class="grow todo-main">
+                <strong>{{ row.member.name }}</strong>
+                @if (row.power; as mp) {
+                  <span class="muted tiny">{{ details(row.kind, mp) }}</span>
+                }
+              </div>
+              @if (isFarmed(row.member)) {
+                <a routerLink="/farming" class="farmed">W farmieniu ✓</a>
+              } @else if (row.member.entry && row.kind !== 'unknown') {
+                <button type="button" (click)="farm(row.member)">Farmuj</button>
+              }
+            </div>
+          }
+        </div>
+      }
     }
   </article>
 </ng-template>

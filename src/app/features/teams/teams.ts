@@ -1,14 +1,25 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TeamTab } from '../../core/models';
 import { FarmingStore } from '../../core/state/farming.store';
 import { MAX_YELLOW_STARS } from '../../core/state/game-rules';
+import { PlayerStore } from '../../core/state/player.store';
+import { MemberPower, TeamPower, teamPower } from '../../core/state/potential-calc';
+import { PotentialStore } from '../../core/state/potential.store';
 import { RosterStore } from '../../core/state/roster.store';
 import { KNOWN_META, KNOWN_META_AS_OF } from '../../core/data/known-meta';
 import {
   KnownTeamFits,
   MAX_MISSING,
+  TeamFit,
   TeamMember,
   fitTeams,
   knownTeamFits,
@@ -19,6 +30,15 @@ import { CharacterAvatar } from '../../shared/ui/character-avatar';
 import { ProgressBar } from '../../shared/ui/progress-bar';
 
 const TAB_KEY = 'msf.teams.tab';
+const COMPACT = new Intl.NumberFormat('pl-PL', { notation: 'compact', maximumFractionDigits: 2 });
+
+type TodoKind = 'unlock' | 'upgrade' | 'unknown';
+
+interface TodoRow {
+  member: TeamMember;
+  kind: TodoKind;
+  power?: MemberPower;
+}
 
 @Component({
   selector: 'app-teams',
@@ -31,6 +51,8 @@ export class Teams {
   private readonly teams = inject(TeamsStore);
   private readonly roster = inject(RosterStore);
   private readonly farming = inject(FarmingStore);
+  private readonly player = inject(PlayerStore);
+  private readonly potentials = inject(PotentialStore);
 
   protected readonly maxMissing = MAX_MISSING;
   protected readonly knownAsOf = KNOWN_META_AS_OF;
@@ -58,13 +80,76 @@ export class Teams {
       : { ...fitTeams(this.state().teams, roster), unmatched: [], unrecognized: [] };
   });
 
+  protected readonly kindLabels: Record<TodoKind, string> = {
+    unlock: 'Odblokuj',
+    upgrade: 'Ulepsz',
+    unknown: 'Nieznana',
+  };
+
+  /** Characters cannot exceed the player's level, so potentials are computed for it. */
+  private readonly playerLevel = computed(() => this.player.card()?.level?.completedTier);
+  private readonly playerReady = computed(() => {
+    const status = this.player.status();
+    return status === 'loaded' || status === 'error';
+  });
+
+  private readonly shownFits = computed(() => [...this.fits().ready, ...this.fits().almost]);
+
+  private readonly powers = computed(() => {
+    const level = this.playerLevel();
+    const map = new Map<string, TeamPower>();
+    for (const fit of this.shownFits()) {
+      const entries = fit.members.flatMap((m) => (m.entry ? [m.entry] : []));
+      map.set(
+        fit.team.key,
+        teamPower(entries, (e) => this.potentials.get(e, level)),
+      );
+    }
+    return map;
+  });
+
   private readonly goalIds = computed(
     () => new Set(this.farming.goals().map((g) => g.characterId)),
   );
 
   constructor() {
     this.roster.load();
+    this.player.load();
     this.teams.load(this.tab());
+    effect(() => {
+      if (this.status() !== 'loaded' || !this.playerReady()) return;
+      const entries = this.shownFits().flatMap((f) =>
+        f.members.flatMap((m) => (m.entry ? [m.entry] : [])),
+      );
+      this.potentials.ensure(entries, this.playerLevel());
+    });
+  }
+
+  /** "G17→G20 · umiejętności · +455 tys. mocy" */
+  protected details(kind: TodoKind, power: MemberPower): string {
+    const parts = kind === 'unlock' ? ['potencjał przy 7★ i maks. gearze'] : [...power.upgrades];
+    if (power.gap) parts.push(`+${COMPACT.format(power.gap)} mocy`);
+    return parts.join(' · ');
+  }
+
+  protected powerOf(key: string): TeamPower | undefined {
+    return this.powers().get(key);
+  }
+
+  /** Members that need work: locked, below their max power, or not recognised. */
+  protected todo(fit: TeamFit): TodoRow[] {
+    const power = this.powers().get(fit.team.key);
+    const rows: TodoRow[] = [];
+    for (const member of fit.members) {
+      const mp = power?.byId.get(member.id);
+      if (member.unknown) rows.push({ member, kind: 'unknown' });
+      else if (!member.owned) rows.push({ member, kind: 'unlock', power: mp });
+      else if (mp && mp.gap > 0) rows.push({ member, kind: 'upgrade', power: mp });
+    }
+    const order: Record<TodoKind, number> = { unlock: 0, upgrade: 1, unknown: 2 };
+    return rows.sort(
+      (a, b) => order[a.kind] - order[b.kind] || (b.power?.gap ?? 0) - (a.power?.gap ?? 0),
+    );
   }
 
   protected select(tab: TeamTab): void {
@@ -86,14 +171,19 @@ export class Teams {
     return this.goalIds().has(member.id);
   }
 
-  /** Adds a farming goal: unlock a locked character, otherwise aim for max yellow stars. */
+  /**
+   * Adds a farming goal: unlock a locked character; otherwise 7★ and the ability levels of
+   * its max build for the player's level (when known).
+   */
   protected farm(member: TeamMember): void {
     const entry = member.entry;
     if (!entry) return;
+    const potential = this.potentials.get(entry, this.playerLevel());
     this.farming.saveGoal({
       characterId: entry.id,
       targetYellow: entry.unlocked ? MAX_YELLOW_STARS : (entry.unlockStars ?? MAX_YELLOW_STARS),
-      targetAbilities: { ...entry.abilities },
+      targetAbilities:
+        entry.unlocked && potential ? { ...potential.abilities } : { ...entry.abilities },
     });
   }
 }

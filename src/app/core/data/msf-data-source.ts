@@ -2,9 +2,11 @@ import { Observable } from 'rxjs';
 import {
   CharacterInfo,
   CharacterInstance,
+  CharacterPotential,
   EventInfo,
   ItemQuantity,
   PlayerCard,
+  PotentialTarget,
   TeamOrder,
   TeamTab,
   UpgradeData,
@@ -37,4 +39,10 @@ export abstract class MsfDataSource {
 
   /** GET /game/v1/analysis/teamOrder/{tab} — most common saved squads across players. */
   abstract getTeamOrder(tab: TeamTab): Observable<TeamOrder[]>;
+
+  /** GET /game/v1/characterInstances/{id} — power at 7★ with max gear/abilities for the level. */
+  abstract getPotential(
+    characterId: string,
+    target: PotentialTarget,
+  ): Observable<CharacterPotential>;
 }

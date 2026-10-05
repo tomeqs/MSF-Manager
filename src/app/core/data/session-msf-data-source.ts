@@ -4,9 +4,11 @@ import { AuthService } from '../auth/auth.service';
 import {
   CharacterInfo,
   CharacterInstance,
+  CharacterPotential,
   EventInfo,
   ItemQuantity,
   PlayerCard,
+  PotentialTarget,
   TeamOrder,
   TeamTab,
   UpgradeData,
@@ -52,5 +54,9 @@ export class SessionMsfDataSource extends MsfDataSource {
 
   getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
     return this.source.getTeamOrder(tab);
+  }
+
+  getPotential(characterId: string, target: PotentialTarget): Observable<CharacterPotential> {
+    return this.source.getPotential(characterId, target);
   }
 }

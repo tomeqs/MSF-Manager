@@ -97,3 +97,13 @@ używa `core/data/known-meta.ts` — imiennych składów z poradników (marvel.c
 październik 2026), z linkiem do źródła przy każdej drużynie. Slot `"A|B"` = A albo B, jeśli A
 nie posiadasz. Nazwy postaci, których nie ma w danych gry, są wypisywane pod listą — wystarczy
 poprawić pisownię w pliku. Przycisk „Sprawdź API ponownie” wraca do danych z API, gdy zadziała.
+
+## Docelowa moc drużyn
+
+Dla każdego członka drużyny `/game/v1/characterInstances/{id}` zwraca moc przy 7★, maks.
+gearze i umiejętnościach dla **poziomu gracza** (postać nie przekroczy poziomu gracza), z
+obecnymi czerwonymi gwiazdkami/diamentami i aktywną klasą ISO-8 na maks. Suma = moc docelowa
+drużyny; różnica z obecną mocą = „brakuje”. Wyniki są cache'owane (hash `chars`), zapytania
+idą po maks. 4 naraz (`PotentialStore`). „Farmuj” tworzy cel: odblokowanie albo 7★ + docelowe
+poziomy umiejętności. Farmienie dzieli cele na „Do odblokowania” i „Do ulepszenia”.
+Gear (G→G) jest pokazywany jako brak, ale kalkulator materiałów gearu jeszcze go nie liczy.

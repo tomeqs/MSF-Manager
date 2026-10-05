@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AbilityKey } from '../../core/models';
 import { FarmingStore } from '../../core/state/farming.store';
@@ -18,7 +19,7 @@ const range = (from: number, to: number) =>
 
 @Component({
   selector: 'app-farming',
-  imports: [RouterLink, CompactNumberPipe, CharacterAvatar, ProgressBar],
+  imports: [NgTemplateOutlet, RouterLink, CompactNumberPipe, CharacterAvatar, ProgressBar],
   templateUrl: './farming.html',
   styleUrl: './farming.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +51,15 @@ export class Farming {
   protected readonly yellowOptions = computed(() =>
     range(Math.max(1, this.selected()?.yellowStars ?? 1), MAX_YELLOW_STARS),
   );
+
+  /** Goals split into characters to unlock and characters to upgrade. */
+  protected readonly groups = computed(() => {
+    const plans = this.store.plans();
+    return [
+      { id: 'unlock', label: 'Do odblokowania', plans: plans.filter((p) => !p.entry.unlocked) },
+      { id: 'upgrade', label: 'Do ulepszenia', plans: plans.filter((p) => p.entry.unlocked) },
+    ];
+  });
 
   protected readonly missingTotals = computed(() =>
     this.store.totals().filter((line) => line.missing > 0),

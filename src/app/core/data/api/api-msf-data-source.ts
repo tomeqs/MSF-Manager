@@ -7,10 +7,12 @@ import {
   ApiResponse,
   CharacterInfo,
   CharacterInstance,
+  CharacterPotential,
   EventInfo,
   IndexedCosts,
   ItemQuantity,
   PlayerCard,
+  PotentialTarget,
   TeamOrder,
   TeamTab,
   UpgradeData,
@@ -150,6 +152,52 @@ export class ApiMsfDataSource extends MsfDataSource {
       );
   }
 
+  getPotential(characterId: string, target: PotentialTarget): Observable<CharacterPotential> {
+    // Omitted params default to the max for the level: gear tier, then ability levels.
+    const params: QueryParams = {
+      yellow: '7',
+      red: String(target.red),
+      lang: 'none',
+      statsFormat: 'csv',
+      itemFormat: 'id',
+      traitFormat: 'id',
+      charInfo: 'none',
+      abilityKits: 'none',
+      gearTiers: 'none',
+    };
+    if (target.level) params['level'] = String(target.level);
+    if (target.isoClass) params['iso8'] = `${target.isoClass},max`;
+    const key = `potential:v1:${characterId}:${target.level ?? 'cap'}:${target.red}:${target.isoClass ?? '-'}`;
+
+    return this.cache
+      .gameData(
+        key,
+        'chars',
+        () =>
+          this.envelope<CharacterInstance | CharacterInstance[]>(
+            `/game/v1/characterInstances/${encodeURIComponent(characterId)}`,
+            params,
+          ),
+        (data) => (toInstance(data)?.power ?? 0) > 0,
+      )
+      .pipe(
+        map((data) => {
+          const instance = toInstance(data);
+          return {
+            power: instance?.power ?? 0,
+            level: instance?.level,
+            gearTier: instance?.gearTier,
+            abilities: {
+              basic: instance?.basic ?? 0,
+              special: instance?.special ?? 0,
+              ultimate: instance?.ultimate ?? 0,
+              passive: instance?.passive ?? 0,
+            },
+          };
+        }),
+      );
+  }
+
   private data<T>(path: string, params?: QueryParams): Observable<T> {
     return this.envelope<T>(path, params).pipe(
       tap((res) => this.cache.noteMeta(res.meta)),
@@ -209,4 +257,9 @@ function resolveCostIcons(costs: IndexedCosts | undefined, base: string | undefi
 function toTeamOrders(value: TeamOrder | TeamOrder[] | null | undefined): TeamOrder[] {
   const list = Array.isArray(value) ? value : value ? [value] : [];
   return list.filter((o) => Array.isArray(o?.squad) && o.squad.length > 0);
+}
+
+/** The instance route returns an array only when a param is "all", which is never sent here. */
+function toInstance(data: CharacterInstance | CharacterInstance[] | undefined) {
+  return Array.isArray(data) ? data[0] : data;
 }

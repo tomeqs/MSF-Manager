@@ -90,10 +90,19 @@
   color: var(--c-success);
 }
 
+.section-title {
+  margin: 8px 0 12px;
+  color: var(--c-text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .goals {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
+  margin-bottom: 24px;
 }
 
 .goal {
