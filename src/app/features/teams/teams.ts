@@ -9,8 +9,8 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { EventInfo, Requirements, RosterEntry, TeamTab } from '../../core/models';
+import { goalFor } from '../../core/state/farming-calc';
 import { FarmingStore } from '../../core/state/farming.store';
-import { MAX_YELLOW_STARS } from '../../core/state/game-rules';
 import { PlayerStore } from '../../core/state/player.store';
 import { MemberPower, TeamPower, teamPower } from '../../core/state/potential-calc';
 import { PotentialStore } from '../../core/state/potential.store';
@@ -247,14 +247,7 @@ export class Teams {
 
   private farmEntry(entry: RosterEntry, targetYellow?: number): void {
     const potential = this.potentials.get(entry, this.playerLevel());
-    this.farming.saveGoal({
-      characterId: entry.id,
-      targetYellow:
-        targetYellow ??
-        (entry.unlocked ? MAX_YELLOW_STARS : (entry.unlockStars ?? MAX_YELLOW_STARS)),
-      targetAbilities:
-        entry.unlocked && potential ? { ...potential.abilities } : { ...entry.abilities },
-    });
+    this.farming.saveGoal(goalFor(entry, potential?.abilities, targetYellow));
   }
 
   protected isGoal(entry: RosterEntry): boolean {

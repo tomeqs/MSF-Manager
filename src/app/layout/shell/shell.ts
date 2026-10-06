@@ -35,6 +35,7 @@ export class Shell {
     { path: '/roster', label: 'Roster', icon: '☰' },
     { path: '/events', label: 'Eventy', icon: '⚑' },
     { path: '/teams', label: 'Drużyny', icon: '★' },
+    { path: '/key-characters', label: 'Kluczowe', icon: '◆' },
     { path: '/farming', label: 'Farmienie', icon: '⛏' },
   ];
 

@@ -31,7 +31,7 @@ function inst(
   };
 }
 
-/** Shape of GET /player/v1/roster (statsFormat=object). Doctor Doom, Drax and Mantis are locked. */
+/** Shape of GET /player/v1/roster (statsFormat=object). Doctor Doom, Drax, Mantis, Odin and Blue Marvel are locked. */
 export const MOCK_ROSTER: CharacterInstance[] = [
   inst(
     'CaptainAmerica',
@@ -77,4 +77,9 @@ export const MOCK_ROSTER: CharacterInstance[] = [
   inst('Loki', 70, 5, 3, 13, 1, [5, 5, 5, 3], 214_700),
   inst('Thanos', 80, 6, 4, 15, 5, [6, 6, 6, 4], 336_900, { active: 'fortifier', level: 6 }),
   { id: 'DoctorDoom' },
+  inst('ProfessorX', 95, 7, 6, 19, 4, [8, 8, 8, 6], 702_300, { active: 'healer', level: 13 }),
+  inst('Knull', 85, 6, 4, 17, 2, [7, 7, 7, 5], 452_800, { active: 'raider', level: 9 }),
+  inst('Mephisto', 80, 5, 3, 16, 3, [6, 6, 6, 4], 318_400),
+  { id: 'Odin' },
+  { id: 'BlueMarvel' },
 ];

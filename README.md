@@ -25,6 +25,7 @@ src/app/
     config/        MSF_CONFIG: client_id, api key, adresy OAuth, zakresy
     auth/          AuthService (PKCE), interceptor, sessionGuard
     data/known-meta.ts  lista drużyn z poradników (fallback dla drużyn) — do ręcznej edycji
+    data/key-characters.ts  postacie uniwersalne z poradników — do ręcznej edycji
     cache/         KvStore (IndexedDB) + ApiCache (meta.hashes, since/344)
     data/
       msf-data-source.ts      abstrakcja źródła danych; metody 1:1 z trasami API
@@ -39,15 +40,18 @@ src/app/
       event.utils.ts          postęp eventu, czas do końca
       farming.store.ts / farming-calc.ts   cele farmienia i wyliczenia
       teams.store.ts / teams-calc.ts       meta drużyny i dopasowanie do rosteru
+      key-characters(.store).ts             kluczowe postacie: status rozwoju i priorytet
+      today.ts                              lista „Co farmić dziś”
       game-rules.ts           limity umiejętności i gwiazdek
   layout/shell/    sidebar + topbar, responsywne menu
   features/        widoki ładowane leniwie (lazy routes)
-    dashboard/         pulpit: kafelki statystyk, top postacie, aktywne eventy
+    dashboard/         pulpit: „Co farmić dziś”, kafelki statystyk, top postacie, aktywne eventy
     roster/            siatka postaci z filtrami (cecha, ★, gear, ulubione) i sortowaniem
     character-detail/  szczegóły postaci: gwiazdki, gear sloty, umiejętności, ISO-8
     events/            trwające i nadchodzące eventy z postępem
     teams/             drużyny per tryb gry dopasowane do rosteru (gotowe / brakuje 1–2);
                        źródło: analiza MSF API, a gdy ta nie działa — lista z poradników
+    key-characters/    postacie uniwersalne (plug-and-play) i ich priorytet farmienia
     farming/           kalkulator: cele (gwiazdki, umiejętności) → shardy i materiały vs inwentarz
     login/             ekran logowania / wejście w tryb demo
     auth-callback/     obsługa powrotu z Scopely (wymiana code → token)
@@ -124,3 +128,25 @@ Zakładki Blitz i Wieża zaczynają od trwających i zapowiedzianych eventów te
 (Blitz: do 3, Wieża: 1) i postacie, które pasują cechami, ale nie spełniają minimów
 (gwiazdki, gear, poziom, czerwone gwiazdki, ISO-8) — z „Farmuj” do wymaganych gwiazdek.
 Cechy porównywane są łącznie z niewidocznymi i eventowymi (`traitKeys`).
+
+## Kluczowe postacie
+
+`core/data/key-characters.ts` — postacie, które poradniki dokładają do wielu składów
+(Professor Xavier, Blue Marvel, Silver Surfer (Breaker), Magik (Breaker), Annihilus, Quasar,
+Knull, Mephisto, Odin, The Destroyer, Apocalypse), z krótkim uzasadnieniem i źródłem.
+Zakładka **Kluczowe** pokazuje dla każdej: status rozwoju, w ilu drużynach z `known-meta.ts`
+występuje i w jakich trybach, oraz „Farmuj”. Priorytet = (drużyny × 2 + tryby) × praca do
+zrobienia (zablokowana × 1,5, w rozwoju × 1 + brakujący udział mocy); optymalne i wymaksowane
+mają 0 i trafiają do „Gotowe”.
+
+## Co farmić dziś
+
+Karta na Pulpicie (`today.ts`), maks. 6 pozycji, jedna na postać, w kolejności:
+
+1. **Awansuj teraz** — masz już shardy na kolejną gwiazdkę albo odblokowanie (najpierw cele,
+   potem cały roster; sam koszt złota nie jest sprawdzany),
+2. **Cel gotowy** — w inwentarzu jest wszystko na cały cel,
+3. **Blisko** — co najmniej 50% shardów na następną gwiazdkę (najbliższe pierwsze),
+4. **Kluczowa** — kluczowe postacie z najwyższym priorytetem.
+
+Karta celu w Farmieniu pokazuje też postęp do następnej gwiazdki („Do 6★: 88 / 100”).

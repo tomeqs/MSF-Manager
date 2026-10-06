@@ -1,7 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FarmingStore } from '../../core/state/farming.store';
+import { KeyCharactersStore } from '../../core/state/key-characters.store';
 import { PlayerStore } from '../../core/state/player.store';
+import { TODAY_LABELS, todayItems } from '../../core/state/today';
 import { RosterStore } from '../../core/state/roster.store';
 import { EVENT_TYPE_LABELS, eventProgress, formatTimeLeft } from '../../core/state/event.utils';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
@@ -30,6 +33,14 @@ import { StatTile } from '../../shared/ui/stat-tile';
 export class Dashboard {
   protected readonly player = inject(PlayerStore);
   protected readonly roster = inject(RosterStore);
+  protected readonly farming = inject(FarmingStore);
+  private readonly keys = inject(KeyCharactersStore);
+
+  protected readonly todayLabels = TODAY_LABELS;
+  protected readonly today = computed(() =>
+    todayItems(this.farming.plans(), this.farming.promotions(), this.keys.rows()),
+  );
+  protected readonly todayStatus = this.farming.status;
 
   protected readonly typeLabels = EVENT_TYPE_LABELS;
   protected readonly progressOf = eventProgress;
@@ -38,5 +49,8 @@ export class Dashboard {
   constructor() {
     this.player.load();
     this.roster.load();
+    this.farming.load();
+    this.keys.load();
+    effect(() => this.keys.ensurePotentials());
   }
 }

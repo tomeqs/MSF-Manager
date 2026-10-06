@@ -36,6 +36,42 @@
   <p class="state-message">Wczytywanie…</p>
 }
 
+<section class="card today">
+  <div class="section-head">
+    <h2>Co farmić dziś</h2>
+    <a routerLink="/farming" class="link">Farmienie →</a>
+  </div>
+  @switch (todayStatus()) {
+    @case ('loaded') {
+      <ul class="today-list">
+        @for (item of today(); track item.characterId) {
+          <li>
+            <a [routerLink]="item.link" class="today-item" [attr.data-kind]="item.kind">
+              <span class="tag">{{ todayLabels[item.kind] }}</span>
+              <span class="today-main">
+                <span class="name">{{ item.name }}</span>
+                <span class="muted small">{{ item.text }}</span>
+              </span>
+              <span class="muted">→</span>
+            </a>
+          </li>
+        } @empty {
+          <li class="muted">
+            Brak pilnych ruchów. Dodaj cele w <a routerLink="/farming">Farmieniu</a> albo sprawdź
+            <a routerLink="/key-characters">Kluczowe postacie</a>.
+          </li>
+        }
+      </ul>
+    }
+    @case ('error') {
+      <p class="muted">Nie udało się wczytać inwentarza.</p>
+    }
+    @default {
+      <p class="muted">Wczytywanie…</p>
+    }
+  }
+</section>
+
 <div class="columns">
   <section class="card">
     <div class="section-head">

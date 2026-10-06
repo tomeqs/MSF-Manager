@@ -8,7 +8,7 @@ import {
   UpgradeData,
   itemId,
 } from '../models';
-import { ABILITY_KEYS } from './game-rules';
+import { ABILITY_KEYS, MAX_YELLOW_STARS } from './game-rules';
 
 export interface FarmingGoal {
   characterId: string;
@@ -33,10 +33,26 @@ export interface ShardPlan {
   tracked: boolean;
 }
 
+/** The next single step: unlocking, or one more yellow star. */
+export interface NextStar {
+  stars: number;
+  needed: number;
+  owned: number;
+  /** Enough shards in the inventory to promote/unlock right now. */
+  ready: boolean;
+}
+
+/** A character whose next step is already covered by the shards in the inventory. */
+export interface Promotion {
+  entry: RosterEntry;
+  next: NextStar;
+}
+
 export interface GoalPlan {
   goal: FarmingGoal;
   entry: RosterEntry;
   shards: ShardPlan;
+  nextStar?: NextStar;
   materials: MaterialLine[];
   /** Nothing left to upgrade. */
   reached: boolean;
@@ -131,9 +147,59 @@ export function planGoal(
     goal,
     entry,
     shards,
+    nextStar: nextStar(entry, upgrade, inventory, goal.targetYellow),
     materials,
     reached: shardsNeeded === 0 && materials.length === 0,
     affordable: shards.missing === 0 && materials.every((m) => m.missing === 0),
+  };
+}
+
+/**
+ * The next step towards `targetYellow` (default: unlock, or 7★): one more star, or unlocking
+ * at the character's unlock stars. Undefined when done or the shard item is unknown.
+ */
+export function nextStar(
+  entry: RosterEntry,
+  upgrade: UpgradeData,
+  inventory: Inventory,
+  targetYellow = goalFor(entry).targetYellow,
+): NextStar | undefined {
+  if (!entry.shardItemId || entry.yellowStars >= targetYellow) return undefined;
+  const stars = entry.unlocked
+    ? entry.yellowStars + 1
+    : Math.min(targetYellow, entry.unlockStars ?? targetYellow);
+  const needed = shardsBetween(upgrade.yellowStarTotalShards, entry.yellowStars, stars);
+  if (needed <= 0) return undefined;
+  const owned = inventory.get(entry.shardItemId) ?? 0;
+  return { stars, needed, owned, ready: owned >= needed };
+}
+
+/** Every roster character that can be unlocked or promoted with the shards already owned. */
+export function promotions(
+  roster: RosterEntry[],
+  upgrade: UpgradeData,
+  inventory: Inventory,
+): Promotion[] {
+  return roster.flatMap((entry) => {
+    const next = nextStar(entry, upgrade, inventory);
+    return next?.ready ? [{ entry, next }] : [];
+  });
+}
+
+/**
+ * Goal towards a character's max build: unlock a locked one, otherwise `targetYellow`
+ * (default 7★) with the ability levels of its max build when known.
+ */
+export function goalFor(
+  entry: RosterEntry,
+  maxAbilities?: Record<AbilityKey, number>,
+  targetYellow?: number,
+): FarmingGoal {
+  return {
+    characterId: entry.id,
+    targetYellow:
+      targetYellow ?? (entry.unlocked ? MAX_YELLOW_STARS : (entry.unlockStars ?? MAX_YELLOW_STARS)),
+    targetAbilities: entry.unlocked && maxAbilities ? { ...maxAbilities } : { ...entry.abilities },
   };
 }
 

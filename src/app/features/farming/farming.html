@@ -56,6 +56,16 @@
         @if (plan.shards.missing > 0) {
           <span class="missing small">Brakuje {{ plan.shards.missing }} shardów</span>
         }
+        @if (plan.nextStar; as next) {
+          <span class="small" [class.next-ready]="next.ready" [class.muted]="!next.ready">
+            @if (next.ready) {
+              ✓ Możesz już
+              {{ plan.entry.unlocked ? 'awansować na ' + next.stars + '★' : 'odblokować' }}
+            } @else {
+              Do {{ next.stars }}★: {{ next.owned }} / {{ next.needed }}
+            }
+          </span>
+        }
         @if (!plan.shards.tracked) {
           <span class="muted small">Nie znam ID shardów tej postaci — stan nieznany.</span>
         }

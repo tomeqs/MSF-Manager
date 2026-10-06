@@ -27,6 +27,7 @@ const c = (id: string, name: string, traits: TraitObject[]): CharacterInfo => ({
   status: 'playable',
   traits,
   starItems: [`SHARD_${id}`],
+  unlockStars: 3,
 });
 
 /** Shape of GET /game/v1/characters?status=playable&charInfo=full (subset). */
@@ -55,4 +56,9 @@ export const MOCK_CHARACTERS: CharacterInfo[] = [
   c('Loki', 'Loki', [VILLAIN, MYSTIC, CONTROLLER, ASGARD]),
   c('Thanos', 'Thanos', [VILLAIN, BIO, BRAWLER]),
   c('DoctorDoom', 'Doctor Doom', [VILLAIN, MYSTIC, CONTROLLER]),
+  c('ProfessorX', 'Professor Xavier', [HERO, MUTANT, CONTROLLER, XMEN]),
+  c('Knull', 'Knull', [VILLAIN, MYSTIC, BRAWLER]),
+  c('Mephisto', 'Mephisto', [VILLAIN, MYSTIC, CONTROLLER]),
+  c('Odin', 'Odin', [HERO, MYSTIC, PROTECTOR, ASGARD]),
+  c('BlueMarvel', 'Blue Marvel', [HERO, BIO, BLASTER]),
 ];

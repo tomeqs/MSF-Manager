@@ -3,7 +3,15 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { MsfDataSource } from '../data/msf-data-source';
 import { LoadStatus, UpgradeData } from '../models';
-import { FarmingGoal, GoalPlan, aggregateMaterials, planGoal, toInventory } from './farming-calc';
+import {
+  FarmingGoal,
+  GoalPlan,
+  Promotion,
+  aggregateMaterials,
+  planGoal,
+  promotions,
+  toInventory,
+} from './farming-calc';
 import { RosterStore } from './roster.store';
 
 const GOALS_KEY = 'msf.farming.goals';
@@ -45,6 +53,11 @@ export class FarmingStore {
       return entry ? [planGoal(goal, entry, this._upgrade(), this._inventory())] : [];
     });
   });
+
+  /** Any roster character (goal or not) whose next star / unlock is covered by owned shards. */
+  readonly promotions = computed<Promotion[]>(() =>
+    promotions(this.roster.entries(), this._upgrade(), this._inventory()),
+  );
 
   readonly totals = computed(() =>
     aggregateMaterials(this.plans(), this._inventory(), this._upgrade()),

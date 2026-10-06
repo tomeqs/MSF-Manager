@@ -1,0 +1,106 @@
+<header class="page-header">
+  <div>
+    <h1>Kluczowe postacie</h1>
+    <p>
+      Postacie uniwersalne, które poradniki dokładają do wielu składów — jedna inwestycja działa w
+      kilku trybach. Kolejność według priorytetu: przydatność × ile pracy zostało.
+    </p>
+  </div>
+</header>
+
+<ng-template #card let-row>
+  <article class="card key" [attr.data-status]="row.status">
+    <header class="key-head">
+      <app-character-avatar
+        [name]="displayName(row)"
+        [portrait]="row.entry?.portrait"
+        [traits]="row.entry?.traits ?? []"
+        style="--avatar-size: 48px"
+      />
+      <div class="key-title">
+        @if (row.entry) {
+          <a [routerLink]="['/roster', row.entry.id]">{{ row.entry.name }}</a>
+          @if (row.entry.unlocked) {
+            <app-star-rating
+              [yellow]="row.entry.yellowStars"
+              [red]="row.entry.redStars"
+              [diamonds]="row.entry.diamonds"
+              style="--star-size: 0.65rem"
+            />
+          }
+        } @else {
+          <strong>{{ displayName(row) }}</strong>
+        }
+      </div>
+      <span class="status">{{ statusLabel(row) }}</span>
+    </header>
+
+    <p class="why">{{ row.key.why }}</p>
+    <p class="muted small">
+      {{ modes(row) }}
+      @if (row.teams.length) {
+        · w drużynach: {{ row.teams.join(', ') }}
+      }
+    </p>
+
+    @if (row.power; as p) {
+      @if (row.entry?.unlocked) {
+        <div class="row small">
+          <span>{{ p.current | compactNumber }} / maks. {{ p.target | compactNumber }}</span>
+          <strong>{{ (p.share * 100).toFixed(0) }}%</strong>
+        </div>
+        <app-progress-bar [value]="p.share" [max]="1" style="--bar-color: var(--c-success)" />
+        @if (p.upgrades.length && row.status === 'developing') {
+          <span class="muted small">Brakuje: {{ p.upgrades.join(' · ') }}</span>
+        }
+      }
+    }
+
+    <footer class="key-foot">
+      <a class="source" [href]="row.key.source" target="_blank" rel="noopener">źródło ↗</a>
+      @if (row.priority > 0) {
+        @if (inFarming(row)) {
+          <a routerLink="/farming" class="farmed">W farmieniu ✓</a>
+        } @else if (row.entry) {
+          <button type="button" (click)="farm(row)">
+            {{ row.entry.unlocked ? 'Farmuj' : 'Farmuj odblokowanie' }}
+          </button>
+        }
+      }
+    </footer>
+  </article>
+</ng-template>
+
+@if (store.status() === 'loaded') {
+  <h2 class="section-title">Warto rozwijać ({{ todo().length }})</h2>
+  <div class="grid">
+    @for (row of todo(); track row.key.name) {
+      <ng-container *ngTemplateOutlet="card; context: { $implicit: row }" />
+    } @empty {
+      <p class="muted">Wszystkie kluczowe postacie, które masz, są już optymalnie rozwinięte.</p>
+    }
+  </div>
+
+  @if (done().length) {
+    <h2 class="section-title">Gotowe — możesz przestać farmić ({{ done().length }})</h2>
+    <div class="grid">
+      @for (row of done(); track row.key.name) {
+        <ng-container *ngTemplateOutlet="card; context: { $implicit: row }" />
+      }
+    </div>
+  }
+
+  @if (unknown().length) {
+    <p class="muted note">
+      Nie znaleziono w danych gry (inna pisownia albo brak postaci w danych — nazwy są w
+      <code>core/data/key-characters.ts</code>):
+      @for (row of unknown(); track row.key.name; let last = $last) {
+        {{ displayName(row) }}{{ last ? '.' : ',' }}
+      }
+    </p>
+  }
+} @else if (store.status() === 'error') {
+  <p class="state-message">Nie udało się wczytać rosteru.</p>
+} @else {
+  <p class="state-message">Wczytywanie…</p>
+}

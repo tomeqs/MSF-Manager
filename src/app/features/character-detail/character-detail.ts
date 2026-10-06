@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { goalFor } from '../../core/state/farming-calc';
 import { FarmingStore } from '../../core/state/farming.store';
 import {
   ABILITY_KEYS,
   ABILITY_LABELS,
   ABILITY_MAX,
-  MAX_YELLOW_STARS,
   OPTIMAL_POWER_SHARE,
 } from '../../core/state/game-rules';
 import { PlayerStore } from '../../core/state/player.store';
@@ -84,10 +84,6 @@ export class CharacterDetail {
     const e = this.entry();
     if (!e) return;
     const potential = this.potentials.get(e, this.playerLevel());
-    this.farming.saveGoal({
-      characterId: e.id,
-      targetYellow: e.unlocked ? MAX_YELLOW_STARS : (e.unlockStars ?? MAX_YELLOW_STARS),
-      targetAbilities: e.unlocked && potential ? { ...potential.abilities } : { ...e.abilities },
-    });
+    this.farming.saveGoal(goalFor(e, potential?.abilities));
   }
 }

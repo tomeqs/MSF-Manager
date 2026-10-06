@@ -3,8 +3,11 @@ import {
   FarmingGoal,
   aggregateMaterials,
   cumulativeCostsBetween,
+  goalFor,
   levelCostsBetween,
+  nextStar,
   planGoal,
+  promotions,
   shardsBetween,
   toInventory,
 } from './farming-calc';
@@ -90,5 +93,48 @@ describe('farming calc', () => {
     expect(aggregateMaterials(plans, inventory, upgrade)).toEqual([
       { itemId: 'GOLD', name: 'Złoto', icon: undefined, needed: 4000, owned: 4000, missing: 0 },
     ]);
+  });
+
+  it('finds the next star or unlock and whether owned shards cover it', () => {
+    const inventory = new Map([['SHARD_X', 30]]);
+    expect(nextStar(entry(2, 1), upgrade, inventory)).toEqual({
+      stars: 3,
+      needed: 25,
+      owned: 30,
+      ready: true,
+    });
+    expect(nextStar(entry(1, 1), upgrade, new Map())).toMatchObject({ needed: 15, ready: false });
+    expect(nextStar(entry(7, 1), upgrade, inventory)).toBeUndefined();
+    expect(nextStar(entry(2, 1), upgrade, inventory, 2)).toBeUndefined();
+    expect(nextStar(entry(2, 1, ''), upgrade, inventory)).toBeUndefined();
+
+    const locked = {
+      ...toRosterEntry({ id: 'L', name: 'Locked', unlockStars: 2 }),
+      shardItemId: 'SHARD_L',
+    };
+    expect(nextStar(locked, upgrade, new Map([['SHARD_L', 25]]))).toEqual({
+      stars: 2,
+      needed: 25,
+      owned: 25,
+      ready: true,
+    });
+    expect(promotions([entry(2, 1), locked], upgrade, inventory).map((p) => p.entry.id)).toEqual([
+      'X',
+    ]);
+  });
+
+  it('builds goals towards unlock or the max build', () => {
+    const max = { basic: 8, special: 8, ultimate: 8, passive: 6 };
+    expect(goalFor(entry(3, 2), max)).toEqual({
+      characterId: 'X',
+      targetYellow: 7,
+      targetAbilities: max,
+    });
+    expect(goalFor(entry(3, 2), undefined, 5).targetYellow).toBe(5);
+    expect(goalFor(toRosterEntry({ id: 'L', name: 'L', unlockStars: 3 }), max)).toEqual({
+      characterId: 'L',
+      targetYellow: 3,
+      targetAbilities: { basic: 0, special: 0, ultimate: 0, passive: 0 },
+    });
   });
 });
