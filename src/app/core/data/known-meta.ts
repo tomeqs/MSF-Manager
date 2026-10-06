@@ -143,8 +143,45 @@ export const KNOWN_META: KnownTeam[] = [
   {
     name: 'Exalted X-Men',
     modes: ['crucible'],
-    members: ['Storm (Mighty)', 'Angel', 'Morph', 'Wolverine', 'Jubilee'],
-    source: `${CHURCH}/exalted-x-men/`,
+    // Ultimate 32 picks swap Jubilee for Annihilus or Quasar.
+    members: ['Storm (Mighty)', 'Angel', 'Morph', 'Wolverine', 'Annihilus|Quasar|Jubilee'],
+    source: `${CHURCH}/cosmic-crucible-ultimate-32/`,
+  },
+  {
+    name: 'A.I. Avengers',
+    modes: ['crucible'],
+    members: ['Jocasta', 'Ultron', 'Vision', 'Human Torch (Jim)', 'Hawkeye (Robot)'],
+    source: `${CHURCH}/a-i-avenger/`,
+  },
+  {
+    name: 'New Mutants',
+    modes: ['crucible'],
+    members: ['Magik', 'Warlock', 'Cannonball', 'Wolfsbane', 'Sunspot'],
+    source: `${CHURCH}/new-mutant/`,
+  },
+  {
+    name: 'Phoenix Force',
+    modes: ['crucible'],
+    members: [
+      'Phoenix',
+      'Omega Red (Phoenix Force)',
+      'Magneto (Phoenix Force)',
+      'Executioner',
+      'Blue Marvel',
+    ],
+    source: `${CHURCH}/cosmic-crucible-the-best-defensive-setup/`,
+  },
+  {
+    name: 'Starjammers',
+    modes: ['crucible', 'war'],
+    members: [
+      'Havok',
+      'Lilandra',
+      'Howard the Duck',
+      'Groot',
+      'Nova (Sam Alexander)|Rocket Raccoon',
+    ],
+    source: `${CHURCH}/starjammer/`,
   },
   {
     name: 'Daring Warriors',
@@ -166,6 +203,12 @@ export const KNOWN_META: KnownTeam[] = [
   },
 
   // --- Raids (Trepidation / Incursion) ---
+  {
+    name: 'Champions (Hero)',
+    modes: ['raids'],
+    members: ['Nova (Sam Alexander)', 'Spider-Man (Miles)', 'Moon Girl', 'Brawn', 'Ms. Marvel'],
+    source: `${CHURCH}/champion/`,
+  },
   {
     name: 'Iron Raiders',
     modes: ['raids'],
@@ -216,6 +259,7 @@ export const KNOWN_META: KnownTeam[] = [
     source: `${CHURCH}/spider-society/`,
   },
   {
+    // Leaving the Trepidation Raid (replaced by Iron Raiders); still useful for Villain/Mutant nodes.
     name: 'Hellfire Club',
     modes: ['raids'],
     members: ['Sebastian Shaw', 'Emma Frost', 'Azazel', 'Madelyne Pryor', 'Rachel Summers'],
@@ -235,7 +279,7 @@ export const KNOWN_META: KnownTeam[] = [
   },
   {
     name: 'Immortal Weapon (Mystic)',
-    modes: ['raids'],
+    modes: ['raids', 'crucible'],
     members: ['Steel Serpent', 'Lady Bullseye', 'Sword Master', 'Iron Fist (WWII)', 'Iron Fist'],
     source: `${CHURCH}/immortal-weapon/`,
   },
