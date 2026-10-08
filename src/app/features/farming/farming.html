@@ -9,6 +9,9 @@
       />
       <div class="goal-title">
         <a [routerLink]="['/roster', plan.entry.id]">{{ plan.entry.name }}</a>
+        @if (rankOf(plan.entry.id); as rank) {
+          <span class="goal-rank">#{{ rank }} w rankingu</span>
+        }
         <span class="muted">
           {{ plan.entry.unlocked ? plan.entry.yellowStars + '★' : 'zablokowana' }} →
           {{ plan.goal.targetYellow }}★
@@ -96,6 +99,83 @@
     <p>Ustaw cele dla postaci. Policzę, ile shardów i materiałów brakuje do nich w inwentarzu.</p>
   </div>
 </header>
+
+<section class="card ranking">
+  <div class="ranking-head">
+    <h2>Co się najbardziej opłaca</h2>
+    <p class="muted small">
+      Przydatność w drużynach z listy, które (prawie) masz × moc do zyskania ÷ koszt. Shardy są
+      najdroższe — tanie ulepszenia (poziomy, gear, umiejętności) postaci, które już masz, idą
+      pierwsze. Postacie optymalnie rozwinięte wypadają z listy.
+    </p>
+  </div>
+  @switch (store.status()) {
+    @case ('loaded') {
+      <ol class="rank-list">
+        @for (rec of visibleRanking(); track rec.id) {
+          <li class="rank-item" [attr.data-kind]="rec.kind">
+            <span class="rank-no">{{ rec.rank }}</span>
+            <app-character-avatar
+              [name]="rec.entry.name"
+              [portrait]="rec.entry.portrait"
+              [traits]="rec.entry.traits"
+              style="--avatar-size: 40px"
+            />
+            <div class="rank-main">
+              <div class="rank-title">
+                <a [routerLink]="['/roster', rec.entry.id]">{{ rec.entry.name }}</a>
+                <span class="tag">{{ kindLabels[rec.kind] }}</span>
+                @if (rec.entry.unlocked) {
+                  <app-star-rating
+                    [yellow]="rec.entry.yellowStars"
+                    [red]="rec.entry.redStars"
+                    [diamonds]="rec.entry.diamonds"
+                    style="--star-size: 0.6rem"
+                  />
+                }
+              </div>
+              <span class="small">{{ action(rec) }}</span>
+              <span class="muted small">
+                {{ teamsOf(rec) }}
+                @if (rec.estimated) {
+                  · szacunek do czasu wczytania maks. mocy
+                }
+              </span>
+            </div>
+            <div class="rank-side">
+              <app-progress-bar
+                [value]="rec.relative"
+                [max]="1"
+                [attr.title]="'Opłacalność względem #1: ' + (rec.relative * 100).toFixed(0) + '%'"
+              />
+              @if (inGoals(rec)) {
+                <span class="farmed small">W celach ✓</span>
+              } @else {
+                <button type="button" (click)="farmRecommended(rec)">Farmuj</button>
+              }
+            </div>
+          </li>
+        } @empty {
+          <li class="muted">
+            Nic się teraz nie opłaca — postacie z drużyn z listy są optymalnie rozwinięte albo nie
+            masz jeszcze żadnej drużyny w zasięgu.
+          </li>
+        }
+      </ol>
+      @if (ranking().length > rankingPreview) {
+        <button type="button" class="more" (click)="showAll.set(!showAll())">
+          {{ showAll() ? 'Pokaż mniej' : 'Pokaż wszystkie (' + ranking().length + ')' }}
+        </button>
+      }
+    }
+    @case ('error') {
+      <p class="muted">Nie udało się wczytać inwentarza.</p>
+    }
+    @default {
+      <p class="muted">Wczytywanie…</p>
+    }
+  }
+</section>
 
 <section class="card form">
   <h2>Nowy cel</h2>

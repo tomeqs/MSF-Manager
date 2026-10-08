@@ -155,7 +155,7 @@ export class ApiMsfDataSource extends MsfDataSource {
   getPotential(characterId: string, target: PotentialTarget): Observable<CharacterPotential> {
     // Omitted params default to the max for the level: gear tier, then ability levels.
     const params: QueryParams = {
-      yellow: '7',
+      yellow: String(target.yellow ?? 7),
       red: String(target.red),
       lang: 'none',
       statsFormat: 'csv',
@@ -167,7 +167,8 @@ export class ApiMsfDataSource extends MsfDataSource {
     };
     if (target.level) params['level'] = String(target.level);
     if (target.isoClass) params['iso8'] = `${target.isoClass},max`;
-    const key = `potential:v1:${characterId}:${target.level ?? 'cap'}:${target.red}:${target.isoClass ?? '-'}`;
+    const yellow = target.yellow && target.yellow !== 7 ? `:y${target.yellow}` : '';
+    const key = `potential:v1:${characterId}:${target.level ?? 'cap'}:${target.red}:${target.isoClass ?? '-'}${yellow}`;
 
     return this.cache
       .gameData(

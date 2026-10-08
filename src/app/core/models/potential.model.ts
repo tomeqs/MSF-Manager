@@ -9,9 +9,11 @@ export interface PotentialTarget {
   red: number;
   /** Active ISO-8 class to assume at max level, if the character has one. */
   isoClass?: IsoClass;
+  /** Yellow stars to assume; omitted = 7. */
+  yellow?: number;
 }
 
-/** Power and build of a character at a target (7 yellow stars, max gear/abilities for level). */
+/** Power and build of a character at a target (yellow stars, max gear/abilities for level). */
 export interface CharacterPotential {
   power: number;
   level?: number;

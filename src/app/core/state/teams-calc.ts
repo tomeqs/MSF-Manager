@@ -109,11 +109,59 @@ export function nameKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+/** Roster by `nameKey` of the name (first entry wins on duplicates). */
+export function rosterByName(roster: RosterEntry[]): Map<string, RosterEntry> {
+  const byName = new Map<string, RosterEntry>();
+  for (const entry of roster) {
+    if (!byName.has(nameKey(entry.name))) byName.set(nameKey(entry.name), entry);
+  }
+  return byName;
+}
+
+/** Roster entry for a name with "A|B" alternatives (first match). */
+export function resolveName(
+  name: string,
+  byName: Map<string, RosterEntry>,
+): RosterEntry | undefined {
+  return name
+    .split('|')
+    .map((option) => byName.get(nameKey(option.trim())))
+    .find((e) => !!e);
+}
+
+export interface ResolvedKnownTeam {
+  team: KnownTeam;
+  members: TeamMember[];
+}
+
 /**
- * Builds each known team for the given mode from the roster.
+ * Builds known teams from the roster.
  * - `members`: the listed lineup; for "A|B" slots the first owned option wins.
  * - `traits`: the five strongest owned characters with the trait, locked ones filling gaps.
+ * Teams with too few members found in the game data are reported in `report.unmatched`.
  */
+export function resolveKnownTeams(
+  known: KnownTeam[],
+  roster: RosterEntry[],
+  report: { unmatched: string[]; unrecognized: string[] } = { unmatched: [], unrecognized: [] },
+): ResolvedKnownTeam[] {
+  const byName = rosterByName(roster);
+  const resolved: ResolvedKnownTeam[] = [];
+  for (const team of known) {
+    const members = team.members
+      ? lineupMembers(team.members, byName, report.unrecognized)
+      : traitMembers(team.traits ?? [], roster);
+    const recognised = members.filter((m) => !m.unknown).length;
+    if (recognised === 0 || recognised < Math.min(MIN_RECOGNISED, members.length)) {
+      report.unmatched.push(team.name);
+      continue;
+    }
+    resolved.push({ team, members });
+  }
+  return resolved;
+}
+
+/** Known teams for the given mode, split by how much of each the player owns. */
 export function knownTeamFits(
   known: KnownTeam[],
   tab: TeamTab,
@@ -126,21 +174,9 @@ export function knownTeamFits(
     unmatched: [],
     unrecognized: [],
   };
-  const byName = new Map<string, RosterEntry>();
-  for (const entry of roster) {
-    if (!byName.has(nameKey(entry.name))) byName.set(nameKey(entry.name), entry);
-  }
+  const forTab = known.filter((t) => ANY_TEAM_TABS.includes(tab) || t.modes.includes(tab));
 
-  for (const team of known) {
-    if (!ANY_TEAM_TABS.includes(tab) && !team.modes.includes(tab)) continue;
-    const members = team.members
-      ? lineupMembers(team.members, byName, result.unrecognized)
-      : traitMembers(team.traits ?? [], roster);
-    const recognised = members.filter((m) => !m.unknown).length;
-    if (recognised === 0 || recognised < Math.min(MIN_RECOGNISED, members.length)) {
-      result.unmatched.push(team.name);
-      continue;
-    }
+  for (const { team, members } of resolveKnownTeams(forTab, roster, result)) {
     const meta: MetaTeam = {
       key: team.name,
       name: team.name,

@@ -1,6 +1,7 @@
 import { KeyCharacter } from '../data/key-characters';
 import { KnownTeam } from '../data/known-meta';
 import { CharacterPotential } from '../models';
+import { Recommendation } from './advisor';
 import { keyCharacterRows } from './key-characters';
 import { toRosterEntry } from './roster.mapper';
 
@@ -37,6 +38,9 @@ const roster = [
   ),
 ];
 
+const ranked = (id: string, rank: number) =>
+  [id, { rank, entry: roster.find((e) => e.id === id) } as Recommendation] as const;
+
 describe('key characters', () => {
   const rows = keyCharacterRows(
     [
@@ -51,6 +55,7 @@ describe('key characters', () => {
     ],
     roster,
     () => MAXED,
+    new Map([ranked('A', 7), ranked('B', 2), ranked('C', 1)]),
   );
   const byName = new Map(rows.map((r) => [r.key.name, r]));
 
@@ -63,12 +68,12 @@ describe('key characters', () => {
     expect(byName.get('Locked B')!.teams).toEqual(['T1', 'T2']);
   });
 
-  it('ranks by usefulness × work left; done and unknown characters get 0', () => {
-    expect(rows.map((r) => [r.key.name, r.priority])).toEqual([
-      ['Locked B', 9],
-      ['Hero A|Alt A', 6],
-      ['Done C', 0],
-      ['Ghost', 0],
+  it('follows the ranking; done and unknown characters go last', () => {
+    expect(rows.map((r) => [r.key.name, r.recommendation?.rank])).toEqual([
+      ['Locked B', 2],
+      ['Hero A|Alt A', 7],
+      ['Done C', undefined],
+      ['Ghost', undefined],
     ]);
     expect(byName.get('Done C')!.status).toBe('optimal');
     expect(byName.get('Ghost')).toMatchObject({ status: 'unknown', entry: undefined });

@@ -138,17 +138,19 @@
   }
 
   &[data-kind='promote'] .tag,
-  &[data-kind='goal-ready'] .tag {
+  &[data-kind='goal-ready'] .tag,
+  &[data-kind='upgrade'] .tag {
     background: rgb(62 207 142 / 0.18);
     color: var(--c-success);
   }
 
-  &[data-kind='close'] .tag {
+  &[data-kind='stars'] .tag {
     background: rgb(245 166 35 / 0.18);
     color: var(--c-warning);
   }
 
-  &[data-kind='key'] .tag {
+  &[data-kind='unlock'] .tag {
+    background: var(--c-accent-soft);
     color: var(--c-accent);
   }
 }

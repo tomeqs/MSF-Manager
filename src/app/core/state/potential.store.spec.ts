@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Subject, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { MsfDataSource } from '../data/msf-data-source';
 import { CharacterPotential } from '../models';
 import { PotentialStore } from './potential.store';
@@ -43,5 +43,25 @@ describe('PotentialStore', () => {
     expect(getPotential).toHaveBeenCalledTimes(6);
     pending[1].complete(); // B finishes → BAD retried
     expect(getPotential.mock.calls.at(-1)?.[0]).toBe('BAD');
+  });
+
+  it('keeps max power at 7★ and at the current stars apart', () => {
+    const getPotential = vi.fn((_id: string, target: { yellow?: number }) =>
+      of(value(target.yellow ? 500 : 900)),
+    );
+    TestBed.configureTestingModule({
+      providers: [{ provide: MsfDataSource, useValue: { getPotential } }],
+    });
+    const store = TestBed.inject(PotentialStore);
+    const fiveStars = toRosterEntry(
+      { id: 'A', name: 'A' },
+      { id: 'A', level: 50, activeYellow: 5 },
+    );
+
+    store.ensure([fiveStars], 90);
+    store.ensure([fiveStars], 90, true);
+    expect(getPotential.mock.calls[1][1]).toMatchObject({ yellow: 5 });
+    expect(store.get(fiveStars, 90)?.power).toBe(900);
+    expect(store.get(fiveStars, 90, true)?.power).toBe(500);
   });
 });

@@ -39,6 +39,7 @@ export class FarmingStore {
 
   readonly goals = this._goals.asReadonly();
   readonly inventory = this._inventory.asReadonly();
+  readonly upgrade = this._upgrade.asReadonly();
   readonly status = computed<LoadStatus>(() => {
     const own = this._status();
     const roster = this.roster.status();

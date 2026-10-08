@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@a
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TeamTab } from '../../core/models';
+import { actionSummary } from '../../core/state/advisor';
 import { goalFor } from '../../core/state/farming-calc';
 import { FarmingStore } from '../../core/state/farming.store';
 import { KeyCharacterRow } from '../../core/state/key-characters';
@@ -47,7 +48,7 @@ export class KeyCharacters {
     unknown: 'Brak w danych gry',
   };
 
-  protected readonly todo = computed(() => this.store.rows().filter((r) => r.priority > 0));
+  protected readonly todo = computed(() => this.store.rows().filter((r) => this.worthFarming(r)));
   protected readonly done = computed(() =>
     this.store.rows().filter((r) => r.status === 'maxed' || r.status === 'optimal'),
   );
@@ -71,6 +72,14 @@ export class KeyCharacters {
 
   protected statusLabel(row: KeyCharacterRow): string {
     return this.statusLabels[row.status];
+  }
+
+  protected worthFarming(row: KeyCharacterRow): boolean {
+    return row.status === 'developing' || row.status === 'locked';
+  }
+
+  protected action(row: KeyCharacterRow): string | undefined {
+    return row.recommendation && actionSummary(row.recommendation);
   }
 
   protected modes(row: KeyCharacterRow): string {

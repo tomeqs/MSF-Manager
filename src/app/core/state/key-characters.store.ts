@@ -1,44 +1,38 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { KEY_CHARACTERS } from '../data/key-characters';
 import { KNOWN_META } from '../data/known-meta';
+import { AdvisorStore } from './advisor.store';
 import { keyCharacterRows } from './key-characters';
-import { PlayerStore } from './player.store';
 import { PotentialStore } from './potential.store';
 import { RosterStore } from './roster.store';
 
-/** Key characters resolved against the roster, with development status and priority. */
+/** Key characters resolved against the roster, with development status and ranking. */
 @Injectable({ providedIn: 'root' })
 export class KeyCharactersStore {
   private readonly roster = inject(RosterStore);
-  private readonly player = inject(PlayerStore);
   private readonly potentials = inject(PotentialStore);
+  private readonly advisor = inject(AdvisorStore);
 
-  readonly playerLevel = computed(() => this.player.card()?.level?.completedTier);
+  readonly playerLevel = this.advisor.playerLevel;
 
   readonly rows = computed(() =>
-    keyCharacterRows(KEY_CHARACTERS, KNOWN_META, this.roster.entries(), (e) =>
-      this.potentials.get(e, this.playerLevel()),
+    keyCharacterRows(
+      KEY_CHARACTERS,
+      KNOWN_META,
+      this.roster.entries(),
+      (e) => this.potentials.get(e, this.playerLevel()),
+      this.advisor.byId(),
     ),
   );
 
   readonly status = computed(() => this.roster.status());
 
   load(): void {
-    this.roster.load();
-    this.player.load();
+    this.advisor.load();
   }
 
-  /** Requests max-power potentials once roster and player level are known (call in an effect). */
+  /** Requests max-power potentials (call in an effect). */
   ensurePotentials(): void {
-    const playerStatus = this.player.status();
-    if (
-      this.roster.status() !== 'loaded' ||
-      playerStatus === 'idle' ||
-      playerStatus === 'loading'
-    ) {
-      return;
-    }
-    const entries = this.rows().flatMap((r) => (r.entry ? [r.entry] : []));
-    this.potentials.ensure(entries, this.playerLevel());
+    this.advisor.ensurePotentials();
   }
 }

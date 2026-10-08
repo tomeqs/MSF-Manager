@@ -102,3 +102,11 @@
 .note {
   font-size: 0.85rem;
 }
+
+.rank {
+  color: var(--c-text);
+
+  strong {
+    color: var(--c-accent);
+  }
+}

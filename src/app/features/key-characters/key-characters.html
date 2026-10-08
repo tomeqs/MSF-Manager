@@ -3,7 +3,8 @@
     <h1>Kluczowe postacie</h1>
     <p>
       Postacie uniwersalne, które poradniki dokładają do wielu składów — jedna inwestycja działa w
-      kilku trybach. Kolejność według priorytetu: przydatność × ile pracy zostało.
+      kilku trybach. Kolejność jak w rankingu opłacalności z Farmienia: tanie ulepszenia przed
+      zbieraniem shardów.
     </p>
   </div>
 </header>
@@ -43,6 +44,12 @@
       }
     </p>
 
+    @if (row.recommendation; as rec) {
+      <p class="rank small">
+        <strong>#{{ rec.rank }}</strong> w rankingu opłacalności · {{ action(row) }}
+      </p>
+    }
+
     @if (row.power; as p) {
       @if (row.entry?.unlocked) {
         <div class="row small">
@@ -58,7 +65,7 @@
 
     <footer class="key-foot">
       <a class="source" [href]="row.key.source" target="_blank" rel="noopener">źródło ↗</a>
-      @if (row.priority > 0) {
+      @if (worthFarming(row)) {
         @if (inFarming(row)) {
           <a routerLink="/farming" class="farmed">W farmieniu ✓</a>
         } @else if (row.entry) {

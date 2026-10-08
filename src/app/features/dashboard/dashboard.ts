@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { AdvisorStore } from '../../core/state/advisor.store';
 import { FarmingStore } from '../../core/state/farming.store';
-import { KeyCharactersStore } from '../../core/state/key-characters.store';
 import { PlayerStore } from '../../core/state/player.store';
 import { TODAY_LABELS, todayItems } from '../../core/state/today';
 import { RosterStore } from '../../core/state/roster.store';
@@ -34,11 +34,11 @@ export class Dashboard {
   protected readonly player = inject(PlayerStore);
   protected readonly roster = inject(RosterStore);
   protected readonly farming = inject(FarmingStore);
-  private readonly keys = inject(KeyCharactersStore);
+  private readonly advisor = inject(AdvisorStore);
 
   protected readonly todayLabels = TODAY_LABELS;
   protected readonly today = computed(() =>
-    todayItems(this.farming.plans(), this.farming.promotions(), this.keys.rows()),
+    todayItems(this.farming.plans(), this.farming.promotions(), this.advisor.recommendations()),
   );
   protected readonly todayStatus = this.farming.status;
 
@@ -49,8 +49,7 @@ export class Dashboard {
   constructor() {
     this.player.load();
     this.roster.load();
-    this.farming.load();
-    this.keys.load();
-    effect(() => this.keys.ensurePotentials());
+    this.advisor.load();
+    effect(() => this.advisor.ensurePotentials());
   }
 }

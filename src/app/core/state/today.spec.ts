@@ -1,6 +1,6 @@
 import { RosterEntry, UpgradeData } from '../models';
+import { Recommendation } from './advisor';
 import { FarmingGoal, planGoal, promotions } from './farming-calc';
-import { KeyCharacterRow } from './key-characters';
 import { toRosterEntry } from './roster.mapper';
 import { todayItems } from './today';
 
@@ -25,58 +25,78 @@ const goal = (id: string, targetYellow: number, basic = 1): FarmingGoal => ({
 });
 
 const inventory = new Map([
-  ['SHARD_A', 30], // 2★ → 3★ needs 25: promote now
-  ['SHARD_B', 40], // 3★ → 4★ needs 50: close (80%)
-  ['SHARD_C', 10], // 3★ → 4★ needs 50: too far (20%)
-  ['SHARD_D', 30], // not a goal, but can be promoted
+  ['SHARD_A', 30], // goal, 2★ → 3★ needs 25: promote now
+  ['SHARD_D', 30], // not a goal, ranked: promote now
+  ['SHARD_N', 30], // not a goal, not ranked: not worth mentioning
   ['T1', 5],
 ]);
 
-const [a, b, c, d, h, e] = [
+const [a, b, d, h, n, r] = [
   owned('A', 2),
   owned('B', 3),
-  owned('C', 3),
   owned('D', 2),
   owned('H', 7),
-  toRosterEntry({ id: 'E', name: 'Hero E' }),
+  owned('N', 2),
+  owned('R', 7),
 ];
 
 const plans = [
-  planGoal(goal('C', 7), c, upgrade, inventory),
   planGoal(goal('B', 7), b, upgrade, inventory),
   planGoal(goal('A', 7), a, upgrade, inventory),
   planGoal(goal('H', 7, 2), h, upgrade, inventory), // abilities only, all materials owned
 ];
 
-const keyRow = (entry: RosterEntry, priority: number): KeyCharacterRow => ({
-  key: { name: entry.name, modes: ['war'], why: '', source: '' },
+const rec = (entry: RosterEntry, kind: Recommendation['kind'], rank: number): Recommendation => ({
+  id: `${entry.id}:${kind}`,
   entry,
-  teams: [],
-  modes: ['war'],
-  status: entry.unlocked ? 'developing' : 'locked',
-  priority,
+  kind,
+  rank,
+  score: 1 / rank,
+  relative: 1 / rank,
+  value: 1,
+  gain: 0.2,
+  effort: 2,
+  teams: [
+    {
+      name: 'Squad',
+      modes: ['arena'],
+      others: 4,
+      ownedOthers: 4,
+      optimalOthers: 1,
+      readiness: 0.8,
+    },
+  ],
+  modes: ['arena'],
+  key: false,
+  shardsMissing: kind === 'upgrade' ? 0 : 120,
+  upgrades: kind === 'upgrade' ? ['G17→G20'] : [],
+  estimated: false,
 });
 
 describe('today', () => {
-  const promos = promotions([a, b, c, d, h], upgrade, inventory);
-  const keys = [keyRow(b, 8), keyRow(e, 5), keyRow(c, 0)];
+  const promos = promotions([a, b, d, h, n, r], upgrade, inventory);
+  const ranking = [
+    rec(r, 'upgrade', 1),
+    rec(d, 'upgrade', 2),
+    rec(b, 'upgrade', 3),
+    rec(r, 'stars', 4),
+  ];
 
-  it('orders promote → goal ready → close → key, one item per character', () => {
-    const items = todayItems(plans, promos, keys);
+  it('orders free promotions → ready goals → ranking, one item per character', () => {
+    const items = todayItems(plans, promos, ranking);
     expect(items.map((i) => [i.kind, i.characterId])).toEqual([
-      ['promote', 'A'],
       ['promote', 'D'],
+      ['promote', 'A'],
       ['goal-ready', 'H'],
-      ['close', 'B'],
-      ['key', 'E'],
+      ['upgrade', 'R'],
+      ['upgrade', 'B'],
     ]);
-    expect(items[0].link).toEqual(['/farming']);
-    expect(items[1].link).toEqual(['/roster', 'D']);
-    expect(items[3].text).toContain('Brakuje 10 shardów do 4★');
-    expect(items[4].text).toContain('zacznij zbierać shardy');
+    expect(items[0].link).toEqual(['/roster', 'D']);
+    expect(items[1].link).toEqual(['/farming']);
+    expect(items[3]).toMatchObject({ text: 'G17→G20', why: 'Squad (reszta gotowa)' });
   });
 
   it('respects the limit', () => {
-    expect(todayItems(plans, promos, keys, 2)).toHaveLength(2);
+    expect(todayItems(plans, promos, ranking, 2)).toHaveLength(2);
   });
 });

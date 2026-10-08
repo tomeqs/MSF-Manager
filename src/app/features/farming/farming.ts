@@ -9,7 +9,14 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AbilityKey, RosterEntry } from '../../core/models';
-import { GoalPlan } from '../../core/state/farming-calc';
+import {
+  RECOMMENDATION_LABELS,
+  Recommendation,
+  actionSummary,
+  teamsSummary,
+} from '../../core/state/advisor';
+import { AdvisorStore } from '../../core/state/advisor.store';
+import { GoalPlan, goalFor } from '../../core/state/farming-calc';
 import { FarmingStore } from '../../core/state/farming.store';
 import { PlayerStore } from '../../core/state/player.store';
 import { DEV_STATUS_LABELS, MemberPower, memberPower } from '../../core/state/potential-calc';
@@ -24,13 +31,23 @@ import { RosterStore } from '../../core/state/roster.store';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 import { CharacterAvatar } from '../../shared/ui/character-avatar';
 import { ProgressBar } from '../../shared/ui/progress-bar';
+import { StarRating } from '../../shared/ui/star-rating';
+
+const RANKING_PREVIEW = 8;
 
 const range = (from: number, to: number) =>
   Array.from({ length: Math.max(0, to - from + 1) }, (_, i) => from + i);
 
 @Component({
   selector: 'app-farming',
-  imports: [NgTemplateOutlet, RouterLink, CompactNumberPipe, CharacterAvatar, ProgressBar],
+  imports: [
+    NgTemplateOutlet,
+    RouterLink,
+    CompactNumberPipe,
+    CharacterAvatar,
+    ProgressBar,
+    StarRating,
+  ],
   templateUrl: './farming.html',
   styleUrl: './farming.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,9 +57,25 @@ export class Farming {
   private readonly roster = inject(RosterStore);
   private readonly player = inject(PlayerStore);
   private readonly potentials = inject(PotentialStore);
+  private readonly advisor = inject(AdvisorStore);
 
   protected readonly statusLabels = DEV_STATUS_LABELS;
   private readonly playerLevel = computed(() => this.player.card()?.level?.completedTier);
+
+  protected readonly kindLabels = RECOMMENDATION_LABELS;
+  protected readonly action = actionSummary;
+  protected readonly teamsOf = teamsSummary;
+
+  /** Roster-wide ranking: what pays off most to farm right now. */
+  protected readonly ranking = this.advisor.recommendations;
+  protected readonly showAll = signal(false);
+  protected readonly visibleRanking = computed(() =>
+    this.showAll() ? this.ranking() : this.ranking().slice(0, RANKING_PREVIEW),
+  );
+  protected readonly rankingPreview = RANKING_PREVIEW;
+  private readonly goalsById = computed(
+    () => new Map(this.store.goals().map((g) => [g.characterId, g] as const)),
+  );
 
   protected readonly abilityKeys = ABILITY_KEYS;
   protected readonly abilityLabels = ABILITY_LABELS;
@@ -81,6 +114,9 @@ export class Farming {
       else if (plan.reached || this.isDone(plan.entry)) done.push(plan);
       else upgrade.push(plan);
     }
+    const rank = (p: GoalPlan) =>
+      this.advisor.byId().get(p.entry.id)?.rank ?? Number.MAX_SAFE_INTEGER;
+    for (const list of [unlock, upgrade]) list.sort((a, b) => rank(a) - rank(b));
     return [
       { id: 'unlock', label: 'Do odblokowania', plans: unlock },
       { id: 'upgrade', label: 'Do ulepszenia', plans: upgrade },
@@ -93,8 +129,8 @@ export class Farming {
   );
 
   constructor() {
-    this.store.load();
-    this.player.load();
+    this.advisor.load();
+    effect(() => this.advisor.ensurePotentials());
     effect(() => {
       const playerStatus = this.player.status();
       if (
@@ -119,6 +155,27 @@ export class Farming {
   private isDone(entry: RosterEntry): boolean {
     const status = this.devOf(entry)?.status;
     return status === 'maxed' || status === 'optimal';
+  }
+
+  /** A saved goal covers the action: any goal for upgrades, a star target for shard actions. */
+  protected inGoals(rec: Recommendation): boolean {
+    const goal = this.goalsById().get(rec.entry.id);
+    if (!goal) return false;
+    return rec.kind === 'upgrade' || goal.targetYellow > rec.entry.yellowStars;
+  }
+
+  protected rankOf(characterId: string): number | undefined {
+    return this.advisor.byId().get(characterId)?.rank;
+  }
+
+  /**
+   * Goal for a ranked action: abilities at the current stars for upgrades, otherwise 7★ (or
+   * unlock) with the max ability levels.
+   */
+  protected farmRecommended(rec: Recommendation): void {
+    const potential = this.potentials.get(rec.entry, this.playerLevel());
+    const stars = rec.kind === 'upgrade' ? rec.entry.yellowStars : undefined;
+    this.store.saveGoal(goalFor(rec.entry, potential?.abilities, stars));
   }
 
   protected abilityOptions(key: AbilityKey): number[] {

@@ -40,7 +40,8 @@ src/app/
       event.utils.ts          postęp eventu, czas do końca
       farming.store.ts / farming-calc.ts   cele farmienia i wyliczenia
       teams.store.ts / teams-calc.ts       meta drużyny i dopasowanie do rosteru
-      key-characters(.store).ts             kluczowe postacie: status rozwoju i priorytet
+      advisor(.store).ts                    ranking opłacalności farmienia (cały roster)
+      key-characters(.store).ts             kluczowe postacie: status rozwoju i miejsce w rankingu
       today.ts                              lista „Co farmić dziś”
       game-rules.ts           limity umiejętności i gwiazdek
   layout/shell/    sidebar + topbar, responsywne menu
@@ -52,7 +53,7 @@ src/app/
     teams/             drużyny per tryb gry dopasowane do rosteru (gotowe / brakuje 1–2);
                        źródło: analiza MSF API, a gdy ta nie działa — lista z poradników
     key-characters/    postacie uniwersalne (plug-and-play) i ich priorytet farmienia
-    farming/           kalkulator: cele (gwiazdki, umiejętności) → shardy i materiały vs inwentarz
+    farming/           ranking „Co się najbardziej opłaca” + kalkulator: cele (gwiazdki, umiejętności) → shardy i materiały vs inwentarz
     login/             ekran logowania / wejście w tryb demo
     auth-callback/     obsługa powrotu z Scopely (wymiana code → token)
   shared/
@@ -129,24 +130,49 @@ Zakładki Blitz i Wieża zaczynają od trwających i zapowiedzianych eventów te
 (gwiazdki, gear, poziom, czerwone gwiazdki, ISO-8) — z „Farmuj” do wymaganych gwiazdek.
 Cechy porównywane są łącznie z niewidocznymi i eventowymi (`traitKeys`).
 
+## Ranking opłacalności
+
+`advisor.ts` układa ruchy w kolejności „co się teraz najbardziej opłaca”. Wynik ruchu to
+**wartość × zysk ÷ koszt**:
+
+- **Wartość** — Σ gotowość² drużyn z `known-meta.ts`, w których postać jest. Gotowość to
+  średnia z pozostałych członków: optymalny 1, posiadany w rozwoju 0,75, brak 0. Drużyny,
+  których prawie nie masz, praktycznie się nie liczą. Postać kluczowa dostaje +0,5.
+- **Zysk** — udział mocy maks. (7★, poziom gracza), który ruch dodaje.
+- **Koszt** — shardy są zdecydowanie najdroższe: 5 shardów = 1 jednostka, a poziom gearu
+  0,75, poziom umiejętności 0,15, brakujące poziomy postaci 0,5. Nowa postać ma dodatkowe 5.
+  Każdy ruch ma też koszt bazowy 1. Wagi są w `EFFORT`.
+
+Każda posiadana postać ma do dwóch osobnych ruchów:
+
+- **Ulepszenia** — poziomy, gear, umiejętności przy obecnych gwiazdkach. Zysk liczony z mocy
+  maks. przy obecnych gwiazdkach (`characterInstances` z `yellow` = obecne).
+- **Shardy** — gwiazdki do 7★. Zysk to różnica między mocą przy 7★ a przy obecnych gwiazdkach;
+  shardy z inwentarza zmniejszają koszt.
+
+Zablokowane postacie mają ruch **Odblokowanie** (shardy do 7★ + budowa od zera). Dzięki
+podziałowi tanie ulepszenia postaci 5★ nie giną pod kosztem jej shardów. Postacie optymalne i
+wymaksowane, ulepszenia już na ≥ 95% pułapu i zyski < 1% wypadają z listy. Dopóki moc maks.
+się wczytuje, zysk jest szacowany (oznaczenie „szacunek”).
+
+Ranking jest na górze **Farmienia** („Farmuj” zapisuje cel: same umiejętności dla ulepszeń,
+7★ dla shardów/odblokowania). Cele w grupach są sortowane według rankingu.
+
 ## Kluczowe postacie
 
 `core/data/key-characters.ts` — postacie, które poradniki dokładają do wielu składów
 (Professor Xavier, Blue Marvel, Silver Surfer (Breaker), Magik (Breaker), Annihilus, Quasar,
 Knull, Mephisto, Odin, The Destroyer, Apocalypse), z krótkim uzasadnieniem i źródłem.
-Zakładka **Kluczowe** pokazuje dla każdej: status rozwoju, w ilu drużynach z `known-meta.ts`
-występuje i w jakich trybach, oraz „Farmuj”. Priorytet = (drużyny × 2 + tryby) × praca do
-zrobienia (zablokowana × 1,5, w rozwoju × 1 + brakujący udział mocy); optymalne i wymaksowane
-mają 0 i trafiają do „Gotowe”.
+Zakładka **Kluczowe** pokazuje dla każdej: status rozwoju, drużyny i tryby, miejsce w rankingu
+opłacalności i najlepszy ruch. Optymalne i wymaksowane trafiają do „Gotowe”.
 
 ## Co farmić dziś
 
 Karta na Pulpicie (`today.ts`), maks. 6 pozycji, jedna na postać, w kolejności:
 
-1. **Awansuj teraz** — masz już shardy na kolejną gwiazdkę albo odblokowanie (najpierw cele,
-   potem cały roster; sam koszt złota nie jest sprawdzany),
+1. **Awansuj teraz** — masz już shardy na kolejną gwiazdkę albo odblokowanie (cele i postacie
+   z rankingu; koszt złota nie jest sprawdzany),
 2. **Cel gotowy** — w inwentarzu jest wszystko na cały cel,
-3. **Blisko** — co najmniej 50% shardów na następną gwiazdkę (najbliższe pierwsze),
-4. **Kluczowa** — kluczowe postacie z najwyższym priorytetem.
+3. **Ranking opłacalności** — najlepszy ruch każdej postaci (Ulepsz / Shardy / Odblokuj).
 
 Karta celu w Farmieniu pokazuje też postęp do następnej gwiazdki („Do 6★: 88 / 100”).

@@ -20,6 +20,7 @@ const SPIDER = t('SpiderVerse', 'Spider-Verse');
 const WAKANDA = t('Wakandan');
 const GUARDIANS = t('Guardian', 'Guardians');
 const ASGARD = t('Asgardian');
+const SYMBIOTE = t('Symbiote');
 
 const c = (id: string, name: string, traits: TraitObject[]): CharacterInfo => ({
   id,
@@ -61,4 +62,10 @@ export const MOCK_CHARACTERS: CharacterInfo[] = [
   c('Mephisto', 'Mephisto', [VILLAIN, MYSTIC, CONTROLLER]),
   c('Odin', 'Odin', [HERO, MYSTIC, PROTECTOR, ASGARD]),
   c('BlueMarvel', 'Blue Marvel', [HERO, BIO, BLASTER]),
+  c('QuicksilverSymbiote', 'Quicksilver (Symbiote)', [VILLAIN, BIO, BRAWLER, SYMBIOTE]),
+  c('Riot', 'Riot', [VILLAIN, BIO, BLASTER, SYMBIOTE]),
+  c('Toxin', 'Toxin', [VILLAIN, BIO, PROTECTOR, SYMBIOTE]),
+  c('BladeMighty', 'Blade (Mighty)', [HERO, SKILL, BRAWLER, AVENGER]),
+  c('SpiderWomanJulia', 'Spider-Woman (Julia)', [HERO, BIO, CONTROLLER, AVENGER]),
+  c('RachelColeAlves', 'Rachel Cole-Alves', [HERO, SKILL, BLASTER, AVENGER]),
 ];

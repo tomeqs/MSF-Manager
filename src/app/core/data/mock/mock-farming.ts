@@ -89,4 +89,7 @@ export const MOCK_INVENTORY: ItemQuantity[] = [
   shards('Drax', 48),
   shards('BlueMarvel', 70),
   shards('Knull', 120),
+  shards('Toxin', 90),
+  shards('SpiderWomanJulia', 130),
+  shards('BladeMighty', 65),
 ];

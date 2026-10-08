@@ -230,3 +230,133 @@
   color: var(--c-success);
   font-weight: 600;
 }
+
+.ranking {
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0 0 4px;
+  }
+}
+
+.ranking-head p {
+  margin: 0 0 12px;
+  max-width: 760px;
+}
+
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--c-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .tag {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--c-surface-2);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &[data-kind='upgrade'] .tag {
+    background: rgb(62 207 142 / 0.18);
+    color: var(--c-success);
+  }
+
+  &[data-kind='stars'] .tag {
+    background: rgb(245 165 36 / 0.18);
+    color: var(--c-warning);
+  }
+
+  &[data-kind='unlock'] .tag {
+    background: var(--c-accent-soft);
+    color: var(--c-accent);
+  }
+}
+
+.rank-no {
+  min-width: 24px;
+  color: var(--c-text-muted);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.rank-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rank-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  a {
+    font-weight: 700;
+    text-decoration: none;
+  }
+}
+
+.rank-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  width: 120px;
+  flex-shrink: 0;
+
+  app-progress-bar {
+    width: 100%;
+  }
+
+  button {
+    padding: 4px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+.farmed {
+  color: var(--c-success);
+}
+
+.more {
+  margin-top: 8px;
+}
+
+.goal-rank {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--c-accent);
+}
+
+@media (max-width: 600px) {
+  .rank-item {
+    flex-wrap: wrap;
+  }
+
+  .rank-side {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+  }
+}

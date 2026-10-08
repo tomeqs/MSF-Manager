@@ -20,7 +20,7 @@ export function mockPotential(characterId: string, target: PotentialTarget): Cha
       (MAX_ABILITIES.passive - (owned.passive ?? 0));
     const factor =
       1 +
-      (7 - (owned.activeYellow ?? 7)) * 0.08 +
+      Math.max(0, (target.yellow ?? 7) - (owned.activeYellow ?? 7)) * 0.08 +
       Math.max(0, 20 - (owned.gearTier ?? 20)) * 0.04 +
       missingAbilities * 0.01;
     power = Math.round((owned.power ?? 0) * factor);

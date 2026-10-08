@@ -20,18 +20,29 @@ export class PotentialStore {
   private readonly queue: Job[] = [];
   private active = 0;
 
-  /** Potential for the entry's current red stars and ISO-8 class, if loaded. */
-  get(entry: RosterEntry, level: number | undefined): CharacterPotential | undefined {
-    return this._values()[keyOf(entry, level)];
+  /**
+   * Potential for the entry's current red stars and ISO-8 class, if loaded — at 7★, or at its
+   * current yellow stars (what upgrades alone can reach) with `atCurrentStars`.
+   */
+  get(
+    entry: RosterEntry,
+    level: number | undefined,
+    atCurrentStars = false,
+  ): CharacterPotential | undefined {
+    return this._values()[keyOf(entry, level, atCurrentStars)];
   }
 
   /** Requests whatever is not loaded or in flight yet. */
-  ensure(entries: RosterEntry[], level: number | undefined): void {
+  ensure(entries: RosterEntry[], level: number | undefined, atCurrentStars = false): void {
     for (const entry of entries) {
-      const key = keyOf(entry, level);
+      const key = keyOf(entry, level, atCurrentStars);
       if (this.requested.has(key)) continue;
       this.requested.add(key);
-      this.queue.push({ key, characterId: entry.id, target: targetOf(entry, level) });
+      this.queue.push({
+        key,
+        characterId: entry.id,
+        target: targetOf(entry, level, atCurrentStars),
+      });
     }
     this.pump();
   }
@@ -57,10 +68,21 @@ export class PotentialStore {
   }
 }
 
-function targetOf(entry: RosterEntry, level: number | undefined): PotentialTarget {
-  return { level, red: entry.redStars + entry.diamonds, isoClass: entry.iso.active };
+function targetOf(
+  entry: RosterEntry,
+  level: number | undefined,
+  atCurrentStars: boolean,
+): PotentialTarget {
+  const target: PotentialTarget = {
+    level,
+    red: entry.redStars + entry.diamonds,
+    isoClass: entry.iso.active,
+  };
+  if (atCurrentStars) target.yellow = entry.yellowStars;
+  return target;
 }
 
-function keyOf(entry: RosterEntry, level: number | undefined): string {
-  return `${entry.id}:${level ?? 'cap'}:${entry.redStars + entry.diamonds}:${entry.iso.active ?? '-'}`;
+function keyOf(entry: RosterEntry, level: number | undefined, atCurrentStars: boolean): string {
+  const stars = atCurrentStars ? `:y${entry.yellowStars}` : '';
+  return `${entry.id}:${level ?? 'cap'}:${entry.redStars + entry.diamonds}:${entry.iso.active ?? '-'}${stars}`;
 }
