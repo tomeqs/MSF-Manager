@@ -68,4 +68,7 @@ export const MOCK_CHARACTERS: CharacterInfo[] = [
   c('BladeMighty', 'Blade (Mighty)', [HERO, SKILL, BRAWLER, AVENGER]),
   c('SpiderWomanJulia', 'Spider-Woman (Julia)', [HERO, BIO, CONTROLLER, AVENGER]),
   c('RachelColeAlves', 'Rachel Cole-Alves', [HERO, SKILL, BLASTER, AVENGER]),
+  c('OmegaRedPF', 'Omega Red (Phoenix Force)', [VILLAIN, MUTANT, BRAWLER]),
+  c('MagnetoPF', 'Magneto (Phoenix Force)', [VILLAIN, MUTANT, CONTROLLER]),
+  c('Executioner', 'Executioner', [VILLAIN, MYSTIC, BRAWLER, ASGARD]),
 ];

@@ -1,0 +1,73 @@
+@if (completions().length) {
+  <section class="card completions">
+    <div class="ranking-head">
+      <h2>Drużyny do skompletowania</h2>
+      <p class="muted small">
+        Drużyny z listy, którym brakuje 1–2 postaci — ile shardów dzieli Cię od pełnego składu.
+        Kompletowanie podnosi miejsce brakujących postaci w rankingu powyżej.
+      </p>
+    </div>
+    <div class="completion-grid">
+      @for (c of visibleCompletions(); track c.team.name) {
+        <article class="completion" [class.now]="c.readyNow">
+          <header class="completion-head">
+            <div>
+              <strong>{{ c.team.name }}</strong>
+              <span class="muted small">{{ modes(c) }}</span>
+            </div>
+            @if (c.readyNow) {
+              <span class="badge-now">Możesz skompletować teraz</span>
+            } @else {
+              <span class="muted small">brakuje {{ c.shardsMissing }} shardów</span>
+            }
+          </header>
+          <ul class="missing-list">
+            @for (m of c.missing; track m.entry.id) {
+              <li>
+                <app-character-avatar
+                  [name]="m.entry.name"
+                  [portrait]="m.entry.portrait"
+                  [traits]="m.entry.traits"
+                  style="--avatar-size: 32px"
+                />
+                <div class="missing-main">
+                  <div class="row small">
+                    <a [routerLink]="['/roster', m.entry.id]">{{ m.entry.name }}</a>
+                    <span>{{ m.owned }} / {{ m.needed }} ({{ m.stars }}★)</span>
+                  </div>
+                  <app-progress-bar
+                    [value]="m.owned"
+                    [max]="m.needed"
+                    [style.--bar-color]="m.missing === 0 ? 'var(--c-success)' : null"
+                  />
+                </div>
+              </li>
+            }
+          </ul>
+          <footer class="completion-foot">
+            <span class="muted small">
+              Masz {{ c.members.length - c.missing.length }}/{{ c.members.length }}
+              @if (c.optimalMembers) {
+                · {{ c.optimalMembers }} optymalnie
+              }
+            </span>
+            @if (allInGoals(c)) {
+              <span class="farmed small">W celach ✓</span>
+            } @else {
+              <button type="button" (click)="farmMissing(c)">
+                {{ c.missing.length === 1 ? 'Farmuj brakującą' : 'Farmuj brakujące' }}
+              </button>
+            }
+          </footer>
+        </article>
+      }
+    </div>
+    @if (completions().length > completionsPreview) {
+      <button type="button" class="more" (click)="showAllCompletions.set(!showAllCompletions())">
+        {{
+          showAllCompletions() ? 'Pokaż mniej' : 'Pokaż wszystkie (' + completions().length + ')'
+        }}
+      </button>
+    }
+  </section>
+}

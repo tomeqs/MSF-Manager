@@ -4,7 +4,13 @@ import { CharacterPotential, RosterEntry, TeamTab, UpgradeData } from '../models
 import { Inventory, shardsBetween } from './farming-calc';
 import { ABILITY_KEYS, ABILITY_MAX, MAX_YELLOW_STARS, OPTIMAL_POWER_SHARE } from './game-rules';
 import { MemberPower, memberPower } from './potential-calc';
-import { resolveKnownTeams, resolveName, rosterByName } from './teams-calc';
+import {
+  MAX_MISSING,
+  TeamMember,
+  resolveKnownTeams,
+  resolveName,
+  rosterByName,
+} from './teams-calc';
 
 /**
  * Effort in abstract units. Shards are by far the scarcest resource (few farmable nodes,
@@ -26,6 +32,15 @@ export const EFFORT = {
 
 /** A plug-and-play key character counts like half a ready team, even without one. */
 const KEY_BONUS = 0.5;
+
+/**
+ * Extra value for unlocking the last missing member of a known team (× the readiness of the
+ * rest) — a complete synergy team is worth far more than four members without the fifth.
+ */
+const COMPLETE_BONUS = 1.5;
+
+/** Extra value for unlocking one of the last two missing members. */
+const NEAR_COMPLETE_BONUS = 0.5;
 
 /** Readiness contribution of another team member that is owned but still developing. */
 const DEVELOPING_MEMBER = 0.75;
@@ -60,6 +75,12 @@ export interface TeamContext {
   ownedOthers: number;
   /** Other members that are optimally built or maxed. */
   optimalOthers: number;
+  /** Other members not owned yet (including names not found in the game data). */
+  missingOthers: number;
+  /** Unlocking this (locked) character completes the team. */
+  completes: boolean;
+  /** Unlocking this (locked) character leaves one member to go. */
+  nearlyCompletes: boolean;
   /** 0–1: owned others count 0.75, optimal ones 1. */
   readiness: number;
 }
@@ -75,7 +96,10 @@ export interface Recommendation {
   score: number;
   /** Score relative to the best recommendation (0–1). */
   relative: number;
-  /** Σ readiness² of its teams (+ key bonus): how much a stronger version of it is used. */
+  /**
+   * Σ over its teams of readiness² (+ a bonus when unlocking it completes or nearly completes
+   * the team), + key bonus: how much a stronger version of it is used.
+   */
   value: number;
   /** Share of the 7★ max power this action adds (1 for unlocking). */
   gain: number;
@@ -89,6 +113,8 @@ export interface Recommendation {
   shardsMissing: number;
   /** Steps of an upgrade action, e.g. "G17→G20", "umiejętności +5". */
   upgrades: string[];
+  /** Unlock action: shards to unlock (team completion happens here, before 7★). */
+  unlock?: MissingMember;
   /** True while max powers are not loaded yet and the gain is estimated. */
   estimated: boolean;
 }
@@ -141,10 +167,14 @@ export function recommend(input: AdvisorInput): Recommendation[] {
 
   const recs: Recommendation[] = [];
   for (const entry of roster) {
-    const teams = (contexts.get(entry.id) ?? []).sort((a, b) => b.readiness - a.readiness);
+    const teams = (contexts.get(entry.id) ?? []).sort(
+      (a, b) =>
+        Number(b.completes) - Number(a.completes) ||
+        Number(b.nearlyCompletes) - Number(a.nearlyCompletes) ||
+        b.readiness - a.readiness,
+    );
     const key = keyModes.has(entry.id);
-    const value =
-      teams.reduce((sum, t) => sum + t.readiness * t.readiness, 0) + (key ? KEY_BONUS : 0);
+    const value = teams.reduce((sum, t) => sum + teamValue(t), 0) + (key ? KEY_BONUS : 0);
     if (value <= 0) continue;
 
     const potential = potentialOf(entry);
@@ -168,6 +198,7 @@ export function recommend(input: AdvisorInput): Recommendation[] {
       effort: number,
       upgrades: string[],
       estimated: boolean,
+      unlock?: MissingMember,
     ) => {
       if (gain < MIN_GAIN) return;
       recs.push({
@@ -179,12 +210,14 @@ export function recommend(input: AdvisorInput): Recommendation[] {
         score: (value * gain) / effort,
         upgrades,
         estimated,
+        unlock,
       });
     };
 
     const shardEffort = EFFORT.base + shardsMissing / EFFORT.shardsPerUnit;
     if (!entry.unlocked) {
-      add('unlock', 1, shardEffort + EFFORT.newCharacter, [], false);
+      const unlock = unlockCost(entry, upgrade, inventory);
+      add('unlock', 1, shardEffort + EFFORT.newCharacter, [], false, unlock);
       continue;
     }
 
@@ -211,6 +244,11 @@ export function bestByCharacter(ranking: Recommendation[]): Map<string, Recommen
   return best;
 }
 
+function teamValue(t: TeamContext): number {
+  const bonus = t.completes ? COMPLETE_BONUS : t.nearlyCompletes ? NEAR_COMPLETE_BONUS : 0;
+  return t.readiness * t.readiness + bonus * t.readiness;
+}
+
 function teamContexts(
   known: KnownTeam[],
   roster: RosterEntry[],
@@ -225,6 +263,7 @@ function teamContexts(
       let ownedOthers = 0;
       let optimalOthers = 0;
       let points = 0;
+      const unknownOthers = others.filter((m) => m.unknown).length;
       for (const other of others) {
         if (!other.owned || !other.entry) continue;
         ownedOthers++;
@@ -244,6 +283,10 @@ function teamContexts(
           others: others.length,
           ownedOthers,
           optimalOthers,
+          missingOthers: others.length - ownedOthers,
+          completes: !member.owned && ownedOthers === others.length,
+          nearlyCompletes:
+            !member.owned && unknownOthers === 0 && ownedOthers === others.length - 1,
           readiness: points / others.length,
         },
       ]);
@@ -328,9 +371,13 @@ function upgradeSteps(
   return { effort, upgrades };
 }
 
-/** "Symbiote Six (reszta gotowa), Phoenix Force (masz 2/4 pozostałych)" — the best two teams. */
+/**
+ * "skompletuje Amazing Avengers, Symbiote Six (reszta gotowa)" — the best two teams.
+ */
 export function teamsSummary(rec: Recommendation, limit = 2): string {
   const parts = rec.teams.slice(0, limit).map((t) => {
+    if (t.completes) return `skompletuje ${t.name}`;
+    if (t.nearlyCompletes) return `${t.name} (po nim brakuje jeszcze 1)`;
     if (t.ownedOthers < t.others)
       return `${t.name} (masz ${t.ownedOthers}/${t.others} pozostałych)`;
     return t.optimalOthers === t.others
@@ -354,7 +401,87 @@ export function actionSummary(rec: Recommendation): string {
       return rec.shardsMissing > 0
         ? `Brakuje ${rec.shardsMissing} shardów do 7★`
         : 'Masz shardy do 7★ — awansuj';
-    case 'unlock':
-      return `Odblokuj i dobij do 7★: brakuje ${rec.shardsMissing} shardów`;
+    case 'unlock': {
+      const unlock = rec.unlock;
+      if (!unlock) return `Odblokuj i dobij do 7★: brakuje ${rec.shardsMissing} shardów`;
+      const rest = rec.shardsMissing - unlock.missing;
+      const then = rest > 0 ? `, potem ${rest} do 7★` : '';
+      return unlock.missing === 0
+        ? `Masz shardy na odblokowanie (${unlock.stars}★)${then}`
+        : `Do odblokowania (${unlock.stars}★) brakuje ${unlock.missing} shardów${then}`;
+    }
   }
+}
+
+/** A locked member of a team the player could complete. */
+export interface MissingMember {
+  entry: RosterEntry;
+  /** Stars it unlocks at. */
+  stars: number;
+  /** Shards to unlock, in the inventory, and still to collect. */
+  needed: number;
+  owned: number;
+  missing: number;
+}
+
+export interface TeamCompletion {
+  team: KnownTeam;
+  members: TeamMember[];
+  missing: MissingMember[];
+  /** Owned members that are optimally built or maxed. */
+  optimalMembers: number;
+  /** Shards still to collect to unlock every missing member. */
+  shardsMissing: number;
+  /** Every missing member can be unlocked with shards already in the inventory. */
+  readyNow: boolean;
+}
+
+/**
+ * Known teams one or two unlocks away from complete, cheapest first: ready to complete now,
+ * then fewer missing members, then fewer shards to collect, then more game modes.
+ * Teams with names not found in the game data are skipped — they cannot be completed.
+ */
+export function completableTeams(
+  known: KnownTeam[],
+  roster: RosterEntry[],
+  upgrade: UpgradeData,
+  inventory: Inventory,
+  powerOf: (entry: RosterEntry) => MemberPower | undefined = () => undefined,
+  maxMissing = MAX_MISSING,
+): TeamCompletion[] {
+  const result: TeamCompletion[] = [];
+  for (const { team, members } of resolveKnownTeams(known, roster)) {
+    const locked = members.filter((m) => !m.owned);
+    if (!locked.length || locked.length > maxMissing || locked.some((m) => !m.entry)) continue;
+    const missing = locked.map(({ entry }) => unlockCost(entry!, upgrade, inventory));
+    const optimalMembers = members.filter((m) => {
+      const status = m.owned && m.entry ? powerOf(m.entry)?.status : undefined;
+      return status === 'optimal' || status === 'maxed';
+    }).length;
+    const shardsMissing = missing.reduce((sum, m) => sum + m.missing, 0);
+    result.push({
+      team,
+      members,
+      missing,
+      optimalMembers,
+      shardsMissing,
+      readyNow: shardsMissing === 0,
+    });
+  }
+  return result.sort(
+    (a, b) =>
+      Number(b.readyNow) - Number(a.readyNow) ||
+      a.missing.length - b.missing.length ||
+      a.shardsMissing - b.shardsMissing ||
+      b.team.modes.length - a.team.modes.length,
+  );
+}
+
+function unlockCost(entry: RosterEntry, upgrade: UpgradeData, inventory: Inventory): MissingMember {
+  const stars = entry.unlockStars ?? MAX_YELLOW_STARS;
+  const needed = upgrade.yellowStarTotalShards
+    ? shardsBetween(upgrade.yellowStarTotalShards, 0, stars)
+    : stars * FALLBACK_SHARDS_PER_STAR;
+  const owned = entry.shardItemId ? (inventory.get(entry.shardItemId) ?? 0) : 0;
+  return { entry, stars, needed, owned, missing: Math.max(0, needed - owned) };
 }

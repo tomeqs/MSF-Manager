@@ -31,7 +31,10 @@ function inst(
   };
 }
 
-/** Shape of GET /player/v1/roster (statsFormat=object). Doctor Doom, Drax, Mantis, Odin, Blue Marvel and Blade (Mighty) are locked. */
+/**
+ * Shape of GET /player/v1/roster (statsFormat=object). Locked: Doctor Doom, Drax, Mantis, Odin,
+ * Blue Marvel, Blade (Mighty), Magneto (Phoenix Force).
+ */
 export const MOCK_ROSTER: CharacterInstance[] = [
   inst(
     'CaptainAmerica',
@@ -91,4 +94,7 @@ export const MOCK_ROSTER: CharacterInstance[] = [
   { id: 'BladeMighty' },
   inst('SpiderWomanJulia', 80, 6, 4, 16, 1, [6, 6, 7, 5], 381_900),
   inst('RachelColeAlves', 90, 7, 6, 18, 3, [7, 7, 8, 5], 566_800, { active: 'raider', level: 11 }),
+  inst('OmegaRedPF', 90, 7, 5, 18, 2, [7, 7, 7, 5], 548_300, { active: 'raider', level: 10 }),
+  { id: 'MagnetoPF' },
+  inst('Executioner', 85, 6, 3, 16, 3, [6, 6, 6, 4], 352_600),
 ];

@@ -1,4 +1,4 @@
-import { AbilityKey } from '../models';
+import { AbilityKey, TeamTab } from '../models';
 
 /** Current caps per API params (basic/special/ultimate ≤ 8, passive ≤ 6). */
 export const ABILITY_MAX: Record<AbilityKey, number> = {
@@ -25,3 +25,13 @@ export const MAX_YELLOW_STARS = 7;
  * than they give, so farming can stop there.
  */
 export const OPTIMAL_POWER_SHARE = 0.95;
+
+export const MODE_LABELS: Record<TeamTab, string> = {
+  arena: 'Arena',
+  war: 'Wojna',
+  raids: 'Raidy',
+  blitz: 'Blitz',
+  tower: 'Wieża',
+  crucible: 'Crucible',
+  roster: 'Roster',
+};

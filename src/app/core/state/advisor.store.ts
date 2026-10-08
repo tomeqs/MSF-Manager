@@ -1,8 +1,16 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { KEY_CHARACTERS } from '../data/key-characters';
 import { KNOWN_META } from '../data/known-meta';
-import { Recommendation, advisorCandidates, bestByCharacter, recommend } from './advisor';
+import {
+  Recommendation,
+  TeamCompletion,
+  advisorCandidates,
+  bestByCharacter,
+  completableTeams,
+  recommend,
+} from './advisor';
 import { MAX_YELLOW_STARS } from './game-rules';
+import { memberPower } from './potential-calc';
 import { FarmingStore } from './farming.store';
 import { PlayerStore } from './player.store';
 import { PotentialStore } from './potential.store';
@@ -32,6 +40,19 @@ export class AdvisorStore {
           upgrade: this.farming.upgrade(),
           inventory: this.farming.inventory(),
         })
+      : [],
+  );
+
+  /** Known teams one or two unlocks away from complete, cheapest first. */
+  readonly completions = computed<TeamCompletion[]>(() =>
+    this.farming.status() === 'loaded'
+      ? completableTeams(
+          KNOWN_META,
+          this.roster.entries(),
+          this.farming.upgrade(),
+          this.farming.inventory(),
+          (e) => memberPower(e, this.potentials.get(e, this.playerLevel())),
+        )
       : [],
   );
 

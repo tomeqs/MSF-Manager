@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TeamTab } from '../../core/models';
 import { actionSummary } from '../../core/state/advisor';
 import { goalFor } from '../../core/state/farming-calc';
+import { MODE_LABELS } from '../../core/state/game-rules';
 import { FarmingStore } from '../../core/state/farming.store';
 import { KeyCharacterRow } from '../../core/state/key-characters';
 import { KeyCharactersStore } from '../../core/state/key-characters.store';
@@ -13,16 +13,6 @@ import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 import { CharacterAvatar } from '../../shared/ui/character-avatar';
 import { ProgressBar } from '../../shared/ui/progress-bar';
 import { StarRating } from '../../shared/ui/star-rating';
-
-const MODE_LABELS: Record<TeamTab, string> = {
-  arena: 'Arena',
-  war: 'Wojna',
-  raids: 'Raidy',
-  blitz: 'Blitz',
-  tower: 'Wieża',
-  crucible: 'Crucible',
-  roster: 'Roster',
-};
 
 @Component({
   selector: 'app-key-characters',

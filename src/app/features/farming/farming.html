@@ -177,6 +177,10 @@
   }
 </section>
 
+@if (store.status() === 'loaded') {
+  <app-team-completions />
+}
+
 <section class="card form">
   <h2>Nowy cel</h2>
   <div class="form-row">

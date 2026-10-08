@@ -32,6 +32,7 @@ import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 import { CharacterAvatar } from '../../shared/ui/character-avatar';
 import { ProgressBar } from '../../shared/ui/progress-bar';
 import { StarRating } from '../../shared/ui/star-rating';
+import { TeamCompletions } from './team-completions/team-completions';
 
 const RANKING_PREVIEW = 8;
 
@@ -47,6 +48,7 @@ const range = (from: number, to: number) =>
     CharacterAvatar,
     ProgressBar,
     StarRating,
+    TeamCompletions,
   ],
   templateUrl: './farming.html',
   styleUrl: './farming.scss',
@@ -73,6 +75,7 @@ export class Farming {
     this.showAll() ? this.ranking() : this.ranking().slice(0, RANKING_PREVIEW),
   );
   protected readonly rankingPreview = RANKING_PREVIEW;
+
   private readonly goalsById = computed(
     () => new Map(this.store.goals().map((g) => [g.characterId, g] as const)),
   );

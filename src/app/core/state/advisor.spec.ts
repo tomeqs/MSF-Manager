@@ -6,6 +6,7 @@ import {
   actionSummary,
   advisorCandidates,
   bestByCharacter,
+  completableTeams,
   recommend,
   teamsSummary,
 } from './advisor';
@@ -23,8 +24,8 @@ function owned(id: string, yellow: number, power: number, gearTier = 18): Roster
   };
 }
 
-function locked(id: string): RosterEntry {
-  return { ...toRosterEntry({ id, name: id }), shardItemId: `SHARD_${id}` };
+function locked(id: string, unlockStars?: number): RosterEntry {
+  return { ...toRosterEntry({ id, name: id, unlockStars }), shardItemId: `SHARD_${id}` };
 }
 
 const potential = (power: number): CharacterPotential => ({
@@ -47,7 +48,7 @@ const keyChar = (name: string): KeyCharacter => ({ name, modes: ['war'], why: ''
 const roster = [
   owned('A', 7, 800_000),
   owned('B', 5, 600_000),
-  locked('C'),
+  locked('C', 3),
   owned('D', 7, 980_000),
   owned('E', 7, 1_000_000, 20),
   owned('F', 7, 500_000),
@@ -64,7 +65,7 @@ const max: Record<string, number> = {
   F: 1_000_000,
   K: 1_000_000,
 };
-const upgrade: UpgradeData = { yellowStarTotalShards: { '5': 155, '7': 410 } };
+const upgrade: UpgradeData = { yellowStarTotalShards: { '3': 50, '5': 155, '7': 410 } };
 
 function input(overrides: Partial<AdvisorInput> = {}): AdvisorInput {
   return {
@@ -112,6 +113,17 @@ describe('advisor', () => {
     expect(squadA).toMatchObject({ ownedOthers: 3, readiness: 0.6875 });
   });
 
+  it('rewards unlocking the last (or second-to-last) missing member of a team', () => {
+    const ranking = recommend(input());
+    const c = ranking.find((r) => r.id === 'C:unlock')!;
+    expect(c.teams[0]).toMatchObject({ name: 'Squad', completes: true, missingOthers: 0 });
+    // readiness² + 1.5 × readiness for completing the team
+    expect(c.value).toBeCloseTo(0.875 ** 2 + 1.5 * 0.875);
+    const g = ranking.find((r) => r.id === 'G:unlock')!;
+    expect(g.teams[0]).toMatchObject({ completes: false, nearlyCompletes: true });
+    expect(g.value).toBeCloseTo(0.375 ** 2 + 0.5 * 0.375);
+  });
+
   it('skips optimal/maxed characters and teams the player barely has', () => {
     const ids = new Set(recommend(input()).map((r) => r.entry.id));
     for (const id of ['D', 'E', 'F', 'Z']) expect(ids.has(id)).toBe(false);
@@ -120,6 +132,7 @@ describe('advisor', () => {
   it('counts shards already in the inventory', () => {
     const ranking = recommend(input({ inventory: new Map([['SHARD_C', 400]]) }));
     expect(ranking[0]).toMatchObject({ id: 'C:unlock', shardsMissing: 10 });
+    expect(actionSummary(ranking[0])).toBe('Masz shardy na odblokowanie (3★), potem 10 do 7★');
   });
 
   it('estimates gains while potentials are loading', () => {
@@ -145,8 +158,12 @@ describe('advisor', () => {
     expect(actionSummary(ranking.find((r) => r.id === 'B:stars')!)).toBe(
       'Brakuje 255 shardów do 7★',
     );
-    expect(actionSummary(best.get('C')!)).toBe('Odblokuj i dobij do 7★: brakuje 410 shardów');
-    expect(teamsSummary(best.get('C')!)).toBe('Squad (reszta gotowa)');
+    expect(actionSummary(best.get('C')!)).toBe(
+      'Do odblokowania (3★) brakuje 50 shardów, potem 360 do 7★',
+    );
+    expect(actionSummary(best.get('G')!)).toBe('Do odblokowania (7★) brakuje 410 shardów');
+    expect(teamsSummary(best.get('C')!)).toBe('skompletuje Squad');
+    expect(teamsSummary(best.get('G')!)).toBe('Far (po nim brakuje jeszcze 1)');
     expect(teamsSummary(best.get('A')!)).toBe('Squad (masz 3/4 pozostałych)');
     expect(teamsSummary(best.get('K')!)).toBe('postać kluczowa');
   });
@@ -154,5 +171,37 @@ describe('advisor', () => {
   it('lists owned team members and key characters as potential candidates', () => {
     const ids = advisorCandidates(input().known, input().keys, roster).map((e) => e.id);
     expect(ids.sort()).toEqual(['A', 'B', 'D', 'E', 'F', 'K']);
+  });
+
+  it('lists teams one or two unlocks away from complete, cheapest first', () => {
+    const known = [
+      team('Far', ['F', 'G', 'H']),
+      team('Squad', ['A', 'B', 'C', 'D', 'E']),
+      team('Misspelled', ['A', 'B', 'D', 'Nobody']),
+    ];
+    const powerOf = (e: RosterEntry) =>
+      ({ D: { status: 'optimal' }, E: { status: 'maxed' } })[e.id] as never;
+
+    const teams = completableTeams(known, roster, upgrade, new Map(), powerOf);
+    expect(teams.map((t) => [t.team.name, t.shardsMissing, t.readyNow])).toEqual([
+      ['Squad', 50, false],
+      ['Far', 820, false],
+    ]);
+    expect(teams[0].missing[0]).toMatchObject({ stars: 3, needed: 50, owned: 0, missing: 50 });
+    expect(teams[0].optimalMembers).toBe(2);
+
+    const withShards = completableTeams(
+      known,
+      roster,
+      upgrade,
+      new Map([
+        ['SHARD_G', 410],
+        ['SHARD_H', 500],
+      ]),
+    );
+    expect(withShards.map((t) => [t.team.name, t.readyNow])).toEqual([
+      ['Far', true],
+      ['Squad', false],
+    ]);
   });
 });

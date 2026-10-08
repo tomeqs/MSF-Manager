@@ -138,6 +138,9 @@ Cechy porównywane są łącznie z niewidocznymi i eventowymi (`traitKeys`).
 - **Wartość** — Σ gotowość² drużyn z `known-meta.ts`, w których postać jest. Gotowość to
   średnia z pozostałych członków: optymalny 1, posiadany w rozwoju 0,75, brak 0. Drużyny,
   których prawie nie masz, praktycznie się nie liczą. Postać kluczowa dostaje +0,5.
+- **Kompletowanie drużyn** — zablokowana postać, której odblokowanie **kompletuje** drużynę
+  (reszta posiadana), dostaje +1,5 × gotowość; gdy po niej brakuje jeszcze jednej, +0,5 ×
+  gotowość. Pełna drużyna synergii jest warta dużo więcej niż cztery postacie bez piątej.
 - **Zysk** — udział mocy maks. (7★, poziom gracza), który ruch dodaje.
 - **Koszt** — shardy są zdecydowanie najdroższe: 5 shardów = 1 jednostka, a poziom gearu
   0,75, poziom umiejętności 0,15, brakujące poziomy postaci 0,5. Nowa postać ma dodatkowe 5.
@@ -154,6 +157,15 @@ Zablokowane postacie mają ruch **Odblokowanie** (shardy do 7★ + budowa od zer
 podziałowi tanie ulepszenia postaci 5★ nie giną pod kosztem jej shardów. Postacie optymalne i
 wymaksowane, ulepszenia już na ≥ 95% pułapu i zyski < 1% wypadają z listy. Dopóki moc maks.
 się wczytuje, zysk jest szacowany (oznaczenie „szacunek”).
+
+Opis odblokowania rozdziela shardy na odblokowanie (wtedy drużyna jest już kompletna) i resztę
+do 7★, np. „Masz shardy na odblokowanie (3★), potem 345 do 7★”.
+
+**Drużyny do skompletowania** (Farmienie, pod rankingiem) — drużyny z listy, którym brakuje
+1–2 postaci: shardy na odblokowanie każdej brakującej (z inwentarzem), „Możesz skompletować
+teraz”, ile członków już jest optymalnych i „Farmuj brakujące” (cele odblokowania). Kolejność:
+gotowe teraz → mniej brakujących → mniej shardów → więcej trybów. Drużyny z nazwami, których
+nie ma w danych gry, są pomijane.
 
 Ranking jest na górze **Farmienia** („Farmuj” zapisuje cel: same umiejętności dla ulepszeń,
 7★ dla shardów/odblokowania). Cele w grupach są sortowane według rankingu.
