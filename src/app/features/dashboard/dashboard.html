@@ -43,6 +43,12 @@
   </div>
   @switch (todayStatus()) {
     @case ('loaded') {
+      @if (focusNames()) {
+        <p class="focus-line small">
+          <strong>Fokus:</strong> {{ focusNames() }}
+          <span class="muted">· Twój etap gearu: G{{ frontier() }}</span>
+        </p>
+      }
       <ul class="today-list">
         @for (item of today(); track item.characterId) {
           <li>

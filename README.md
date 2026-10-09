@@ -77,6 +77,11 @@ Komponenty nie znają kształtu odpowiedzi API — operują na `RosterEntry` z m
   401 kończy sesję i wraca do `/login`.
 - `core/data/session-msf-data-source.ts` — zalogowany → `ApiMsfDataSource`, tryb demo → `MockMsfDataSource`.
 - `sessionGuard` — strony aplikacji wymagają logowania albo trybu demo.
+- **Sesja przetrwa przeładowania i przebudowy**: tokeny są w `localStorage` (per adres — otwieraj
+  zawsze `http://localhost:4200`). Token jest odświeżany 5 min przed wygaśnięciem, gdy karta jest
+  widoczna, oraz po powrocie do karty i sieci. Przy 401 aplikacja odświeża token i ponawia
+  zapytanie. Sesja kończy się tylko, gdy Scopely odrzuci token (400/401/403) — błędy sieci/5xx
+  jej nie kasują. Powód zakończenia sesji jest pokazywany na ekranie logowania.
 
 ## Cache
 
@@ -98,9 +103,12 @@ Komponenty nie znają kształtu odpowiedzi API — operują na `RosterEntry` z m
 ## Drużyny: fallback
 
 `/game/v1/analysis/teamOrder` (per tryb i zbiorczo) zwraca obecnie 500. Wtedy widok drużyn
-używa `core/data/known-meta.ts` — imiennych składów z poradników (marvel.church i in.,
-październik 2026), z linkiem do źródła przy każdej drużynie. Slot `"A|B"` = A albo B, jeśli A
-nie posiadasz. Nazwy postaci, których nie ma w danych gry, są wypisywane pod listą — wystarczy
+używa `core/data/known-meta.ts` — imiennych składów z poradników i oficjalnych postów
+(stan na 9.10.2026: Crucible sezon 25, raid Trepidation z Iron Raiders zamiast Hellfire Club,
+Boss Raid; dawne drużyny raidowe zostały jako „legacy”/Blitz), z linkiem do źródła i poziomem
+S/A/B przy każdej drużynie. Badanie opierało się na wynikach wyszukiwania (strony poradników
+były niedostępne), więc poziomy to dobrze poinformowane szacunki. Slot `"A|B"` = A albo B,
+jeśli A nie posiadasz. Nazwy postaci, których nie ma w danych gry, są wypisywane pod listą — wystarczy
 poprawić pisownię w pliku. Przycisk „Sprawdź API ponownie” wraca do danych z API, gdy zadziała.
 
 ## Docelowa moc drużyn
@@ -133,48 +141,65 @@ Cechy porównywane są łącznie z niewidocznymi i eventowymi (`traitKeys`).
 ## Ranking opłacalności
 
 `advisor.ts` układa ruchy w kolejności „co się teraz najbardziej opłaca”. Wynik ruchu to
-**wartość × zysk ÷ koszt**:
+**wartość × zysk ÷ koszt**. Zasada: zasoby rzadkie (shardy, gear ponad Twój etap, T4) idą
+tylko tam, gdzie zwrot jest największy.
 
-- **Wartość** — Σ gotowość² drużyn z `known-meta.ts`, w których postać jest. Gotowość to
-  średnia z pozostałych członków: optymalny 1, posiadany w rozwoju 0,75, brak 0. Drużyny,
-  których prawie nie masz, praktycznie się nie liczą. Postać kluczowa dostaje +0,5.
-- **Kompletowanie drużyn** — zablokowana postać, której odblokowanie **kompletuje** drużynę
-  (reszta posiadana), dostaje +1,5 × gotowość; gdy po niej brakuje jeszcze jednej, +0,5 ×
-  gotowość. Pełna drużyna synergii jest warta dużo więcej niż cztery postacie bez piątej.
-- **Zysk** — udział mocy maks. (7★, poziom gracza), który ruch dodaje.
-- **Koszt** — shardy są zdecydowanie najdroższe: 5 shardów = 1 jednostka, a poziom gearu
-  0,75, poziom umiejętności 0,15, brakujące poziomy postaci 0,5. Nowa postać ma dodatkowe 5.
-  Każdy ruch ma też koszt bazowy 1. Wagi są w `EFFORT`.
+### Twój etap gry (`progression.ts`)
 
-Każda posiadana postać ma do dwóch osobnych ruchów:
+Trudność gearu zależy od konta, więc liczę ją z rosteru: ile z Twoich 60 najsilniejszych
+postaci ma dany poziom gearu. **Etap** (frontier) to najwyższy poziom, który ma ≥ 20% z nich.
+Koszt poziomu = 0,3 ÷ zasięg² (maks. 60 jednostek): poziom, który ma większość — tani; który ma
+1 na 7 — ~15 jednostek (~75 shardów); którego prawie nikt nie ma — ~300 shardów. Etykiety:
+łatwy / średni / trudny / ekstremalny. Ulepszenia celują najpierw w Twój etap, a postać już na
+nim dostaje jeden **osobny, drogi** krok wyżej (np. „G16→G17 (G17: trudny)”). Dalsze poziomy
+nie są proponowane — ich materiałów zwykle jeszcze nie zdobywasz.
 
-- **Ulepszenia** — poziomy, gear, umiejętności przy obecnych gwiazdkach. Zysk liczony z mocy
-  maks. przy obecnych gwiazdkach (`characterInstances` z `yellow` = obecne).
-- **Shardy** — gwiazdki do 7★. Zysk to różnica między mocą przy 7★ a przy obecnych gwiazdkach;
-  shardy z inwentarza zmniejszają koszt.
+### Składniki
 
-Zablokowane postacie mają ruch **Odblokowanie** (shardy do 7★ + budowa od zera). Dzięki
-podziałowi tanie ulepszenia postaci 5★ nie giną pod kosztem jej shardów. Postacie optymalne i
-wymaksowane, ulepszenia już na ≥ 95% pułapu i zyski < 1% wypadają z listy. Dopóki moc maks.
-się wczytuje, zysk jest szacowany (oznaczenie „szacunek”).
+- **Wartość** — Σ po drużynach z `known-meta.ts`: waga × (gotowość² + premia za kompletowanie).
+  - Waga = poziom drużyny w mecie (S 1, A 0,75, B 0,5) × (1 + 0,15 na każdy dodatkowy tryb),
+    ×2 dla drużyn z **fokusu**.
+  - Gotowość = średnia z pozostałych członków: gotowy na Twój etap 1, posiadany w rozwoju
+    0,75, brak 0. Drużyny, których prawie nie masz, praktycznie się nie liczą.
+  - Kompletowanie: odblokowanie ostatniego brakującego członka +1,5 × gotowość, przedostatniego
+    +0,5 × gotowość. Postać kluczowa dostaje +0,5.
+- **Zysk** — udział mocy maks. (7★, poziom gracza), który ruch dodaje. Gear tylko do
+  realnego celu zamyka proporcjonalną część luki.
+- **Koszt** (`EFFORT`, 5 shardów = 1 jednostka): shardy do 7★ (0→7★ to ~810), gear według etapu,
+  umiejętności według **materiałów w inwentarzu** (brak części materiałów → do +10 jednostek),
+  brakujące poziomy postaci 0,5, nowa postać — budowa do Twojego etapu. Bazowo 1.
 
-Opis odblokowania rozdziela shardy na odblokowanie (wtedy drużyna jest już kompletna) i resztę
-do 7★, np. „Masz shardy na odblokowanie (3★), potem 345 do 7★”.
+Każda posiadana postać ma do dwóch ruchów: **Ulepszenia** (poziomy, gear do realnego celu,
+umiejętności — zysk z mocy maks. przy obecnych gwiazdkach, `characterInstances` z `yellow`) i
+**Shardy** (do 7★). Zablokowana ma **Odblokowanie** — opis rozdziela shardy na odblokowanie
+(wtedy drużyna jest już kompletna) i resztę do 7★.
 
-**Drużyny do skompletowania** (Farmienie, pod rankingiem) — drużyny z listy, którym brakuje
-1–2 postaci: shardy na odblokowanie każdej brakującej (z inwentarzem), „Możesz skompletować
-teraz”, ile członków już jest optymalnych i „Farmuj brakujące” (cele odblokowania). Kolejność:
-gotowe teraz → mniej brakujących → mniej shardów → więcej trybów. Drużyny z nazwami, których
-nie ma w danych gry, są pomijane.
+**Kiedy przestać**: postać 7★ z maks. poziomem i umiejętnościami, z gearem na krok ponad Twój
+etap (albo optymalna/wymaksowana), jest „gotowa na Twój etap” i wypada z rankingu — dalsze
+poziomy gearu są poza zasięgiem. Dopóki moc maks. się wczytuje, zysk jest szacowany.
 
-Ranking jest na górze **Farmienia** („Farmuj” zapisuje cel: same umiejętności dla ulepszeń,
-7★ dla shardów/odblokowania). Cele w grupach są sortowane według rankingu.
+### Fokus (`team-plans.ts`)
+
+Typowy błąd to rozkładanie rzadkich zasobów na wiele drużyn. Fokus to maks. 3 drużyny
+najbliższe zbudowania: waga (poziom × tryby) × postęp² (średni udział mocy członków), bez
+drużyn już gotowych, z literówkami w nazwach albo zbudowanych < 35%. Ich członkowie liczą się
+w rankingu podwójnie. Na Farmieniu każda drużyna fokusu pokazuje członków z ich najlepszym
+ruchem i miejscem w rankingu, a „Farmuj drużynę” zapisuje cele dla całej drużyny. Pulpit pokazuje
+fokus i Twój etap gearu.
+
+**Drużyny do skompletowania** (Farmienie) — drużyny z listy, którym brakuje 1–2 postaci:
+shardy na odblokowanie każdej brakującej (z inwentarzem), „Możesz skompletować teraz” i
+„Farmuj brakujące”. Kolejność: gotowe teraz → mniej brakujących → mniej shardów → mocniejsza.
+
+Ranking jest na Farmieniu („Farmuj” zapisuje cel: same umiejętności dla ulepszeń, 7★ dla
+shardów/odblokowania). Cele w grupach są sortowane według rankingu.
 
 ## Kluczowe postacie
 
 `core/data/key-characters.ts` — postacie, które poradniki dokładają do wielu składów
 (Professor Xavier, Blue Marvel, Silver Surfer (Breaker), Magik (Breaker), Annihilus, Quasar,
-Knull, Mephisto, Odin, The Destroyer, Apocalypse), z krótkim uzasadnieniem i źródłem.
+Knull, Mephisto, Odin, The Destroyer, Toxin, Captain Britain, Sentry), z krótkim
+uzasadnieniem i źródłem.
 Zakładka **Kluczowe** pokazuje dla każdej: status rozwoju, drużyny i tryby, miejsce w rankingu
 opłacalności i najlepszy ruch. Optymalne i wymaksowane trafiają do „Gotowe”.
 

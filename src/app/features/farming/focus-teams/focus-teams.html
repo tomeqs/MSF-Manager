@@ -1,0 +1,78 @@
+<section class="card focus">
+  <div class="head">
+    <h2>Fokus — w co inwestować teraz</h2>
+    <p class="muted small">
+      Shardy i wysokie poziomy gearu są rzadkie, więc lepiej skończyć kilka drużyn niż rozwijać
+      wiele po trochu. Fokus to drużyny najbliższe zbudowania (siła w mecie × tryby × postęp). Ich
+      członkowie liczą się w rankingu podwójnie.
+    </p>
+    @if (tiers().length) {
+      <div class="profile small">
+        <span>
+          Twój etap: <strong>G{{ profile().frontier }}</strong>
+          <span class="muted"> (z {{ profile().sample }} najsilniejszych postaci)</span>
+        </span>
+        <span class="chips">
+          @for (chip of tiers(); track chip.tier) {
+            <span class="chip" [attr.data-difficulty]="chip.difficulty">
+              G{{ chip.tier }}: {{ chip.label }} · {{ chip.have }}
+            </span>
+          }
+        </span>
+      </div>
+    }
+  </div>
+
+  <div class="grid">
+    @for (plan of plans(); track plan.team.name) {
+      <article class="plan">
+        <header class="plan-head">
+          <div>
+            <strong>{{ plan.team.name }}</strong>
+            <span class="muted small">{{ modes(plan) }}</span>
+          </div>
+          <span class="tier" [attr.data-tier]="plan.tier">{{ plan.tier }}</span>
+        </header>
+        <div class="row small">
+          <span>Zbudowana w {{ (plan.closeness * 100).toFixed(0) }}%</span>
+          <span class="muted">{{ plan.done }}/{{ plan.members.length }} gotowe</span>
+        </div>
+        <app-progress-bar [value]="plan.closeness" [max]="1" />
+        <ul class="members">
+          @for (m of plan.members; track m.member.id) {
+            <li [class.done]="m.done">
+              <app-character-avatar
+                [name]="m.member.name"
+                [portrait]="m.member.entry?.portrait"
+                [traits]="m.member.entry?.traits ?? []"
+                style="--avatar-size: 28px"
+              />
+              <div class="member-main">
+                @if (m.member.entry) {
+                  <a [routerLink]="['/roster', m.member.entry.id]">{{ m.member.name }}</a>
+                } @else {
+                  <span>{{ m.member.name }}</span>
+                }
+                <span class="muted small">{{ next(m) }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+        <footer class="plan-foot">
+          <a class="muted small" [href]="plan.team.source" target="_blank" rel="noopener">
+            źródło ↗
+          </a>
+          @if (allInGoals(plan)) {
+            <span class="farmed small">W celach ✓</span>
+          } @else {
+            <button type="button" (click)="farmTeam(plan)">Farmuj drużynę</button>
+          }
+        </footer>
+      </article>
+    } @empty {
+      <p class="muted">
+        Żadna drużyna z listy nie jest jeszcze w zasięgu — zacznij od rankingu poniżej.
+      </p>
+    }
+  </div>
+</section>

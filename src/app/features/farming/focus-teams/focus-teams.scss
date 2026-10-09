@@ -1,0 +1,150 @@
+:host {
+  display: block;
+  margin-bottom: 16px;
+}
+
+h2 {
+  margin: 0 0 4px;
+}
+
+.head p {
+  margin: 0 0 10px;
+  max-width: 760px;
+}
+
+.small {
+  font-size: 0.8rem;
+}
+
+.profile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-bottom: 12px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--c-surface-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &[data-difficulty='easy'] {
+    color: var(--c-success);
+  }
+
+  &[data-difficulty='medium'] {
+    color: var(--c-text);
+  }
+
+  &[data-difficulty='hard'] {
+    color: var(--c-warning);
+  }
+
+  &[data-difficulty='extreme'] {
+    color: var(--c-accent);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+.plan-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+.tier {
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--c-surface-2);
+  font-weight: 800;
+
+  &[data-tier='S'] {
+    background: var(--c-accent-soft);
+    color: var(--c-accent);
+  }
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.members {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  li.done .member-main span {
+    color: var(--c-success);
+  }
+
+  a {
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+.member-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.plan-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+
+  a {
+    text-decoration: none;
+  }
+
+  button {
+    padding: 4px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+.farmed {
+  color: var(--c-success);
+}

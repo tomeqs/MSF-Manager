@@ -2,13 +2,15 @@ import { Injectable, computed, inject } from '@angular/core';
 import { KEY_CHARACTERS } from '../data/key-characters';
 import { KNOWN_META } from '../data/known-meta';
 import {
+  Advice,
   Recommendation,
   TeamCompletion,
+  advise,
   advisorCandidates,
   bestByCharacter,
   completableTeams,
-  recommend,
 } from './advisor';
+import { progression } from './progression';
 import { MAX_YELLOW_STARS } from './game-rules';
 import { memberPower } from './potential-calc';
 import { FarmingStore } from './farming.store';
@@ -29,9 +31,9 @@ export class AdvisorStore {
   /** Needs the inventory and upgrade data (shards), so it follows the farming store. */
   readonly status = this.farming.status;
 
-  readonly recommendations = computed<Recommendation[]>(() =>
+  private readonly advice = computed<Advice | undefined>(() =>
     this.farming.status() === 'loaded'
-      ? recommend({
+      ? advise({
           roster: this.roster.entries(),
           known: KNOWN_META,
           keys: KEY_CHARACTERS,
@@ -40,7 +42,18 @@ export class AdvisorStore {
           upgrade: this.farming.upgrade(),
           inventory: this.farming.inventory(),
         })
-      : [],
+      : undefined,
+  );
+
+  readonly recommendations = computed<Recommendation[]>(() => this.advice()?.ranking ?? []);
+
+  /** Known teams with progress; the `focus` ones are where scarce resources should go. */
+  readonly plans = computed(() => this.advice()?.plans ?? []);
+  readonly focusPlans = computed(() => this.plans().filter((p) => p.focus));
+
+  /** The player's gear frontier, read from their strongest characters. */
+  readonly progression = computed(
+    () => this.advice()?.progression ?? progression(this.roster.entries()),
   );
 
   /** Known teams one or two unlocks away from complete, cheapest first. */

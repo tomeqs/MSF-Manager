@@ -41,6 +41,13 @@ export class Dashboard {
     todayItems(this.farming.plans(), this.farming.promotions(), this.advisor.recommendations()),
   );
   protected readonly todayStatus = this.farming.status;
+  protected readonly focusNames = computed(() =>
+    this.advisor
+      .focusPlans()
+      .map((p) => p.team.name)
+      .join(', '),
+  );
+  protected readonly frontier = computed(() => this.advisor.progression().frontier);
 
   protected readonly typeLabels = EVENT_TYPE_LABELS;
   protected readonly progressOf = eventProgress;

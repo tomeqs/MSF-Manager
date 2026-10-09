@@ -2,7 +2,8 @@ import { TeamTab } from '../models';
 
 /**
  * "Plug-and-play" characters that community guides add to many lineups, so one investment
- * pays off in several modes. Compiled October 2026 (see `source`); edit freely.
+ * pays off in several modes. Updated 9 October 2026 (Crucible Season 25 / Ultimate 32
+ * setups, War season of September; see `source`); edit freely.
  */
 export interface KeyCharacter {
   /** In-game name; "A|B" accepts alternative spellings. */
@@ -37,7 +38,7 @@ export const KEY_CHARACTERS: KeyCharacter[] = [
   {
     name: 'Magik (Breaker)',
     modes: ['crucible', 'war', 'arena'],
-    why: 'Uniwersalna (październik 2026): tarcze dla drużyny i kontra na Blue Marvel.',
+    why: 'Ofensywa do każdej drużyny (wrzesień 2026): Plates i Barrier na start, chroni przed obniżaniem Max Health przez Blue Marvel.',
     source: 'https://marvelstrikeforce.com/en/updates/blog-update-9-25-26',
   },
   {
@@ -73,13 +74,25 @@ export const KEY_CHARACTERS: KeyCharacter[] = [
   {
     name: 'The Destroyer|Destroyer',
     modes: ['war', 'crucible', 'raids'],
-    why: 'Darmowy z Battleworld (wrzesień 2026); dokłada dużo obrażeń do dowolnej drużyny.',
+    why: 'Darmowy z Battleworld „Fallen Asgard” (od 29.09.2026); siła w mecie jeszcze niepotwierdzona.',
     source: 'https://marvelstrikeforce.com/en/updates/blog-update-9-24-26',
   },
   {
-    name: 'Apocalypse',
-    modes: ['arena', 'war'],
-    why: 'Najczęstszy zamiennik w Secret Defenders na arenie.',
-    source: `${CHURCH}/secret-defender/`,
+    name: 'Toxin',
+    modes: ['arena', 'crucible'],
+    why: 'Członek Symbiote Six i piąty w Phoenix Force — dwie obrony S w Crucible.',
+    source: `${CHURCH}/cosmic-crucible-ultimate-32/`,
+  },
+  {
+    name: 'Captain Britain',
+    modes: ['crucible'],
+    why: 'Częsty dodatek do obron Crucible (np. Fantastic Four (MCU) + Blue Marvel).',
+    source: `${CHURCH}/cosmic-crucible-the-best-defensive-setup/`,
+  },
+  {
+    name: 'Sentry',
+    modes: ['crucible'],
+    why: 'Zamiennik w obronach Crucible obok Fantastic Four (MCU).',
+    source: `${CHURCH}/cosmic-crucible-the-best-defensive-setup/`,
   },
 ];

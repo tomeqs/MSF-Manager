@@ -41,13 +41,13 @@ const ABILITY_COSTS: IndexedCosts = {
 /** Shape of GET /game/v1/upgradeData (subset, illustrative numbers). */
 export const MOCK_UPGRADE_DATA: UpgradeData = {
   yellowStarTotalShards: {
-    '1': 15,
-    '2': 30,
-    '3': 55,
-    '4': 95,
-    '5': 155,
-    '6': 255,
-    '7': 410,
+    '1': 10,
+    '2': 25,
+    '3': 50,
+    '4': 100,
+    '5': 260,
+    '6': 510,
+    '7': 810,
   },
   yellowStarTotalCosts: {
     '1': [],
