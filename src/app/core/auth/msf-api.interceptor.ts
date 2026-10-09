@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
@@ -7,7 +7,8 @@ import { AuthService } from './auth.service';
 
 /**
  * Adds `x-api-key` to every MSF API call and `Authorization: Bearer` to all but `/util/*`
- * (gatedRefresh authenticates with the refresh token in its body). A 401 ends the session.
+ * (gatedRefresh authenticates with the refresh token in its body). On 401 the token is
+ * refreshed and the call retried once; only a second rejection ends the session.
  */
 export const msfApiInterceptor: HttpInterceptorFn = (req, next) => {
   const config = inject(MSF_CONFIG);
@@ -19,16 +20,36 @@ export const msfApiInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (req.url.startsWith(`${config.apiBaseUrl}/util/`)) return next(withKey);
 
+  const send = (token: string | null) => next(withToken(withKey, token));
+  const toLogin = () => void router.navigate(['/login'], { queryParams: { expired: 1 } });
+  const isUnauthorized = (error: unknown) =>
+    error instanceof HttpErrorResponse && error.status === 401;
+
   return auth.accessToken().pipe(
-    switchMap((token) =>
-      next(token ? withKey.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : withKey),
-    ),
+    switchMap(send),
     catchError((error: unknown) => {
-      if (error instanceof HttpErrorResponse && error.status === 401) {
-        void auth.logout();
-        void router.navigate(['/login'], { queryParams: { expired: 1 } });
-      }
-      return throwError(() => error);
+      if (!isUnauthorized(error)) return throwError(() => error);
+      // The token may have been revoked or expired early: refresh once and retry.
+      return auth.accessToken(true).pipe(
+        switchMap((token) => {
+          if (!token) {
+            toLogin();
+            return throwError(() => error);
+          }
+          return send(token);
+        }),
+        catchError((retryError: unknown) => {
+          if (isUnauthorized(retryError)) {
+            auth.endSession('API odrzuca token (401) także po odświeżeniu');
+            toLogin();
+          }
+          return throwError(() => retryError);
+        }),
+      );
     }),
   );
 };
+
+function withToken<T>(req: HttpRequest<T>, token: string | null): HttpRequest<T> {
+  return token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
+}

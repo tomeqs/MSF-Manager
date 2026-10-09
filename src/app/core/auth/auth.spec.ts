@@ -107,7 +107,7 @@ describe('AuthService + msfApiInterceptor', () => {
     expect(auth.mode()).toBe('api');
   });
 
-  it('ends the session on 401', () => {
+  it('ends the session on 401 when there is no refresh token', () => {
     seedTokens({ accessToken: 'AT', expiresAt: Date.now() + 3_600_000 });
     const { http, httpMock, auth } = setup();
 
@@ -118,6 +118,58 @@ describe('AuthService + msfApiInterceptor', () => {
 
     expect(auth.mode()).toBeNull();
     expect(localStorage.getItem('msf.auth.tokens')).toBeNull();
+    expect(auth.lastSessionEnd()?.reason).toContain('refresh tokenu');
+  });
+
+  it('on 401 refreshes the token and retries the call once', () => {
+    seedTokens({ accessToken: 'AT', refreshToken: 'RT1', expiresAt: Date.now() + 3_600_000 });
+    const { http, httpMock, auth } = setup();
+    let result: unknown;
+
+    http.get(`${API}/player/v1/card`).subscribe((r) => (result = r));
+    httpMock
+      .expectOne(`${API}/player/v1/card`)
+      .flush({}, { status: 401, statusText: 'Unauthorized' });
+    httpMock
+      .expectOne(`${API}/util/v1/gatedRefresh`)
+      .flush({ access_token: 'NEW', refresh_token: 'RT2', expires_in: 3600 });
+    const retry = httpMock.expectOne(`${API}/player/v1/card`);
+    expect(retry.request.headers.get('Authorization')).toBe('Bearer NEW');
+    retry.flush({ data: 'ok' });
+
+    expect(result).toEqual({ data: 'ok' });
+    expect(auth.mode()).toBe('api');
+  });
+
+  it('keeps the session when the refresh fails for network/server reasons', () => {
+    seedTokens({ accessToken: 'OLD', refreshToken: 'RT1', expiresAt: Date.now() - 1000 });
+    const { http, httpMock, auth } = setup();
+    let failed = false;
+
+    http.get(`${API}/player/v1/card`).subscribe({ error: () => (failed = true) });
+    httpMock
+      .expectOne(`${API}/util/v1/gatedRefresh`)
+      .flush({ gatewayError: 'X' }, { status: 500, statusText: 'Server Error' });
+
+    expect(failed).toBe(true);
+    expect(auth.mode()).toBe('api');
+    expect(JSON.parse(localStorage.getItem('msf.auth.tokens')!).refreshToken).toBe('RT1');
+  });
+
+  it('ends the session with the reason when Scopely rejects the refresh token', () => {
+    seedTokens({ accessToken: 'OLD', refreshToken: 'RT1', expiresAt: Date.now() - 1000 });
+    const { http, httpMock, auth } = setup();
+
+    http.get(`${API}/player/v1/card`).subscribe({ error: () => undefined });
+    httpMock
+      .expectOne(`${API}/util/v1/gatedRefresh`)
+      .flush(
+        { error: 'invalid_grant', error_description: 'token reused' },
+        { status: 400, statusText: 'Bad Request' },
+      );
+
+    expect(auth.mode()).toBeNull();
+    expect(auth.lastSessionEnd()?.reason).toContain('400 invalid_grant — token reused');
   });
 
   it('ApiMsfDataSource unwraps `data` and trims the characters query', async () => {

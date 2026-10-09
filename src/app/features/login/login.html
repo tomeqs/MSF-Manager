@@ -10,7 +10,12 @@
     dane — nie wykonuje akcji w grze.
   </p>
 
-  @if (expired()) {
+  @if (lastEnd(); as end) {
+    <p class="notice">
+      Sesja zakończyła się {{ end.at | date: 'd.MM, HH:mm' }}: {{ end.reason }}. Zaloguj się
+      ponownie.
+    </p>
+  } @else if (expired()) {
     <p class="notice">Sesja wygasła. Zaloguj się ponownie.</p>
   }
 

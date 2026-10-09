@@ -1,9 +1,11 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
+  imports: [DatePipe],
   templateUrl: './login.html',
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +19,7 @@ export class Login {
   readonly expired = input<string>();
 
   protected readonly redirecting = signal(false);
+  protected readonly lastEnd = this.auth.lastSessionEnd;
 
   protected login(): void {
     this.redirecting.set(true);
