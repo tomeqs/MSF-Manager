@@ -1,5 +1,6 @@
 import { DateTime } from './api.model';
 import { IsoClass, Trait } from './character.model';
+import { ItemQuantity } from './item.model';
 
 /** Mirrors API schema EventInfo (subset). */
 
@@ -26,8 +27,17 @@ export interface Progress {
   rank?: number;
 }
 
+/** Mirrors API schema ObjectiveTier (subset). Tier rewards are additive. */
+export interface ObjectiveTier {
+  goal?: number;
+  rewards?: ItemQuantity;
+  premiumRewards?: ItemQuantity;
+}
+
 export interface Objective {
   progress?: Progress;
+  /** Tier number ("1", "2", …) → tier; present with `objRewards=full`. */
+  tiers?: Record<string, ObjectiveTier>;
 }
 
 export interface Bracket {
@@ -72,4 +82,6 @@ export interface EventInfo {
   milestone?: { type?: 'solo' | 'alliance'; brackets?: Bracket[] };
   blitz?: { requirements?: Requirements; brackets?: Bracket[] };
   tower?: { requirements?: Requirements; brackets?: Bracket[] };
+  battlePass?: { brackets?: Bracket[] };
+  strikePass?: { brackets?: Bracket[] };
 }

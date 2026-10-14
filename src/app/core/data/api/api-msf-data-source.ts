@@ -73,7 +73,13 @@ export class ApiMsfDataSource extends MsfDataSource {
   }
 
   getEvents(): Observable<EventInfo[]> {
-    return this.data<EventInfo[]>('/player/v1/events', { itemFormat: 'id', pieceInfo: 'none' });
+    // Tier rewards (objRewards) let the app spot events that award shards of the player's
+    // characters; items as ids keep the response small.
+    return this.data<EventInfo[]>('/player/v1/events', {
+      itemFormat: 'id',
+      pieceInfo: 'none',
+      objRewards: 'full',
+    });
   }
 
   getInventory(): Observable<ItemQuantity[]> {

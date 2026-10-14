@@ -18,10 +18,20 @@ export interface ItemCost {
   quantity?: number;
 }
 
-/** Inventory entries are ItemQuantity objects with a plain `item`. */
+/**
+ * Inventory entries are ItemQuantity objects with a plain `item`. Rewards may instead be
+ * packages: `allOf` (everything), `oneOf` (one weighted random pick), `chanceOf` (maybe).
+ */
 export interface ItemQuantity {
   item?: Item;
   quantity?: number;
+  /** A range of possible quantities, from `quantity` to `maxQuantity`. */
+  maxQuantity?: number;
+  oneOf?: ItemQuantity[];
+  allOf?: ItemQuantity[];
+  chanceOf?: ItemQuantity;
+  /** How many times a `oneOf`/`chanceOf` package is opened (default 1). */
+  pulls?: number;
 }
 
 /** Level/tier number (as string key, starting at "1") → cost. */

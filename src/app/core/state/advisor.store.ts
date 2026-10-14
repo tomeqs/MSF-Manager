@@ -11,6 +11,7 @@ import {
   completableTeams,
 } from './advisor';
 import { progression } from './progression';
+import { shardOffers } from './event-rewards';
 import { MAX_YELLOW_STARS } from './game-rules';
 import { memberPower } from './potential-calc';
 import { FarmingStore } from './farming.store';
@@ -31,6 +32,14 @@ export class AdvisorStore {
   /** Needs the inventory and upgrade data (shards), so it follows the farming store. */
   readonly status = this.farming.status;
 
+  /** Running and upcoming events that award shards of roster characters, by shard item id. */
+  readonly offers = computed(() =>
+    shardOffers(
+      this.player.events(),
+      new Set(this.roster.entries().flatMap((e) => (e.shardItemId ? [e.shardItemId] : []))),
+    ),
+  );
+
   private readonly advice = computed<Advice | undefined>(() =>
     this.farming.status() === 'loaded'
       ? advise({
@@ -41,6 +50,7 @@ export class AdvisorStore {
           potentialAtStarsOf: (e) => this.potentials.get(e, this.playerLevel(), true),
           upgrade: this.farming.upgrade(),
           inventory: this.farming.inventory(),
+          offers: this.offers(),
         })
       : undefined,
   );

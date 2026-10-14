@@ -42,3 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Working notes of research reports (the reports themselves live in reports/)
+research_notes/

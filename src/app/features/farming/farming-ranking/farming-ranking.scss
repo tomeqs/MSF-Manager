@@ -134,3 +134,12 @@
   background: var(--c-accent-soft);
   color: var(--c-accent);
 }
+
+.offer {
+  color: var(--c-success);
+  font-weight: 600;
+
+  &.upcoming {
+    color: var(--c-warning);
+  }
+}

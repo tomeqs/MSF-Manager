@@ -7,6 +7,7 @@ import {
   teamsSummary,
 } from '../../../core/state/advisor';
 import { AdvisorStore } from '../../../core/state/advisor.store';
+import { offerSummary } from '../../../core/state/event-rewards';
 import { goalFor } from '../../../core/state/farming-calc';
 import { FarmingStore } from '../../../core/state/farming.store';
 import { PotentialStore } from '../../../core/state/potential.store';
@@ -32,6 +33,7 @@ export class FarmingRanking {
   protected readonly kindLabels = RECOMMENDATION_LABELS;
   protected readonly action = actionSummary;
   protected readonly teamsOf = teamsSummary;
+  protected readonly offerText = offerSummary;
 
   protected readonly ranking = this.advisor.recommendations;
   protected readonly showAll = signal(false);

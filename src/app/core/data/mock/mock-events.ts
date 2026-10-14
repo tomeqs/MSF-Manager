@@ -94,6 +94,47 @@ export function mockEvents(nowMs: number): EventInfo[] {
       },
     },
     {
+      id: 'mock-milestone-phoenix',
+      type: 'milestone',
+      name: 'Phoenix Rising',
+      subName: 'Solo milestone — nagrody: shardy Magneto (Phoenix Force)',
+      details: 'Punkty za walki postaciami Phoenix Force.',
+      startTime: now - 1 * DAY,
+      endTime: now + 4 * DAY,
+      milestone: {
+        type: 'solo',
+        brackets: [
+          {
+            objective: {
+              progress: { completedTier: 1, goalTier: 2, points: 2_000, goal: 6_000 },
+              tiers: {
+                '1': { goal: 2_000, rewards: { item: 'SHARD_MagnetoPF', quantity: 15 } },
+                '2': { goal: 6_000, rewards: { item: 'SHARD_MagnetoPF', quantity: 25 } },
+                '3': {
+                  goal: 12_000,
+                  rewards: { item: 'SHARD_MagnetoPF', quantity: 40 },
+                  premiumRewards: { item: 'SHARD_MagnetoPF', quantity: 50 },
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+    {
+      id: 'mock-legendary-odin',
+      type: 'episodic',
+      name: 'Legendary: Odin',
+      subName: 'Nadchodzi — odblokowanie Odina',
+      startTime: now + 3 * DAY,
+      endTime: now + 10 * DAY,
+      milestone: {
+        brackets: [
+          { objective: { tiers: { '1': { rewards: { item: 'SHARD_Odin', quantity: 100 } } } } },
+        ],
+      },
+    },
+    {
       id: 'mock-raid-season',
       type: 'raidSeason',
       name: 'Raid Season 12',

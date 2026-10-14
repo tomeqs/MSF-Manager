@@ -43,6 +43,11 @@
                   · szacunek do czasu wczytania maks. mocy
                 }
               </span>
+              @if (rec.offer) {
+                <span class="offer small" [class.upcoming]="!rec.offer.live">
+                  {{ offerText(rec.offer) }}
+                </span>
+              }
             </div>
             <div class="rank-side">
               <app-progress-bar

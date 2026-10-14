@@ -8,6 +8,7 @@ import {
   UpgradeData,
   itemId,
 } from '../models';
+import { ShardOffer, offeredShards } from './event-rewards';
 import { Inventory, levelCostsBetween, shardsBetween } from './farming-calc';
 import { ABILITY_KEYS, ABILITY_MAX, MAX_YELLOW_STARS, OPTIMAL_POWER_SHARE } from './game-rules';
 import { MemberPower, memberPower } from './potential-calc';
@@ -155,6 +156,8 @@ export interface Recommendation {
   gearDifficulty?: Difficulty;
   /** Unlock action: shards to unlock (team completion happens here, before 7★). */
   unlock?: MissingMember;
+  /** Shard actions: the best running (or else upcoming) event that awards its shards. */
+  offer?: ShardOffer;
   /** True while max powers are not loaded yet and the gain is estimated. */
   estimated: boolean;
 }
@@ -169,6 +172,8 @@ export interface AdvisorInput {
   potentialAtStarsOf: (entry: RosterEntry) => CharacterPotential | undefined;
   upgrade: UpgradeData;
   inventory: Inventory;
+  /** Events awarding shards, by shard item id (`event-rewards.ts`). */
+  offers?: ReadonlyMap<string, ShardOffer[]>;
 }
 
 export interface Advice {
@@ -213,7 +218,8 @@ export function recommend(input: AdvisorInput): Recommendation[] {
  * stars themselves are separate actions. Characters with nothing realistic left to farm drop out.
  */
 export function advise(input: AdvisorInput): Advice {
-  const { roster, known, keys, potentialOf, potentialAtStarsOf, upgrade, inventory } = input;
+  const { roster, known, keys, potentialOf, potentialAtStarsOf, upgrade, inventory, offers } =
+    input;
   const profile = progression(roster);
   const byName = rosterByName(roster);
   const keyModes = new Map<string, TeamTab[]>();
@@ -281,12 +287,16 @@ export function advise(input: AdvisorInput): Advice {
       });
     };
 
-    const shardEffort = EFFORT.base + shardsMissing / EFFORT.shardsPerUnit;
+    // Shards a running event awards for playing it are much cheaper than farming them.
+    const offer = entry.shardItemId ? offers?.get(entry.shardItemId)?.[0] : undefined;
+    const fromEvent = offer?.live ? offeredShards(offer) : 0;
+    const shardEffort = EFFORT.base + Math.max(0, shardsMissing - fromEvent) / EFFORT.shardsPerUnit;
     if (!entry.unlocked) {
       const build =
         EFFORT.levels + gearCost(profile, 1, profile.frontier) + EFFORT.newCharacterAbilities;
       add('unlock', 1, shardEffort + build, false, {
         unlock: unlockCost(entry, upgrade, inventory),
+        offer,
       });
       continue;
     }
@@ -303,7 +313,7 @@ export function advise(input: AdvisorInput): Advice {
       });
     }
     if (entry.yellowStars < MAX_YELLOW_STARS) {
-      add('stars', (max - ceiling) / max, shardEffort, estimated);
+      add('stars', (max - ceiling) / max, shardEffort, estimated, { offer });
     }
   }
 

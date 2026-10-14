@@ -4,6 +4,7 @@ import { RosterEntry } from '../../../core/models';
 import { actionSummary } from '../../../core/state/advisor';
 import { AdvisorStore } from '../../../core/state/advisor.store';
 import { goalFor } from '../../../core/state/farming-calc';
+import { offerSummary } from '../../../core/state/event-rewards';
 import { FarmingStore } from '../../../core/state/farming.store';
 import { MODE_LABELS } from '../../../core/state/game-rules';
 import { PotentialStore } from '../../../core/state/potential.store';
@@ -70,7 +71,9 @@ export class FocusTeams {
     if (member.member.unknown) return 'brak w danych gry';
     if (member.done) return 'gotowa na Twój etap ✓';
     const rec = member.member.entry && this.advisor.byId().get(member.member.entry.id);
-    return rec ? `#${rec.rank}: ${actionSummary(rec)}` : 'bez opłacalnych ruchów';
+    if (!rec) return 'bez opłacalnych ruchów';
+    const offer = rec.offer ? ` · ${offerSummary(rec.offer)}` : '';
+    return `#${rec.rank}: ${actionSummary(rec)}${offer}`;
   }
 
   private todo(plan: TeamPlan): RosterEntry[] {
