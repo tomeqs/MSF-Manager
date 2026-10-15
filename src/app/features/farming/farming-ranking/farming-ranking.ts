@@ -13,6 +13,7 @@ import { FarmingStore } from '../../../core/state/farming.store';
 import { PotentialStore } from '../../../core/state/potential.store';
 import { CharacterAvatar } from '../../../shared/ui/character-avatar';
 import { ProgressBar } from '../../../shared/ui/progress-bar';
+import { SourceLine } from '../../../shared/ui/source-line';
 import { StarRating } from '../../../shared/ui/star-rating';
 
 const PREVIEW = 8;
@@ -20,7 +21,7 @@ const PREVIEW = 8;
 /** Roster-wide ranking: what pays off most to farm right now. */
 @Component({
   selector: 'app-farming-ranking',
-  imports: [RouterLink, CharacterAvatar, ProgressBar, StarRating],
+  imports: [RouterLink, CharacterAvatar, ProgressBar, SourceLine, StarRating],
   templateUrl: './farming-ranking.html',
   styleUrl: './farming-ranking.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

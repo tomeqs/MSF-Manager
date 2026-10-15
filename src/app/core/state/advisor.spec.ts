@@ -44,7 +44,7 @@ const potential = (power: number, gearTier = 20): CharacterPotential => ({
 
 const team = (name: string, members: string[]): KnownTeam => ({
   name,
-  modes: ['arena'],
+  modes: ['raids'],
   members,
   source: '',
 });

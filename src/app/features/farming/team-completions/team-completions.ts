@@ -7,13 +7,14 @@ import { FarmingStore } from '../../../core/state/farming.store';
 import { MODE_LABELS } from '../../../core/state/game-rules';
 import { CharacterAvatar } from '../../../shared/ui/character-avatar';
 import { ProgressBar } from '../../../shared/ui/progress-bar';
+import { SourceLine } from '../../../shared/ui/source-line';
 
 const PREVIEW = 4;
 
 /** Known teams one or two unlocks away from complete, with the shards it takes. */
 @Component({
   selector: 'app-team-completions',
-  imports: [RouterLink, CharacterAvatar, ProgressBar],
+  imports: [RouterLink, CharacterAvatar, ProgressBar, SourceLine],
   templateUrl: './team-completions.html',
   styleUrl: './team-completions.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +24,7 @@ export class TeamCompletions {
   private readonly store = inject(FarmingStore);
 
   protected readonly completions = this.advisor.completions;
+  protected readonly sourceOf = this.advisor.sourceOf;
   protected readonly showAllCompletions = signal(false);
   protected readonly visibleCompletions = computed(() =>
     this.showAllCompletions() ? this.completions() : this.completions().slice(0, PREVIEW),

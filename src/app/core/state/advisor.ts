@@ -1,3 +1,4 @@
+import { CharacterSource } from '../data/character-sources';
 import { KeyCharacter } from '../data/key-characters';
 import { KnownTeam, TeamTier } from '../data/known-meta';
 import {
@@ -21,6 +22,7 @@ import {
   progression,
   realisticGear,
 } from './progression';
+import { SOURCE_FACTOR, isObtainableNow } from './sources';
 import { TeamPlan, teamPlans, teamWeight } from './team-plans';
 import {
   MAX_MISSING,
@@ -158,6 +160,8 @@ export interface Recommendation {
   unlock?: MissingMember;
   /** Shard actions: the best running (or else upcoming) event that awards its shards. */
   offer?: ShardOffer;
+  /** Shard actions: where its shards come from and whether that is open now. */
+  source?: CharacterSource;
   /** True while max powers are not loaded yet and the gain is estimated. */
   estimated: boolean;
 }
@@ -174,6 +178,8 @@ export interface AdvisorInput {
   inventory: Inventory;
   /** Events awarding shards, by shard item id (`event-rewards.ts`). */
   offers?: ReadonlyMap<string, ShardOffer[]>;
+  /** Researched shard source per character (`data/character-sources.ts`). */
+  sourceOf?: (entry: RosterEntry) => CharacterSource | undefined;
 }
 
 export interface Advice {
@@ -220,6 +226,7 @@ export function recommend(input: AdvisorInput): Recommendation[] {
 export function advise(input: AdvisorInput): Advice {
   const { roster, known, keys, potentialOf, potentialAtStarsOf, upgrade, inventory, offers } =
     input;
+  const sourceOf = input.sourceOf ?? (() => undefined);
   const profile = progression(roster);
   const byName = rosterByName(roster);
   const keyModes = new Map<string, TeamTab[]>();
@@ -231,10 +238,19 @@ export function advise(input: AdvisorInput): Advice {
   const targetOf = (e: RosterEntry) => buildTarget(e, potentialOf(e), profile);
   const isDone = (e: RosterEntry) =>
     e.unlocked && doneForNow(e, memberPower(e, potentialOf(e)), targetOf(e));
-  const plans = teamPlans(known, roster, (e) => ({
-    share: memberPower(e, potentialOf(e))?.share ?? estimatedShare(e, profile.top),
-    done: isDone(e),
-  }));
+  const plans = teamPlans(
+    known,
+    roster,
+    (e) => ({
+      share: memberPower(e, potentialOf(e))?.share ?? estimatedShare(e, profile.top),
+      done: isDone(e),
+    }),
+    // Obtainable: an open source, a running event with its shards, or enough shards already.
+    (e) =>
+      isObtainableNow(sourceOf(e)) ||
+      !!(e.shardItemId && offers?.get(e.shardItemId)?.some((o) => o.live)) ||
+      unlockCost(e, upgrade, inventory).missing === 0,
+  );
   const focus = new Set(plans.filter((p) => p.focus).map((p) => p.team.name));
   const contexts = teamContexts(known, roster, isDone, focus);
 
@@ -287,16 +303,22 @@ export function advise(input: AdvisorInput): Advice {
       });
     };
 
-    // Shards a running event awards for playing it are much cheaper than farming them.
+    // Shards a running event awards for playing it are much cheaper than farming them; the
+    // rest costs more or less depending on whether its source is open now (live API data
+    // about a running event beats the researched status).
     const offer = entry.shardItemId ? offers?.get(entry.shardItemId)?.[0] : undefined;
     const fromEvent = offer?.live ? offeredShards(offer) : 0;
-    const shardEffort = EFFORT.base + Math.max(0, shardsMissing - fromEvent) / EFFORT.shardsPerUnit;
+    const source = sourceOf(entry);
+    const factor = offer?.live ? SOURCE_FACTOR.event : SOURCE_FACTOR[source?.status ?? 'unknown'];
+    const shardEffort =
+      EFFORT.base + (Math.max(0, shardsMissing - fromEvent) / EFFORT.shardsPerUnit) * factor;
     if (!entry.unlocked) {
       const build =
         EFFORT.levels + gearCost(profile, 1, profile.frontier) + EFFORT.newCharacterAbilities;
       add('unlock', 1, shardEffort + build, false, {
         unlock: unlockCost(entry, upgrade, inventory),
         offer,
+        source,
       });
       continue;
     }
@@ -313,7 +335,7 @@ export function advise(input: AdvisorInput): Advice {
       });
     }
     if (entry.yellowStars < MAX_YELLOW_STARS) {
-      add('stars', (max - ceiling) / max, shardEffort, estimated, { offer });
+      add('stars', (max - ceiling) / max, shardEffort, estimated, { offer, source });
     }
   }
 

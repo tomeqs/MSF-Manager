@@ -149,3 +149,29 @@
   justify-content: space-between;
   margin-bottom: 6px;
 }
+
+.sources {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .offer {
+    color: var(--c-success);
+    font-weight: 600;
+    font-size: 0.85rem;
+
+    &.upcoming {
+      color: var(--c-warning);
+    }
+  }
+}

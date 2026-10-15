@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CHARACTER_SOURCES_AS_OF } from '../../core/data/character-sources';
+import { AdvisorStore } from '../../core/state/advisor.store';
+import { offerSummary } from '../../core/state/event-rewards';
 import { goalFor } from '../../core/state/farming-calc';
 import { FarmingStore } from '../../core/state/farming.store';
 import {
@@ -17,11 +20,20 @@ import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 import { CharacterAvatar } from '../../shared/ui/character-avatar';
 import { GearBadge } from '../../shared/ui/gear-badge';
 import { ProgressBar } from '../../shared/ui/progress-bar';
+import { SourceLine } from '../../shared/ui/source-line';
 import { StarRating } from '../../shared/ui/star-rating';
 
 @Component({
   selector: 'app-character-detail',
-  imports: [RouterLink, CompactNumberPipe, CharacterAvatar, GearBadge, ProgressBar, StarRating],
+  imports: [
+    RouterLink,
+    CompactNumberPipe,
+    CharacterAvatar,
+    GearBadge,
+    ProgressBar,
+    StarRating,
+    SourceLine,
+  ],
   templateUrl: './character-detail.html',
   styleUrl: './character-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +43,7 @@ export class CharacterDetail {
   private readonly player = inject(PlayerStore);
   private readonly potentials = inject(PotentialStore);
   private readonly farming = inject(FarmingStore);
+  private readonly advisor = inject(AdvisorStore);
 
   /** Bound from the `roster/:id` route param. */
   readonly id = input.required<string>();
@@ -48,6 +61,18 @@ export class CharacterDetail {
     const e = this.entry();
     return e ? memberPower(e, this.potentials.get(e, this.playerLevel())) : undefined;
   });
+
+  /** Researched shard source and running/upcoming events that award its shards. */
+  protected readonly source = computed(() => {
+    const e = this.entry();
+    return e && this.advisor.sourceOf(e);
+  });
+  protected readonly offers = computed(() => {
+    const id = this.entry()?.shardItemId;
+    return (id && this.advisor.offers().get(id)) || [];
+  });
+  protected readonly offerText = offerSummary;
+  protected readonly sourcesAsOf = CHARACTER_SOURCES_AS_OF;
 
   protected readonly inFarming = computed(() =>
     this.farming.goals().some((g) => g.characterId === this.id()),

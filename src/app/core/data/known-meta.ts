@@ -60,7 +60,7 @@ export const KNOWN_META: KnownTeam[] = [
       'Invisible Woman (MCU)',
       'Franklin Richards',
       'Human Torch|Professor Xavier',
-      'The Thing|Mephisto|Odin|Quasar',
+      'The Thing|Thing|Mephisto|Odin|Quasar',
     ],
     source: `${CHURCH}/fantastic-four-mcu/`,
   },
@@ -298,7 +298,7 @@ export const KNOWN_META: KnownTeam[] = [
   {
     name: 'Champions',
     modes: ['raids'],
-    tier: 'S',
+    tier: 'A',
     members: ['Nova (Sam Alexander)', 'Spider-Man (Miles)', 'Moon Girl', 'Brawn', 'Ms. Marvel'],
     source: `${CHURCH}/champion/`,
   },

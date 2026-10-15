@@ -26,6 +26,7 @@ src/app/
     auth/          AuthService (PKCE), interceptor, sessionGuard
     data/known-meta.ts  lista drużyn z poradników (fallback dla drużyn) — do ręcznej edycji
     data/key-characters.ts  postacie uniwersalne z poradników — do ręcznej edycji
+    data/character-sources.ts  skąd shardy każdej postaci i czy źródło jest otwarte (z raportu)
     cache/         KvStore (IndexedDB) + ApiCache (meta.hashes, since/344)
     data/
       msf-data-source.ts      abstrakcja źródła danych; metody 1:1 z trasami API
@@ -43,6 +44,8 @@ src/app/
       advisor(.store).ts                    ranking opłacalności farmienia (cały roster)
       key-characters(.store).ts             kluczowe postacie: status rozwoju i miejsce w rankingu
       today.ts                              lista „Co farmić dziś”
+      event-rewards.ts                      shardy z nagród trwających/nadchodzących eventów (API)
+      sources.ts                            dostępność źródeł → koszt shardów, blokada drużyn
       game-rules.ts           limity umiejętności i gwiazdek
   layout/shell/    sidebar + topbar, responsywne menu
   features/        widoki ładowane leniwie (lazy routes)
@@ -157,8 +160,8 @@ nie są proponowane — ich materiałów zwykle jeszcze nie zdobywasz.
 ### Składniki
 
 - **Wartość** — Σ po drużynach z `known-meta.ts`: waga × (gotowość² + premia za kompletowanie).
-  - Waga = poziom drużyny w mecie (S 1, A 0,75, B 0,5) × (1 + 0,15 na każdy dodatkowy tryb),
-    ×2 dla drużyn z **fokusu**.
+  - Waga = poziom drużyny w mecie (S 1, A 0,75, B 0,5) × (wartość najlepszego trybu + 0,15
+    na każdy dodatkowy tryb), ×2 dla drużyn z **fokusu**.
   - Gotowość = średnia z pozostałych członków: gotowy na Twój etap 1, posiadany w rozwoju
     0,75, brak 0. Drużyny, których prawie nie masz, praktycznie się nie liczą.
   - Kompletowanie: odblokowanie ostatniego brakującego członka +1,5 × gotowość, przedostatniego
@@ -193,6 +196,28 @@ shardy na odblokowanie każdej brakującej (z inwentarzem), „Możesz skompleto
 
 Ranking jest na Farmieniu („Farmuj” zapisuje cel: same umiejętności dla ulepszeń, 7★ dla
 shardów/odblokowania). Cele w grupach są sortowane według rankingu.
+
+## Źródła postaci i eventy
+
+Research z 14.10.2026 — **[raport](reports/Opłacalne%20drużyny%20MSF%20i%20źródła%20postaci.md)**:
+które drużyny się opłacają, skąd brać ich postacie, co trwa teraz i co zrobić w połowie gry.
+Jego załącznik jest w aplikacji jako `core/data/character-sources.ts` (138 postaci; ze
+skrawków wyników wyszukiwania — potwierdzaj w grze przyciskiem „Find”, odświeżaj po blogach).
+
+- **Stan źródła**: stałe (sklep postaci według Age, węzeł kampanii, DD, stały event), tylko
+  losowe orby, event teraz, tylko płatne, za bramką endgame, niedostępne, brak danych.
+- **Koszt shardów** w rankingu mnożony według stanu (`SOURCE_FACTOR`): event 0,7, stałe 1,
+  orby 1,5, płatne 3, endgame 4, niedostępne 6 — nie farmisz czegoś, czego teraz nie ma.
+- **Eventy z API**: `/player/v1/events?objRewards=full` → shardy w nagrodach progów
+  (`event-rewards.ts`). Trwający event z shardami postaci obniża koszt i wygrywa ze stanem
+  z badań; ruch dostaje dopisek „Event „X”: +N shardów (do d.m)”.
+- **Fokus pomija drużyny, których nie skompletujesz** — brakujący członek jest płatny, za
+  bramką albo niedostępny, chyba że masz już shardy na odblokowanie lub trwa event.
+- **Tryby ważą według nagród** po reformie ekonomii 2026 (`MODE_VALUE`): rajd (gear) i Wojna
+  (ISO-8, Power Cores) 1, Crucible (T4, Red Stars) 0,9, Arena (tylko Training Modules) 0,6,
+  Blitz (Shop Credits) 0,5.
+- Źródło widać w rankingu (ruchy Shardy/Odblokowanie), w „Drużynach do skompletowania”,
+  w fokusie i na karcie „Skąd shardy” w szczegółach postaci.
 
 ## Kluczowe postacie
 

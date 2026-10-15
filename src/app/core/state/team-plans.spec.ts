@@ -9,7 +9,7 @@ const locked = (id: string): RosterEntry => toRosterEntry({ id, name: id });
 
 const team = (name: string, members: string[], extra: Partial<KnownTeam> = {}): KnownTeam => ({
   name,
-  modes: ['arena'],
+  modes: ['raids'],
   members,
   source: '',
   ...extra,

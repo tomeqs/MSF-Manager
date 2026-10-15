@@ -48,6 +48,9 @@
                   {{ offerText(rec.offer) }}
                 </span>
               }
+              @if (rec.source && rec.kind !== 'upgrade' && !rec.offer?.live) {
+                <app-source-line [source]="rec.source" compact />
+              }
             </div>
             <div class="rank-side">
               <app-progress-bar

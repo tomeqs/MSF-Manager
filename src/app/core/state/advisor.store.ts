@@ -1,4 +1,5 @@
 import { Injectable, computed, inject } from '@angular/core';
+import { CHARACTER_SOURCES } from '../data/character-sources';
 import { KEY_CHARACTERS } from '../data/key-characters';
 import { KNOWN_META } from '../data/known-meta';
 import {
@@ -11,6 +12,7 @@ import {
   completableTeams,
 } from './advisor';
 import { progression } from './progression';
+import { sourceLookup } from './sources';
 import { shardOffers } from './event-rewards';
 import { MAX_YELLOW_STARS } from './game-rules';
 import { memberPower } from './potential-calc';
@@ -32,6 +34,9 @@ export class AdvisorStore {
   /** Needs the inventory and upgrade data (shards), so it follows the farming store. */
   readonly status = this.farming.status;
 
+  /** Researched shard source per character. */
+  readonly sourceOf = sourceLookup(CHARACTER_SOURCES);
+
   /** Running and upcoming events that award shards of roster characters, by shard item id. */
   readonly offers = computed(() =>
     shardOffers(
@@ -51,6 +56,7 @@ export class AdvisorStore {
           upgrade: this.farming.upgrade(),
           inventory: this.farming.inventory(),
           offers: this.offers(),
+          sourceOf: this.sourceOf,
         })
       : undefined,
   );

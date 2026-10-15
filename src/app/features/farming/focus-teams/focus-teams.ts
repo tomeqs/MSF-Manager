@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { SOURCE_STATUS_LABELS } from '../../../core/data/character-sources';
 import { RosterEntry } from '../../../core/models';
 import { actionSummary } from '../../../core/state/advisor';
 import { AdvisorStore } from '../../../core/state/advisor.store';
@@ -71,9 +72,17 @@ export class FocusTeams {
     if (member.member.unknown) return 'brak w danych gry';
     if (member.done) return 'gotowa na Twój etap ✓';
     const rec = member.member.entry && this.advisor.byId().get(member.member.entry.id);
-    if (!rec) return 'bez opłacalnych ruchów';
+    const entry = member.member.entry;
+    const source = entry && this.advisor.sourceOf(entry);
+    if (!rec) {
+      return entry && !entry.unlocked && source
+        ? `${SOURCE_STATUS_LABELS[source.status]}${source.next ? ` — ${source.next}` : ''}`
+        : 'bez opłacalnych ruchów';
+    }
     const offer = rec.offer ? ` · ${offerSummary(rec.offer)}` : '';
-    return `#${rec.rank}: ${actionSummary(rec)}${offer}`;
+    const where =
+      rec.kind !== 'upgrade' && rec.source ? ` · ${SOURCE_STATUS_LABELS[rec.source.status]}` : '';
+    return `#${rec.rank}: ${actionSummary(rec)}${offer}${where}`;
   }
 
   private todo(plan: TeamPlan): RosterEntry[] {

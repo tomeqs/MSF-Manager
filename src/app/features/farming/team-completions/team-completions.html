@@ -40,6 +40,9 @@
                     [max]="m.needed"
                     [style.--bar-color]="m.missing === 0 ? 'var(--c-success)' : null"
                   />
+                  @if (m.missing > 0) {
+                    <app-source-line [source]="sourceOf(m.entry)" compact />
+                  }
                 </div>
               </li>
             }

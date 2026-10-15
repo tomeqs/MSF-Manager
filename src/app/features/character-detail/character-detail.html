@@ -34,6 +34,21 @@
     }
   </header>
 
+  @if (source() || offers().length) {
+    <section class="card sources">
+      <h2>Skąd shardy</h2>
+      @for (o of offers(); track o.event.id) {
+        <p class="offer" [class.upcoming]="!o.live">{{ offerText(o) }}</p>
+      }
+      @if (source(); as s) {
+        <app-source-line [source]="s" />
+        <p class="muted small">
+          Stan z badań z {{ sourcesAsOf }} — potwierdź w grze przyciskiem „Find” przy postaci.
+        </p>
+      }
+    </section>
+  }
+
   @if (e.unlocked) {
     <section class="card dev" [attr.data-status]="dev()?.status">
       <div class="dev-head">
