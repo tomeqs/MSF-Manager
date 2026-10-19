@@ -54,7 +54,7 @@ export class CharacterDetail {
   protected readonly statusLabels = DEV_STATUS_LABELS;
   protected readonly optimalPct = Math.round(OPTIMAL_POWER_SHARE * 100);
 
-  private readonly playerLevel = computed(() => this.player.card()?.level?.completedTier);
+  private readonly playerLevel = this.player.level;
 
   /** Development vs the max power for the player's level. */
   protected readonly dev = computed(() => {
@@ -78,14 +78,16 @@ export class CharacterDetail {
     this.farming.goals().some((g) => g.characterId === this.id()),
   );
 
+  /** Ability levels against the max for the player's level (game max until it is known). */
   protected readonly abilities = computed(() => {
     const e = this.entry();
     if (!e) return [];
+    const max = this.potentials.get(e, this.playerLevel())?.abilities;
     return ABILITY_KEYS.map((key) => ({
       key,
       label: ABILITY_LABELS[key],
       level: e.abilities[key],
-      max: ABILITY_MAX[key],
+      max: Math.max(e.abilities[key], max?.[key] ?? ABILITY_MAX[key]),
     }));
   });
 

@@ -99,7 +99,7 @@ export class Teams {
   };
 
   /** Characters cannot exceed the player's level, so potentials are computed for it. */
-  private readonly playerLevel = computed(() => this.player.card()?.level?.completedTier);
+  private readonly playerLevel = this.player.level;
   private readonly playerReady = computed(() => {
     const status = this.player.status();
     return status === 'loaded' || status === 'error';

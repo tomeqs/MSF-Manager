@@ -32,8 +32,12 @@ export class PotentialStore {
     return this._values()[keyOf(entry, level, atCurrentStars)];
   }
 
-  /** Requests whatever is not loaded or in flight yet. */
+  /**
+   * Requests whatever is not loaded or in flight yet. Without the player's level nothing is
+   * requested: the API would assume the game's level cap and overstate every target.
+   */
   ensure(entries: RosterEntry[], level: number | undefined, atCurrentStars = false): void {
+    if (level === undefined) return;
     for (const entry of entries) {
       const key = keyOf(entry, level, atCurrentStars);
       if (this.requested.has(key)) continue;

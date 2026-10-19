@@ -12,6 +12,7 @@ import {
 import { ShardOffer, offeredShards } from './event-rewards';
 import { Inventory, levelCostsBetween, shardsBetween } from './farming-calc';
 import { ABILITY_KEYS, ABILITY_MAX, MAX_YELLOW_STARS, OPTIMAL_POWER_SHARE } from './game-rules';
+import { LevelCap } from './level-caps';
 import { MemberPower, memberPower } from './potential-calc';
 import {
   DIFFICULTY_LABELS,
@@ -180,12 +181,22 @@ export interface AdvisorInput {
   offers?: ReadonlyMap<string, ShardOffer[]>;
   /** Researched shard source per character (`data/character-sources.ts`). */
   sourceOf?: (entry: RosterEntry) => CharacterSource | undefined;
+  /** Player level (defaults to the highest character level). Nothing is aimed past it. */
+  playerLevel?: number;
+  /** Max gear tier and ability levels at the player's level (`level-caps.ts`). */
+  levelCap?: LevelCap;
 }
 
 export interface Advice {
   ranking: Recommendation[];
   plans: TeamPlan[];
   progression: Progression;
+}
+
+/** What the player's level allows — no target goes past it. */
+interface LevelLimit {
+  level: number;
+  cap?: LevelCap;
 }
 
 /** The build worth aiming for now: max level and abilities, gear up to a realistic tier. */
@@ -228,6 +239,10 @@ export function advise(input: AdvisorInput): Advice {
     input;
   const sourceOf = input.sourceOf ?? (() => undefined);
   const profile = progression(roster);
+  const limit: LevelLimit = {
+    level: input.playerLevel ?? Math.max(0, ...roster.map((e) => e.level)),
+    cap: input.levelCap,
+  };
   const byName = rosterByName(roster);
   const keyModes = new Map<string, TeamTab[]>();
   for (const k of keys) {
@@ -235,7 +250,7 @@ export function advise(input: AdvisorInput): Advice {
     if (entry) keyModes.set(entry.id, [...(keyModes.get(entry.id) ?? []), ...k.modes]);
   }
 
-  const targetOf = (e: RosterEntry) => buildTarget(e, potentialOf(e), profile);
+  const targetOf = (e: RosterEntry) => buildTarget(e, potentialOf(e), profile, limit);
   const isDone = (e: RosterEntry) =>
     e.unlocked && doneForNow(e, memberPower(e, potentialOf(e)), targetOf(e));
   const plans = teamPlans(
@@ -355,18 +370,33 @@ export function bestByCharacter(ranking: Recommendation[]): Map<string, Recommen
   return best;
 }
 
+/**
+ * Never past the player's level nor the gear and ability levels it allows. Without the caps
+ * gear stops at the best tier in the roster and abilities stay — nothing is guessed upwards.
+ */
 function buildTarget(
   entry: RosterEntry,
   potential: CharacterPotential | undefined,
   profile: Progression,
+  limit: LevelLimit,
 ): BuildTarget {
-  const gearCap = potential?.gearTier ?? profile.frontier + 1;
+  const gearCap = lowest(potential?.gearTier, limit.cap?.gearTier) ?? profile.top;
+  const abilities = {} as Record<AbilityKey, number>;
+  for (const k of ABILITY_KEYS) {
+    const cap = lowest(potential?.abilities[k], limit.cap?.abilities[k]) ?? entry.abilities[k];
+    abilities[k] = Math.max(entry.abilities[k], cap);
+  }
   return {
-    level: Math.max(entry.level, potential?.level ?? entry.level),
+    level: Math.max(entry.level, Math.min(potential?.level ?? limit.level, limit.level)),
     gear: realisticGear(profile, entry.gearTier, gearCap),
     gearCap: Math.max(gearCap, entry.gearTier),
-    abilities: potential?.abilities ?? ABILITY_MAX,
+    abilities,
   };
+}
+
+function lowest(...values: (number | undefined)[]): number | undefined {
+  const known = values.filter((v): v is number => v !== undefined);
+  return known.length ? Math.min(...known) : undefined;
 }
 
 /**

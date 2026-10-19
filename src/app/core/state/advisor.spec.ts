@@ -163,6 +163,49 @@ describe('advisor', () => {
     expect(ranking.find((r) => r.entry.id === 'P')?.upgrades).toEqual(['G16→G17 (G17: trudny)']);
   });
 
+  it('never aims past the player level or the gear and abilities it allows', () => {
+    const l = toRosterEntry(
+      { id: 'L', name: 'L' },
+      { id: 'L', level: 80, activeYellow: 7, gearTier: 14, power: 500_000, basic: 5, special: 5 },
+    );
+    const peers = ['P', 'Q', 'R'].map((id) => owned(id, 7, 500_000, 14));
+    const levelCap = {
+      level: 85,
+      gearTier: 15,
+      abilities: { basic: 6, special: 6, ultimate: 6, passive: 4 },
+    };
+    const run = (overrides: Partial<AdvisorInput>) =>
+      recommend(
+        input({
+          roster: [l, ...peers],
+          known: [],
+          keys: [keyChar('L')],
+          playerLevel: 85,
+          ...overrides,
+        }),
+      ).find((r) => r.entry.id === 'L');
+
+    // A potential computed for the game's level cap (110, G21, 8/8/8/6) is clamped.
+    const tooHigh: CharacterPotential = {
+      power: 1_000_000,
+      level: 110,
+      gearTier: 21,
+      abilities: MAX_ABILITIES,
+    };
+    for (const potentialOf of [() => tooHigh, () => undefined]) {
+      const rec = run({ levelCap, potentialOf, potentialAtStarsOf: () => undefined });
+      expect(rec?.upgrades).toEqual([
+        'poz. 80→85',
+        'G14→G15 (G15: ekstremalny)', // nobody has G15 yet
+        'umiejętności +12', // 5/5/0/0 → 6/6/6/4
+      ]);
+    }
+
+    // Without the caps nothing is guessed: gear stops at the best tier owned, abilities stay.
+    const blind = run({ potentialOf: () => undefined, potentialAtStarsOf: () => undefined });
+    expect(blind?.upgrades).toEqual(['poz. 80→85']);
+  });
+
   it('prices abilities by the materials in the inventory', () => {
     const T4 = { id: 'T4', name: 'T4' };
     const l = owned('L', 7, 900_000, 16, { ...MAX_ABILITIES, basic: 6 });

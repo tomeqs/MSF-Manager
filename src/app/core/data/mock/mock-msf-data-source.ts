@@ -18,7 +18,7 @@ import { mockEvents } from './mock-events';
 import { MOCK_INVENTORY, MOCK_UPGRADE_DATA } from './mock-farming';
 import { MOCK_PLAYER } from './mock-player';
 import { MOCK_ROSTER } from './mock-roster';
-import { mockPotential } from './mock-potential';
+import { MOCK_LEVEL_CAPS, mockPotential } from './mock-potential';
 import { MOCK_TEAM_ORDER } from './mock-teams';
 
 /** Simulated network latency so loading states are visible during development. */
@@ -52,6 +52,10 @@ export class MockMsfDataSource extends MsfDataSource {
 
   getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
     return of(MOCK_TEAM_ORDER[tab] ?? []).pipe(delay(LATENCY_MS));
+  }
+
+  getLevelCaps(): Observable<CharacterInstance[]> {
+    return of(MOCK_LEVEL_CAPS).pipe(delay(LATENCY_MS));
   }
 
   getPotential(characterId: string, target: PotentialTarget): Observable<CharacterPotential> {

@@ -41,13 +41,19 @@ export class FocusTeams {
 
   protected readonly plans = this.advisor.focusPlans;
   protected readonly profile = this.advisor.progression;
+  protected readonly playerLevel = this.advisor.playerLevel;
+  protected readonly levelCap = this.advisor.levelCap;
 
-  /** Gear tiers around the frontier with how hard they are for this player. */
+  /**
+   * Gear tiers around the frontier with how hard they are for this player — none past what
+   * the player's level allows.
+   */
   protected readonly tiers = computed<TierChip[]>(() => {
     const p = this.profile();
     if (!p.sample) return [];
+    const last = Math.min(p.frontier + 2, this.levelCap()?.gearTier ?? Infinity);
     const chips: TierChip[] = [];
-    for (let tier = Math.max(1, p.frontier - 1); tier <= p.frontier + 2; tier++) {
+    for (let tier = Math.max(1, p.frontier - 1); tier <= last; tier++) {
       const difficulty = gearDifficulty(p, tier);
       chips.push({
         tier,

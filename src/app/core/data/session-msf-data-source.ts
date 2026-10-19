@@ -52,6 +52,10 @@ export class SessionMsfDataSource extends MsfDataSource {
     return this.source.getUpgradeData();
   }
 
+  getLevelCaps(): Observable<CharacterInstance[]> {
+    return this.source.getLevelCaps();
+  }
+
   getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
     return this.source.getTeamOrder(tab);
   }

@@ -45,6 +45,15 @@ describe('PotentialStore', () => {
     expect(getPotential.mock.calls.at(-1)?.[0]).toBe('BAD');
   });
 
+  it('requests nothing until the player level is known', () => {
+    const getPotential = vi.fn(() => of(value(1)));
+    TestBed.configureTestingModule({
+      providers: [{ provide: MsfDataSource, useValue: { getPotential } }],
+    });
+    TestBed.inject(PotentialStore).ensure([entry('A')], undefined);
+    expect(getPotential).not.toHaveBeenCalled();
+  });
+
   it('keeps max power at 7★ and at the current stars apart', () => {
     const getPotential = vi.fn((_id: string, target: { yellow?: number }) =>
       of(value(target.yellow ? 500 : 900)),

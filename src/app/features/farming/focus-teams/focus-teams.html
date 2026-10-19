@@ -11,6 +11,12 @@
         <span>
           Twój etap: <strong>G{{ profile().frontier }}</strong>
           <span class="muted"> (z {{ profile().sample }} najsilniejszych postaci)</span>
+          @if (playerLevel(); as level) {
+            · poziom gracza <strong>{{ level }}</strong>
+            @if (levelCap(); as cap) {
+              <span class="muted"> (maks. G{{ cap.gearTier }})</span>
+            }
+          }
         </span>
         <span class="chips">
           @for (chip of tiers(); track chip.tier) {

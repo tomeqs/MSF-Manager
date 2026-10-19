@@ -11,6 +11,7 @@ import {
   bestByCharacter,
   completableTeams,
 } from './advisor';
+import { capAt } from './level-caps';
 import { progression } from './progression';
 import { sourceLookup } from './sources';
 import { shardOffers } from './event-rewards';
@@ -29,7 +30,9 @@ export class AdvisorStore {
   private readonly potentials = inject(PotentialStore);
   private readonly farming = inject(FarmingStore);
 
-  readonly playerLevel = computed(() => this.player.card()?.level?.completedTier);
+  readonly playerLevel = this.player.level;
+  /** Max gear tier and ability levels at the player's level (undefined if not loaded). */
+  readonly levelCap = computed(() => capAt(this.farming.levelCaps(), this.playerLevel()));
 
   /** Needs the inventory and upgrade data (shards), so it follows the farming store. */
   readonly status = this.farming.status;
@@ -57,6 +60,8 @@ export class AdvisorStore {
           inventory: this.farming.inventory(),
           offers: this.offers(),
           sourceOf: this.sourceOf,
+          playerLevel: this.playerLevel(),
+          levelCap: this.levelCap(),
         })
       : undefined,
   );
@@ -98,14 +103,8 @@ export class AdvisorStore {
    * current stars to split upgrade and shard gains (call in an effect).
    */
   ensurePotentials(): void {
-    const playerStatus = this.player.status();
-    if (
-      this.roster.status() !== 'loaded' ||
-      playerStatus === 'idle' ||
-      playerStatus === 'loading'
-    ) {
-      return;
-    }
+    // The level is known once the player card loaded (or failed and the roster stands in).
+    if (this.roster.status() !== 'loaded' || this.playerLevel() === undefined) return;
     const candidates = advisorCandidates(KNOWN_META, KEY_CHARACTERS, this.roster.entries());
     this.potentials.ensure(candidates, this.playerLevel());
     this.potentials.ensure(

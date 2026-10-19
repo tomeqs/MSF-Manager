@@ -157,6 +157,15 @@ Koszt poziomu = 0,3 ÷ zasięg² (maks. 60 jednostek): poziom, który ma większ
 nim dostaje jeden **osobny, drogi** krok wyżej (np. „G16→G17 (G17: trudny)”). Dalsze poziomy
 nie są proponowane — ich materiałów zwykle jeszcze nie zdobywasz.
 
+**Limit poziomu gracza** (`level-caps.ts`): postać nie przekroczy Twojego poziomu, a poziom
+postaci ogranicza gear i umiejętności. `/game/v1/characterInstanceCaps` (cache'owane) podaje
+maks. gear i poziomy umiejętności dla każdego poziomu postaci — cele doradcy, opcje
+umiejętności w formularzu i chipy gearu w fokusie nigdy nie wychodzą ponad to, na co pozwala
+Twój poziom (widoczny w panelu fokusu). Poziom bierzemy z karty gracza; najwyższy poziom
+postaci w rosterze jest dolną granicą i zastępstwem, gdy karta się nie wczyta. Bez poziomu
+moce maks. nie są pobierane (API przyjęłoby maks. poziom gry). Bez danych o limitach gear
+kończy się na najwyższym poziomie w Twoim rosterze, a umiejętności nie są proponowane.
+
 ### Składniki
 
 - **Wartość** — Σ po drużynach z `known-meta.ts`: waga × (gotowość² + premia za kompletowanie).

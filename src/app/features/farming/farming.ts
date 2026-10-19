@@ -56,7 +56,7 @@ export class Farming {
   private readonly advisor = inject(AdvisorStore);
 
   protected readonly statusLabels = DEV_STATUS_LABELS;
-  private readonly playerLevel = computed(() => this.player.card()?.level?.completedTier);
+  private readonly playerLevel = this.player.level;
 
   protected readonly abilityKeys = ABILITY_KEYS;
   protected readonly abilityLabels = ABILITY_LABELS;
@@ -143,7 +143,12 @@ export class Farming {
   }
 
   protected abilityOptions(key: AbilityKey): number[] {
-    return range(this.selected()?.abilities[key] ?? 0, ABILITY_MAX[key]);
+    const entry = this.selected();
+    const max =
+      (entry && this.potentials.get(entry, this.playerLevel())?.abilities[key]) ??
+      this.advisor.levelCap()?.abilities[key] ??
+      ABILITY_MAX[key];
+    return range(entry?.abilities[key] ?? 0, Math.max(max, entry?.abilities[key] ?? 0));
   }
 
   protected select(id: string): void {

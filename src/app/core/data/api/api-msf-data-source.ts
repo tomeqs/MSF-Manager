@@ -125,6 +125,15 @@ export class ApiMsfDataSource extends MsfDataSource {
     );
   }
 
+  getLevelCaps(): Observable<CharacterInstance[]> {
+    return this.cache.gameData(
+      'levelCaps:v1',
+      'chars',
+      () => this.envelope<CharacterInstance[]>('/game/v1/characterInstanceCaps'),
+      (data) => Array.isArray(data) && data.length > 0,
+    );
+  }
+
   getTeamOrder(tab: TeamTab): Observable<TeamOrder[]> {
     // No meta hash tracks this analysis, so it is cached by age only (empty results never).
     // The per-tab route has been seen returning 500 for every tab; on a server error try the

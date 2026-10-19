@@ -37,6 +37,9 @@ export abstract class MsfDataSource {
   /** GET /game/v1/upgradeData */
   abstract getUpgradeData(): Observable<UpgradeData>;
 
+  /** GET /game/v1/characterInstanceCaps — max gear tier and ability levels per character level. */
+  abstract getLevelCaps(): Observable<CharacterInstance[]>;
+
   /** GET /game/v1/analysis/teamOrder/{tab} — most common saved squads across players. */
   abstract getTeamOrder(tab: TeamTab): Observable<TeamOrder[]>;
 

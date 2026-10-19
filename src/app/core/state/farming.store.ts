@@ -1,5 +1,5 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { MsfDataSource } from '../data/msf-data-source';
 import { LoadStatus, UpgradeData } from '../models';
@@ -12,6 +12,7 @@ import {
   promotions,
   toInventory,
 } from './farming-calc';
+import { LevelCap, toLevelCaps } from './level-caps';
 import { RosterStore } from './roster.store';
 
 const GOALS_KEY = 'msf.farming.goals';
@@ -35,11 +36,14 @@ export class FarmingStore {
   private readonly _goals = signal<FarmingGoal[]>(readGoals(this.storageKey));
   private readonly _inventory = signal<Map<string, number>>(new Map());
   private readonly _upgrade = signal<UpgradeData>({});
+  private readonly _levelCaps = signal<LevelCap[]>([]);
   private readonly _status = signal<LoadStatus>('idle');
 
   readonly goals = this._goals.asReadonly();
   readonly inventory = this._inventory.asReadonly();
   readonly upgrade = this._upgrade.asReadonly();
+  /** Max gear tier and ability levels per character level (empty if unavailable). */
+  readonly levelCaps = this._levelCaps.asReadonly();
   readonly status = computed<LoadStatus>(() => {
     const own = this._status();
     const roster = this.roster.status();
@@ -87,10 +91,13 @@ export class FarmingStore {
     forkJoin({
       inventory: this.data.getInventory(),
       upgrade: this.data.getUpgradeData(),
+      // Optional: without caps the advisor stays within what the roster already shows.
+      caps: this.data.getLevelCaps().pipe(catchError(() => of([]))),
     }).subscribe({
-      next: ({ inventory, upgrade }) => {
+      next: ({ inventory, upgrade, caps }) => {
         this._inventory.set(toInventory(inventory));
         this._upgrade.set(upgrade);
+        this._levelCaps.set(toLevelCaps(caps));
         this._status.set('loaded');
       },
       error: () => this._status.set('error'),
