@@ -3,9 +3,9 @@ import { TeamTab } from '../models';
 /**
  * Hand-maintained fallback used only while the API's team analysis is unavailable.
  *
- * Compiled from community guides and official posts (see `source` per team), last updated
- * 9 October 2026 (Crucible Season 25, Trepidation raid with Iron Raiders, War season of
- * September). Research came from search snippets — the guides themselves were not reachable —
+ * Compiled from community guides and official posts (see `source` per team), 9 October 2026
+ * (Crucible Season 25, Trepidation raid with Iron Raiders, War season of September); checked
+ * again 19 October 2026 — tiers unchanged, Nightreavers added. Research came from search snippets — the guides themselves were not reachable —
  * so treat tiers as a well-informed estimate. It is NOT live data and goes stale as new teams
  * release — edit freely.
  *
@@ -29,7 +29,7 @@ export interface KnownTeam {
   source: string;
 }
 
-export const KNOWN_META_AS_OF = '9 października 2026';
+export const KNOWN_META_AS_OF = '19 października 2026';
 
 const CHURCH = 'https://www.marvel.church';
 const BLOG = 'https://marvelstrikeforce.com/en/updates';
@@ -156,6 +156,16 @@ export const KNOWN_META: KnownTeam[] = [
     tier: 'B',
     members: ['Ms. Marvel (Classic)|Ms. Marvel', 'Wasp', 'Ironheart', 'Kahhori', 'Medusa'],
     source: `${CHURCH}/absolute-a-force/`,
+  },
+  {
+    name: 'Nightreavers',
+    modes: ['war'],
+    tier: 'B',
+    // New 3-character War offense (13.10.2026) against Winter Guard, Brimstone and Shadow
+    // Conclave; Dracula only from King of the Night (19.10 – ~2.11.2026) until next year.
+    // Rated B+/A only if the campaign unlocks Dracula; Blade and Bleed characters fill slots 4–5.
+    members: ['Dracula', 'Morbius', 'Oath'],
+    source: `${BLOG}/blog-update-10-13-26`,
   },
   {
     name: 'Hellfire Club',

@@ -1,8 +1,9 @@
 /**
- * Where each character's shards come from and whether that source is open now — generated from
- * the appendix of `reports/Opłacalne drużyny MSF i źródła postaci.md` (research of 14 October
- * 2026, from search snippets; confirm in game with the character's "Find" button). Regenerate
- * or edit by hand when the weekly MSF blog changes a source.
+ * Where each character's shards come from and whether that source is open now — the appendix
+ * of `reports/Opłacalne drużyny MSF i źródła postaci.md` (14 October 2026) with the changes from
+ * `reports/Opłacalne drużyny MSF aktualizacja październik.md` (19 October 2026). Research from
+ * search snippets; confirm in game with the character's "Find" button, and update by hand when
+ * the weekly MSF blog changes a source.
  */
 export type SourceStatus =
   | 'permanent'
@@ -27,9 +28,12 @@ export interface CharacterSource {
   /** OFF = official post, 3P = fan site, szac. = estimate. */
   confidence: string;
   url?: string;
+  /** End of a time-limited status (ISO date, usually estimated); after it `afterUntil` applies. */
+  until?: string;
+  afterUntil?: SourceStatus;
 }
 
-export const CHARACTER_SOURCES_AS_OF = '14 października 2026';
+export const CHARACTER_SOURCES_AS_OF = '19 października 2026';
 
 export const SOURCE_STATUS_LABELS: Record<SourceStatus, string> = {
   permanent: 'stałe źródło',
@@ -63,7 +67,7 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Azazel',
-    teams: 'Hellfire Club (W/R)',
+    teams: 'Hellfire Club (W)',
     status: 'permanent',
     source:
       'Venture Orb; Character Store (Age of Annihilus); Spotlight Raid Orb. Wpis o Hard Nexus 5-9 nieaktualny (od czerwca 2026 jest tam Nova)',
@@ -152,9 +156,10 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'Brimstone (W)',
     status: 'permanent',
     source:
-      'Versus Orb; Character Store (Age of Annihilus). Na Hard Nexus 3-9 był tylko od 21.02 do ok. 15.08.2026',
-    confidence: '3P + OFF',
-    url: 'https://www.marvel.church/brimstone/',
+      'Orby Basic/Mega/Premium/Supreme (od 17–23.01.2026); Versus Orb; Character Store (Age of Annihilus); promocje Red Star i Diamond w Sigil Store. Hard Nexus 3-9 tylko do 15.08.2026.',
+    confidence: 'OFF + 3P',
+    next: 'Versus Orb mógł wygasnąć (Brimstone z września 2025 r., reguła ok. roku)',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-01-16-26',
   },
   {
     name: 'Daredevil',
@@ -179,6 +184,18 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source: 'Character Store (Age of Annihilus); Spotlight Raid Orb',
     confidence: '3P',
     url: 'https://www.marvel.church/secret-warrior/',
+  },
+  {
+    name: 'Dracula',
+    teams: 'Nightreavers (W)',
+    status: 'event',
+    source:
+      'King of the Night (19.10, 23:00 → ok. 2.11): Nightreaver Orbs i ich fragmenty; Red Stars z misji bonusowych; płatne oferty limitowane',
+    confidence: 'OFF',
+    next: '„jedyna okazja do przyszłego roku”, czyli następne okno w 2027 r. Po 2.11 zmień na NIE. Postać Epic (3P).',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-13-26',
+    until: '2026-11-02',
+    afterUntil: 'unavailable',
   },
   {
     name: 'Ebony Maw',
@@ -213,13 +230,14 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'Brimstone (W)',
     status: 'permanent',
     source:
-      'Character Store (Age of Annihilus); Nexus 5-6 (marvel.church) albo 5-3 (fandom), źródła sprzeczne; Spotlight Raid Orb',
+      'dodano Versus Orb; dalej Nexus 5-6 (marvel.church) albo 5-3 (fandom); Spotlight Raid Orb; Character Store (Age of Annihilus)',
     confidence: '3P',
+    next: 'sprzeczność co do węzła nierozstrzygnięta',
     url: 'https://www.marvel.church/brimstone/',
   },
   {
     name: 'Emma Frost',
-    teams: 'Hellfire Club (W/R), Blue Marvel obrona (C)',
+    teams: 'Hellfire Club (W), Blue Marvel obrona (C)',
     status: 'permanent',
     source: 'Heroes 6-6; Venture Orb; Character Store (Age of Annihilus)',
     confidence: '3P',
@@ -324,10 +342,11 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     name: 'Hawkeye (Robot)',
     teams: 'A.I. Avengers (C)',
     status: 'unavailable',
-    source: 'brak źródła; tylko postać wypożyczana w A.I. Takeover',
-    confidence: 'OFF (brak źródła)',
-    next: 'spodziewana premiera (płatna, Kyln albo Breaker) koniec października–listopad 2026 (szac.)',
-    url: 'https://marvelstrikeforce.com/updates/blog-update-9-22-26',
+    source:
+      'brak źródła shardów; tylko postać wypożyczana w A.I. Takeover. Red Stars z Elite Red Star Orb, gdy wyróżniony (3P).',
+    confidence: 'OFF + 3P',
+    next: 'Szacunek „koniec października–listopad” słabnie: listopadowym Breakerem jest Sabretooth, a Kyln do ok. 6.11 daje Human Torch (Jim). Najwcześniej nowy rozdział Age of Fear (listopad, szac.).',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-2-26',
   },
   {
     name: 'Hela',
@@ -343,9 +362,10 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     name: 'Hellcat',
     teams: 'Brimstone (W)',
     status: 'permanent',
-    source: 'Versus Orb; Character Store (Age of Annihilus); featured slot 21–27.02.2026',
-    confidence: '3P + OFF',
-    url: 'https://www.marvel.church/brimstone/',
+    source:
+      'Orby Basic/Mega/Premium/Supreme (od 17–23.01.2026); Versus Orb; Character Store (Age of Annihilus); promocje w Sigil Store',
+    confidence: 'OFF + 3P',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-01-16-26',
   },
   {
     name: 'Hellverine',
@@ -397,6 +417,8 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     confidence: 'OFF + 3P',
     next: 'do ok. 6.11.2026 (szac.); w orbach ok. lutego 2027 (szac.)',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-2-26',
+    until: '2026-11-06',
+    afterUntil: 'unavailable',
   },
   {
     name: 'Ikaris',
@@ -522,10 +544,11 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     name: 'Kingo',
     teams: 'Timeless Eternals (W)',
     status: 'unknown',
-    source: 'Spider-Man Tower: Descent (do 7★; pierwszy run od 29.07, powrót od 18.09.2026)',
-    confidence: 'OFF',
-    next: 'sprawdź od razu: jeśli powrót trwał ok. 4 tyg., wieża zamyka się ok. 16.10 (szac.); w orbach ok. listopada–grudnia 2026 (szac.)',
-    url: 'https://marvelstrikeforce.com/en/updates/blog-update-9-10-26',
+    source:
+      'Spider-Man Tower: Descent: 40 pięter po 10 tygodniowo od 18.09, więc całość otwarta od ok. 9.10. Shardy: Easy 100, Normal 325, Hard 640, Omega 810.',
+    confidence: 'OFF + 3P',
+    next: 'Szacunek „zamknięcie ok. 16.10” wycofany. Jeśli wieża jest w Events, zmień na EVENT, jeśli nie, na NIE. W orbach ok. listopada–grudnia (szac.).',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-9-18-26',
   },
   {
     name: 'Knull',
@@ -564,11 +587,21 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Madelyne Pryor',
-    teams: 'Hellfire Club (W/R)',
+    teams: 'Hellfire Club (W)',
     status: 'permanent',
     source: 'Venture Orb; Character Store (Age of Annihilus)',
     confidence: '3P',
     url: 'https://www.marvel.church/hellfire-club/',
+  },
+  {
+    name: 'Maestro',
+    teams: 'brak drużyny w tabeli',
+    status: 'unknown',
+    source:
+      'Battleworld Dystopia zakończony 6.10; od 20.10 Echoes of Dystopia z Maestro (nagrody nieznane)',
+    confidence: 'OFF',
+    next: 'sprawdź w grze, czy Echoes daje shardy, czy tylko ulepszenia',
+    url: 'https://x.com/MarvelStrikeF',
   },
   {
     name: 'Magik',
@@ -608,13 +641,13 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Mephisto',
-    teams: 'zamiennik: FF (MCU) (A), Accursed, New Mutants (C)',
+    teams: 'zamiennik: FF (MCU) (A); Accursed, New Mutants (C); obrona etapu 5 w Crucible S25',
     status: 'endgame',
     source:
-      'Dark Dimension VII (GT19; misje 10–11 wymagają Legendary, 12–13 Mythic); zapowiedziana Halloweenowa edycja DD VII z Mephisto',
-    confidence: 'OFF',
-    next: 'Halloweenowe DD VII: szczegóły ok. 16.10, prawdopodobnie koniec października (szac.); wymagania nieznane',
-    url: 'https://marvelstrikeforce.com/en/updates/blog-update-3-8-24',
+      "Dark Dimension VII. Mephisto's Summoning od 19.10: bez wymagań cech przez 90 dni; Milestones do 5 Diamentów. Bramka GT19 (co najmniej 24 postacie) prawdopodobnie zostaje.",
+    confidence: 'OFF + 3P',
+    next: 'okno do ok. 17.01.2027; sprawdź w grze, czy zniesiono GT19',
+    url: 'https://x.com/MarvelStrikeF',
   },
   {
     name: 'Minn-Erva',
@@ -657,6 +690,16 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     confidence: 'OFF',
     next: 'sprawdź przyciskiem „Find”',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-2-6-26',
+  },
+  {
+    name: 'Morbius',
+    teams: 'Nightreavers (W)',
+    status: 'permanentUnverified',
+    source:
+      'Character Store (Age of Fear); Villains 6-3; Red Stars z Incursion 6-6 (3P, wpis może pochodzić sprzed eventu). Do ok. 2.11 także fragmenty Nightreaver Orbs.',
+    confidence: '3P + OFF',
+    next: 'Przerobiony 13.10. Po 2.11 zostają tylko stałe źródła; potwierdź przyciskiem „Find”.',
+    url: 'https://www.marvel.church/nightreaver/',
   },
   {
     name: 'Morph',
@@ -716,6 +759,16 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source: 'Hard Nexus 5-9 (od czerwca 2026); Twitch Drop 10 shardów',
     confidence: 'OFF',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-6-19-26',
+  },
+  {
+    name: 'Oath',
+    teams: 'Nightreavers (W), Nightstalkers',
+    status: 'permanentUnverified',
+    source:
+      'Character Store (Age of Fear) (3P). Do ok. 2.11 fragmenty Nightreaver Orbs i Diamenty z misji bonusowych King of the Night (OFF). Możliwe też The Thirst („postacie Nightstalkers”, lista niepotwierdzona).',
+    confidence: '3P + OFF',
+    next: 'Przerobiona 13.10; potwierdź przyciskiem „Find”',
+    url: 'https://www.marvel.church/nightreaver/',
   },
   {
     name: 'Odin',
@@ -818,7 +871,7 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Rachel Summers',
-    teams: 'Hellfire Club (W/R)',
+    teams: 'Hellfire Club (W)',
     status: 'permanent',
     source: 'Venture Orb; Spotlight Raid Orb; Character Store',
     confidence: '3P',
@@ -857,6 +910,15 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     url: 'https://www.marvel.church/omen/',
   },
   {
+    name: 'Sabretooth (Breaker)',
+    teams: 'brak drużyny; w evencie kluczowi A.I. Avengers i Iron Raiders',
+    status: 'unavailable',
+    source: 'Breaker Event: Sabretooth „na początku listopada”',
+    confidence: 'OFF',
+    next: 'Na początku listopada zmień na EVENT; dokładna data nieznana',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
+  },
+  {
     name: 'Satana',
     teams: 'Accursed (C)',
     status: 'permanent',
@@ -877,7 +939,8 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     name: 'Scorpion',
     teams: 'Insidious Six (R)',
     status: 'permanent',
-    source: 'Hard Nexus 4-9 (od stycznia 2026); Venture Orb; Character Store (Age of Annihilus)',
+    source:
+      'dodano Spotlight Raid Orb; dalej Hard Nexus 4-9, Venture Orb, Character Store (Age of Annihilus)',
     confidence: 'OFF + 3P',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-01-16-26',
   },
@@ -886,14 +949,16 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'Dread (C)',
     status: 'event',
     source:
-      'Breaker Event: Scorpion (od 12.10.2026; 10 misji, 4 poziomy; rekrutacja na 5★ i 5 RS; Awakened Passive za poziom 3)',
+      'Breaker Event: Scorpion od 12.10, 23:00. Bramki: D1 poziom 65–100, D2 GT18 + Blue L5, D3 GT19 + Purple L3, D4 GT21. Awakened Passive za D3.',
     confidence: 'OFF + 3P',
-    next: 'koniec 16.10 albo ok. 26.10; w listopadzie ma być Breaker Sabretooth, więc kolejne runy Scorpiona są niepewne; Awakened Ultimate później w płatnej ofercie',
+    next: 'Koniec ok. 26.10, 22:00 (szac.; jedno streszczenie podawało 16.10). Gdy event zniknie, zmień na NIE. Kolejny run niepewny, bo w listopadzie wypada Sabretooth.',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
+    until: '2026-10-26',
+    afterUntil: 'unavailable',
   },
   {
     name: 'Sebastian Shaw',
-    teams: 'Hellfire Club (W/R)',
+    teams: 'Hellfire Club (W)',
     status: 'permanent',
     source: 'Venture Orb; Spotlight Raid Orb; Character Store (Age of Annihilus)',
     confidence: '3P',
@@ -1096,12 +1161,11 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Toxin',
-    teams: 'Symbiote Six (A), Phoenix Force (dowolny 4./5. członek) (C)',
-    status: 'event',
-    source:
-      'featured slot w Character Store 10–16.10.2026; Basic/Premium/Mega (od 18.09, według streszczenia)',
+    teams: 'Symbiote Six (A); Phoenix Force (C), obrona etapu 3 w Crucible S25',
+    status: 'orb',
+    source: 'featured slot w Character Store zakończony 16.10; zostają orby Basic/Premium/Mega',
     confidence: 'OFF',
-    next: 'w featured slocie do 16.10, potem tylko orby',
+    next: 'kolejne wyróżnienie nieznane',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
   },
   {
@@ -1185,10 +1249,10 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'West Coast Avengers (W)',
     status: 'event',
     source:
-      'wyłącznie 4 Chapter Battle Passy (od 21.09.2026): darmowo 45 shardów za pass, razem 4★ + 4 RS; Premium daje 7★ + 1 Diament; wymaga poziomu 78',
+      'Chapter Battle Passy: #3 potwierdzony od 19.10; darmowo 45 shardów za pass (łącznie 4★ + 4 RS), Premium daje 7★ + 1 Diament',
     confidence: 'OFF',
-    next: 'pass #2 od 5.10; #3 ok. 19.10, #4 ok. 2.11 (szac.); zapowiedziano oferty dla spóźnionych',
-    url: 'https://marvelstrikeforce.com/en/updates/blog-update-9-18-26',
+    next: '#4 ok. 2.11 (szac.); zapowiedziano oferty dla spóźnionych',
+    url: 'https://x.com/MarvelStrikeF',
   },
   {
     name: 'Whiplash',

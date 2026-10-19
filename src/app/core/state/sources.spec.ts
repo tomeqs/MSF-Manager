@@ -3,7 +3,7 @@ import { KnownTeam } from '../data/known-meta';
 import { RosterEntry, UpgradeData } from '../models';
 import { advise, recommend } from './advisor';
 import { toRosterEntry } from './roster.mapper';
-import { isObtainableNow, sourceLookup } from './sources';
+import { currentSource, isObtainableNow, sourceLookup } from './sources';
 import { teamPlans, teamWeight } from './team-plans';
 
 const src = (name: string, status: CharacterSource['status']): CharacterSource => ({
@@ -48,6 +48,21 @@ describe('character sources', () => {
     expect(isObtainableNow(src('A', 'event'))).toBe(true);
     expect(isObtainableNow(src('A', 'paid'))).toBe(false);
     expect(isObtainableNow(undefined)).toBe(true);
+  });
+
+  it('falls back once a time-limited status is past its end date', () => {
+    const window: CharacterSource = {
+      ...src('Dracula', 'event'),
+      until: '2026-11-02',
+      afterUntil: 'unavailable',
+    };
+    expect(currentSource(window, new Date('2026-11-02T12:00:00Z')).status).toBe('event');
+    expect(currentSource(window, new Date('2026-11-03T00:00:00Z')).status).toBe('unavailable');
+    expect(currentSource({ ...window, afterUntil: undefined }, new Date('2027-01-01')).status).toBe(
+      'unknown',
+    );
+    const of = sourceLookup([window], new Date('2026-12-01'));
+    expect(of(owned('Dracula'))?.status).toBe('unavailable');
   });
 
   it('prices shards by how open the source is now; a live event wins', () => {

@@ -201,8 +201,13 @@ shardów/odblokowania). Cele w grupach są sortowane według rankingu.
 
 Research z 14.10.2026 — **[raport](reports/Opłacalne%20drużyny%20MSF%20i%20źródła%20postaci.md)**:
 które drużyny się opłacają, skąd brać ich postacie, co trwa teraz i co zrobić w połowie gry.
-Jego załącznik jest w aplikacji jako `core/data/character-sources.ts` (138 postaci; ze
-skrawków wyników wyszukiwania — potwierdzaj w grze przyciskiem „Find”, odświeżaj po blogach).
+Aktualizacja z 19.10.2026 — **[raport](reports/Opłacalne%20drużyny%20MSF%20aktualizacja%20październik.md)**:
+weryfikacja tez (Overpower zastąpiony przez Chapter Boosts od 4.05.2026), fala halloweenowa
+(King of the Night / Nightreavers, Mephisto's Summoning) i polecenia na 19.10–2.11.
+Załączniki obu raportów są w aplikacji jako `core/data/character-sources.ts` (143 postacie;
+ze skrawków wyników wyszukiwania — potwierdzaj w grze przyciskiem „Find”, odświeżaj po
+blogach). Okno czasowe może mieć `until` (szacowany koniec) i `afterUntil` — po tej dacie
+status sam przechodzi np. z „event teraz” na „niedostępna teraz”.
 
 - **Stan źródła**: stałe (sklep postaci według Age, węzeł kampanii, DD, stały event), tylko
   losowe orby, event teraz, tylko płatne, za bramką endgame, niedostępne, brak danych.

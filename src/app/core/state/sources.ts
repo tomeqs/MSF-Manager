@@ -33,11 +33,18 @@ export const SOURCE_TONE: Record<SourceStatus, 'good' | 'warn' | 'bad'> = {
   unavailable: 'bad',
 };
 
+/** The source as of `now`: a time-limited status past its `until` date falls back. */
+export function currentSource(source: CharacterSource, now = new Date()): CharacterSource {
+  if (!source.until || now.toISOString().slice(0, 10) <= source.until) return source;
+  return { ...source, status: source.afterUntil ?? 'unknown' };
+}
+
 /** Source of a roster entry, matched by name ignoring case and punctuation. */
 export function sourceLookup(
   sources: CharacterSource[],
+  now = new Date(),
 ): (entry: RosterEntry) => CharacterSource | undefined {
-  const byName = new Map(sources.map((s) => [nameKey(s.name), s] as const));
+  const byName = new Map(sources.map((s) => [nameKey(s.name), currentSource(s, now)] as const));
   return (entry) => byName.get(nameKey(entry.name));
 }
 
