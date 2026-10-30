@@ -1,7 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { MsfDataSource } from '../data/msf-data-source';
 import { KNOWN_META } from '../data/known-meta';
-import { CharacterKit, LoadStatus, SquadTabs, TeamTab } from '../models';
+import { LoadStatus, SquadTabs, TeamTab } from '../models';
+import { KitsStore } from './kits.store';
 import { RosterStore } from './roster.store';
 import {
   LooseCharacter,
@@ -30,21 +31,20 @@ export class SquadsStore {
   private readonly data = inject(MsfDataSource);
   private readonly roster = inject(RosterStore);
   private readonly teams = inject(TeamsStore);
+  private readonly kits = inject(KitsStore);
 
   private readonly _saved = signal<SquadTabs>({});
   private readonly _savedStatus = signal<LoadStatus>('idle');
-  private readonly _kits = signal<CharacterKit[]>([]);
-  private readonly _kitsStatus = signal<LoadStatus>('idle');
 
   /** Saved squads load or fail independently; the rest works without them. */
   readonly savedStatus = this._savedStatus.asReadonly();
-  readonly kitsStatus = this._kitsStatus.asReadonly();
+  readonly kitsStatus = this.kits.status;
   readonly hasSaved = computed(() =>
     SQUAD_TABS.some((tab) => (this._saved()[tab]?.length ?? 0) > 0),
   );
 
   readonly synergy = computed<SynergyIndex>(() =>
-    buildSynergy(this.roster.entries(), this._kits()),
+    buildSynergy(this.roster.entries(), this.kits.kits()),
   );
 
   /** Options and saved-squad reviews per mode. */
@@ -105,16 +105,7 @@ export class SquadsStore {
         error: () => this._savedStatus.set('error'),
       });
     }
-    if (this._kitsStatus() === 'idle' || this._kitsStatus() === 'error') {
-      this._kitsStatus.set('loading');
-      this.data.getAbilityKits().subscribe({
-        next: (kits) => {
-          this._kits.set(kits);
-          this._kitsStatus.set('loaded');
-        },
-        error: () => this._kitsStatus.set('error'),
-      });
-    }
+    this.kits.load();
   }
 
   /** Reloads saved squads (they change in game); kits follow the game data hash. */

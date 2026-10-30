@@ -77,9 +77,10 @@ export class ApiMsfDataSource extends MsfDataSource {
   }
 
   getAbilityKits(): Observable<CharacterKit[]> {
-    // Only the top level of each ability; the cache keeps just the texts, names and traits.
+    // Only the top level of each ability, plus how players build each character (ISO-8 class
+    // and T4 adoption); the cache keeps just the texts, names, traits and adoption.
     return this.cache.gameData(
-      'kits:v1',
+      'kits:v2',
       'chars',
       () =>
         this.pagedEnvelope<CharacterInfo>(
@@ -91,6 +92,8 @@ export class ApiMsfDataSource extends MsfDataSource {
             abilityKits: 'max',
             gearTiers: 'none',
             pieceInfo: 'none',
+            starItems: 'none',
+            charAdoption: 'full',
           },
           KIT_PAGE_SIZE,
         ).pipe(map(({ data, meta }) => ({ meta, data: data.map(toKit) }))),
@@ -300,7 +303,30 @@ export function toKit(info: CharacterInfo): CharacterKit {
     name: info.name,
     traits: (info.traits ?? []).map((t) => (typeof t === 'string' ? { id: t, name: t } : t)),
     texts,
+    isoAdoption: shares(info.iso8ClassAdoption),
+    t4Adoption: shares(info.abilityAdoption, false),
   };
+}
+
+/**
+ * Adoption as 0–1 shares. The spec only says "percentages", so values above 1 are read as
+ * 0–100. ISO-8 classes are exclusive and are normalised to sum to 1; T4 abilities are not.
+ */
+export function shares<K extends string>(
+  values: Partial<Record<K, number>> | undefined,
+  normalise = true,
+): Partial<Record<K, number>> | undefined {
+  if (!values) return undefined;
+  const entries = Object.entries(values).filter(
+    (e): e is [string, number] => typeof e[1] === 'number' && e[1] >= 0,
+  );
+  if (!entries.length) return undefined;
+  const scale = entries.some(([, v]) => v > 1) ? 100 : 1;
+  const total = entries.reduce((sum, [, v]) => sum + v / scale, 0);
+  const divisor = normalise && total > 0 ? total : 1;
+  return Object.fromEntries(entries.map(([k, v]) => [k, v / scale / divisor])) as Partial<
+    Record<K, number>
+  >;
 }
 
 function withSince(params: QueryParams, since?: string): QueryParams {

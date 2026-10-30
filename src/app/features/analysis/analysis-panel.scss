@@ -1,0 +1,45 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+h3 {
+  margin: 10px 0 0;
+  font-size: 0.95rem;
+}
+
+ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+li {
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+
+  a {
+    margin-left: 3px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+.good {
+  color: var(--c-success, #3ecf8e);
+}
+
+.warn {
+  color: var(--c-warning, #f0b429);
+}
+
+.tiny {
+  margin: 0;
+  font-size: 0.72rem;
+}

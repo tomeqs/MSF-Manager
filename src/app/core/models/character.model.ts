@@ -32,6 +32,10 @@ export interface CharacterInfo {
   starItems?: Item[];
   /** Only when requested with `abilityKits`. */
   abilityKit?: AbilityKit;
+  /** ISO-8 class adoption across players (only with `charAdoption=full`). */
+  iso8ClassAdoption?: Partial<Record<IsoClass, number>>;
+  /** T4 ability adoption across players (only with `charAdoption=full`). */
+  abilityAdoption?: Partial<Record<AbilityKey, number>>;
 }
 
 /** Mirrors API schemas AbilityKit / Ability / AbilityLevel (descriptions only). */
@@ -50,13 +54,16 @@ export interface Ability {
 
 /**
  * What the app keeps of a character's kit: the description of each ability at its highest
- * level, with the character's name and traits in the same language as the text.
+ * level, with the character's name and traits in the same language as the text, and how
+ * players build it (adoption shares 0–1, summing to about 1 for ISO-8).
  */
 export interface CharacterKit {
   id: string;
   name?: string;
   traits: TraitObject[];
   texts: Partial<Record<AbilityKey, string>>;
+  isoAdoption?: Partial<Record<IsoClass, number>>;
+  t4Adoption?: Partial<Record<AbilityKey, number>>;
 }
 
 export type IsoClass = 'striker' | 'fortifier' | 'healer' | 'skirmisher' | 'raider';

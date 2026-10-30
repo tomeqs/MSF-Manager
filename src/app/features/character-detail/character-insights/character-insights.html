@@ -1,0 +1,31 @@
+@if (mechanics().length || iso().length || order()) {
+  <section class="card insights">
+    <h2>Charakterystyka</h2>
+    @if (mechanics().length) {
+      <p class="row">
+        <span class="muted">Mechaniki w opisach:</span>
+        @for (m of mechanics(); track m) {
+          <span class="chip">{{ m }}</span>
+        }
+      </p>
+    }
+    @if (iso().length) {
+      <p class="row">
+        <span class="muted">ISO-8 u graczy:</span>
+        @for (c of iso(); track c.label) {
+          <span class="chip" [class.mine]="c.mine">{{ c.label }} {{ c.pct }}%</span>
+        }
+      </p>
+    }
+    @if (order(); as o) {
+      <p class="row">
+        <span class="muted">Kolejność umiejętności (T4 u graczy):</span>
+        @for (s of o.steps; track s.key) {
+          <span class="chip" [class.next]="s.key === o.next.key">
+            {{ abilityLabels[s.key] }} {{ s.level }}/{{ s.max }} · {{ pct(s.adoption) }}%
+          </span>
+        }
+      </p>
+    }
+  </section>
+}

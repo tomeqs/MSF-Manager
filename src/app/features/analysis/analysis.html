@@ -1,0 +1,28 @@
+<header class="page-header">
+  <div>
+    <h1>Analiza postaci</h1>
+    <p>
+      Twoje {{ poolSize }} najsilniejszych postaci: ile mocy jeszcze w nich drzemie, jakie mechaniki
+      wnoszą, czy ISO-8 i umiejętności są rozwijane tak jak u większości graczy.
+    </p>
+  </div>
+</header>
+
+@if (status() === 'error') {
+  <p class="state-message">Nie udało się wczytać rosteru.</p>
+} @else if (status() !== 'loaded') {
+  <p class="state-message">Wczytuję roster…</p>
+} @else {
+  <app-potential-panel [summary]="summary()" />
+
+  @if (kitsStatus() === 'error') {
+    <p class="muted small">
+      Opisy umiejętności i dane o wyborach graczy są niedostępne — sekcje poniżej będą puste.
+    </p>
+  }
+  <div class="columns">
+    <app-iso-panel [advice]="iso()" [lagging]="lagging()" [usual]="usualIso()" />
+    <app-ability-order-panel [orders]="orders()" />
+  </div>
+  <app-capabilities-panel [coverage]="coverage()" [poolSize]="pool().length" />
+}

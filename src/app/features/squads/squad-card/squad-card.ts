@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { GROUP_LABELS, capabilityLabel, squadProfile } from '../../../core/state/capabilities';
+import { KitsStore } from '../../../core/state/kits.store';
 import { RosterStore } from '../../../core/state/roster.store';
 import { SquadOption } from '../../../core/state/squads';
 import { SynergyLink } from '../../../core/state/synergy';
@@ -18,6 +20,7 @@ import { ORDER_LABELS, ORIGIN_LABELS, linkText, squadTitle } from '../squad-labe
 })
 export class SquadCard {
   private readonly roster = inject(RosterStore);
+  private readonly kits = inject(KitsStore);
 
   readonly option = input.required<SquadOption>();
   /** Position in a plan (1, 2, …). */
@@ -35,6 +38,19 @@ export class SquadCard {
   );
   protected readonly orderLabel = computed(() => ORDER_LABELS[this.option().order]);
   protected readonly synergyPct = computed(() => Math.round(this.option().cohesion * 100));
+  /** Mechanics the members bring and essentials nobody covers (once kits are loaded). */
+  protected readonly profile = computed(() => {
+    const kits = this.kits.byId();
+    if (!kits.size) return undefined;
+    const profile = squadProfile(this.option().members, (id) => kits.get(id));
+    return {
+      present: profile.present.map((p) => ({
+        label: capabilityLabel(p.id),
+        by: p.by.join(', '),
+      })),
+      gaps: profile.gaps.map((g) => GROUP_LABELS[g]),
+    };
+  });
 
   protected link(link: SynergyLink): string {
     return linkText(link, (id) => this.roster.entry(id)?.name ?? id);

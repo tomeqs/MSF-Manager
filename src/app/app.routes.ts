@@ -53,6 +53,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/squads/squads').then((m) => m.Squads),
       },
       {
+        path: 'analysis',
+        title: 'Analiza · MSF Assistant',
+        loadComponent: () => import('./features/analysis/analysis').then((m) => m.Analysis),
+      },
+      {
         path: 'key-characters',
         title: 'Kluczowe postacie · MSF Assistant',
         loadComponent: () =>

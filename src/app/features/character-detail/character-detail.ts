@@ -14,6 +14,7 @@ import {
 import { PlayerStore } from '../../core/state/player.store';
 import { DEV_STATUS_LABELS, memberPower } from '../../core/state/potential-calc';
 import { PotentialStore } from '../../core/state/potential.store';
+import { CharacterInsights } from './character-insights/character-insights';
 import { ISO_CLASS_LABELS } from '../../core/state/roster.mapper';
 import { RosterStore } from '../../core/state/roster.store';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
@@ -26,6 +27,7 @@ import { StarRating } from '../../shared/ui/star-rating';
 @Component({
   selector: 'app-character-detail',
   imports: [
+    CharacterInsights,
     RouterLink,
     CompactNumberPipe,
     CharacterAvatar,

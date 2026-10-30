@@ -1,0 +1,59 @@
+<section class="panel">
+  <h2 class="title">Potencjał</h2>
+  @if (summary().loaded < summary().total) {
+    <p class="muted small">
+      Wczytuję moc maks. dla Twojego poziomu: {{ summary().loaded }} z {{ summary().total }}
+      postaci…
+    </p>
+  }
+  <div class="tiles">
+    @for (t of tiles(); track t.label) {
+      <app-stat-tile [label]="t.label" [value]="t.value" [hint]="t.hint" />
+    }
+  </div>
+
+  <div class="lists">
+    <div class="card">
+      <h3>Najwyższy sufit</h3>
+      <p class="muted tiny">Najwięcej mocy przy pełnym rozwoju — tu inwestycje dają najwięcej.</p>
+      <ol>
+        @for (r of ceiling(); track r.entry.id) {
+          <li>
+            <a [routerLink]="['/roster', r.entry.id]">{{ r.entry.name }}</a>
+            <span class="muted">{{ r.max | compactNumber }} · masz {{ pct(r) }}%</span>
+            <app-progress-bar [value]="r.share" [max]="1" />
+          </li>
+        }
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Najwięcej bez shardów</h3>
+      <p class="muted tiny">
+        Moc z poziomów, gearu, umiejętności i ISO-8 przy obecnych gwiazdkach.
+      </p>
+      <ol>
+        @for (r of upgrades(); track r.entry.id) {
+          <li>
+            <a [routerLink]="['/roster', r.entry.id]">{{ r.entry.name }}</a>
+            <span class="gain">+{{ r.withoutShards | compactNumber }}</span>
+          </li>
+        }
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Najwięcej z gwiazdek</h3>
+      <p class="muted tiny">Ile mocy dodałoby 7★ — wymaga shardów, więc to plan długi.</p>
+      <ol>
+        @for (r of stars(); track r.entry.id) {
+          <li>
+            <a [routerLink]="['/roster', r.entry.id]">{{ r.entry.name }}</a>
+            <span class="muted">{{ r.entry.yellowStars }}★→7★</span>
+            <span class="gain">+{{ r.fromStars | compactNumber }}</span>
+          </li>
+        } @empty {
+          <li class="muted">Wszystkie mają 7★.</li>
+        }
+      </ol>
+    </div>
+  </div>
+</section>

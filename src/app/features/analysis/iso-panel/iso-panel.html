@@ -1,0 +1,39 @@
+<section class="card panel">
+  <h2>ISO-8</h2>
+  <p class="muted tiny">
+    Klasa porównana z tym, co wybiera większość graczy (dane z API, Twoje 30 najsilniejszych
+    postaci). Zmiana klasy to też jej osobne rozwijanie — sprawdź koszt w grze.
+  </p>
+  <ul>
+    @for (a of advice().slice(0, limit); track a.entry.id) {
+      <li>
+        <a [routerLink]="['/roster', a.entry.id]">{{ a.entry.name }}</a>
+        @if (a.current) {
+          masz <strong>{{ labels[a.current] }}</strong
+          >&nbsp;<span class="muted">({{ pct(a.currentShare) }}% graczy)</span>, większość wybiera
+        } @else {
+          bez klasy — większość wybiera
+        }
+        <strong class="good">{{ labels[a.best] }}</strong
+        >&nbsp;<span class="muted">({{ pct(a.bestShare) }}%)</span>
+      </li>
+    } @empty {
+      <li class="muted">Twoje klasy ISO-8 zgadzają się z wyborem większości.</li>
+    }
+    @if (advice().length > limit) {
+      <li class="muted">…i {{ advice().length - limit }} kolejnych (słabszych) postaci.</li>
+    }
+  </ul>
+  @if (lagging().length) {
+    <h3>Poziom ISO-8 w tyle</h3>
+    <p class="muted tiny">Zwykle masz poziom {{ usual() }}; te silne postacie są wyraźnie niżej.</p>
+    <ul>
+      @for (e of lagging(); track e.id) {
+        <li>
+          <a [routerLink]="['/roster', e.id]">{{ e.name }}</a>
+          <span class="muted">{{ labels[e.iso.active!] }} · poziom {{ e.iso.level }}</span>
+        </li>
+      }
+    </ul>
+  }
+</section>

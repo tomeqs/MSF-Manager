@@ -114,6 +114,17 @@
   margin: 0;
 }
 
+.mechanics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+}
+
+.gaps {
+  color: var(--c-warning, #f0b429);
+}
+
 .small {
   font-size: 0.82rem;
 }

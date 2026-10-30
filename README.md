@@ -57,6 +57,8 @@ src/app/
                        źródło: analiza MSF API, a gdy ta nie działa — lista z poradników
     squads/            składy per tryb: plan bez powtórzeń postaci, Twoje składy z gry z
                        podpowiedziami zamian, luźne postacie z partnerami (synergia z pasywek)
+    analysis/          analiza 60 najsilniejszych postaci: potencjał mocy, ISO-8 i kolejność
+                       umiejętności vs wybory graczy, mechaniki z opisów umiejętności
     key-characters/    postacie uniwersalne (plug-and-play) i ich priorytet farmienia
     farming/           ranking „Co się najbardziej opłaca” + kalkulator: cele (gwiazdki, umiejętności) → shardy i materiały vs inwentarz
     login/             ekran logowania / wejście w tryb demo
@@ -109,6 +111,8 @@ Komponenty nie znają kształtu odpowiedzi API — operują na `RosterEntry` z m
 - `/game/v1/characters?abilityKits=max` zwraca opis każdej umiejętności na najwyższym poziomie
   (`abilityKit.<umiejętność>.levels.<n>.description`); strony po 40 postaci, by zmieścić się w
   limicie 472 kB.
+- `charAdoption=full` dodaje `iso8ClassAdoption` i `abilityAdoption` („procenty” — wartości
+  > 1 czytam jako 0–100; klasy ISO-8 normalizuję do sumy 1, T4 nie).
 
 ## Drużyny: fallback
 
@@ -176,6 +180,27 @@ ogniwo (najmniej synergii z resztą) i postać z rosteru, która doda najwięcej
 **Luźne postacie** to silne postacie spoza znanych drużyn, popularnych składów i Twoich
 składów: ich najlepsi partnerzy według umiejętności i skład zbudowany wokół nich. Tryb demo
 ma wymyślone opisy umiejętności w stylu gry — tylko do pokazania działania.
+
+## Analiza postaci (`insights.ts`, `capabilities.ts`)
+
+Strona „Analiza” patrzy na Twoje 60 najsilniejszych postaci (ISO-8 i umiejętności: 30).
+
+- **Potencjał** — obecna moc vs moc maks. dla Twojego poziomu (`characterInstances`), z
+  podziałem na to, co dadzą same ulepszenia (moc maks. przy obecnych gwiazdkach − obecna) i co
+  tylko gwiazdki (reszta). Listy: najwyższy sufit, najwięcej bez shardów, najwięcej z 7★.
+- **ISO-8** — klasa porównana z wyborem graczy (`iso8ClassAdoption`): podpowiedź, gdy klasę
+  wybiera wyraźna większość (≥ 50%), a Twojej używa mniej niż połowa tylu graczy, albo gdy klasy
+  nie ma. Do tego postacie z poziomem ISO-8 o ≥ 4 niższym niż Twoja mediana.
+- **Kolejność umiejętności** — umiejętności ułożone według tego, ilu graczy ma w nich T4
+  (`abilityAdoption`); następna do podniesienia i flaga, gdy mniej popularna umiejętność jest o
+  ≥ 20% dalej rozwinięta.
+- **Mechaniki** — słowa z opisów umiejętności (Taunt, Barrier, Deathproof, leczenie,
+  odradzanie, Cleanse, Stun, Ability Block, Speed Bar, Flip, Assist, Counter, Stealth, Defense
+  Down, Bleed, atak obszarowy): które są u Ciebie rzadkie. Karty na stronie „Składy” pokazują
+  mechaniki składu i luki („brak: leczenie / odradzanie”), a szczegóły postaci — jej mechaniki,
+  klasy ISO-8 u graczy i kolejność T4. To profil z tekstu, nie gwarancja efektu.
+
+Dane o wyborach graczy i opisy w trybie demo są wymyślone.
 
 ## Ranking opłacalności
 

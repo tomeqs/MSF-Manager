@@ -49,6 +49,8 @@
     </section>
   }
 
+  <app-character-insights [entry]="e" />
+
   @if (e.unlocked) {
     <section class="card dev" [attr.data-status]="dev()?.status">
       <div class="dev-head">

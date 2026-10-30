@@ -1,0 +1,30 @@
+<section class="card panel">
+  <h2>Kolejność umiejętności</h2>
+  <p class="muted tiny">
+    Kolejność według tego, ile graczy ma T4 w danej umiejętności (dane z API). Najpierw postacie,
+    które rozwijasz inaczej niż większość.
+  </p>
+  <ul>
+    @for (o of orders(); track o.entry.id) {
+      <li>
+        <a [routerLink]="['/roster', o.entry.id]">{{ o.entry.name }}</a>
+        następna:
+        <strong>{{ labels[o.next.key] }} {{ o.next.level }}/{{ o.next.max }}</strong> &nbsp;<span
+          class="muted"
+          >(T4 ma {{ pct(o.next.adoption) }}% graczy)</span
+        >
+        @if (o.offOrder) {
+          <span class="warn"> · rozwijasz w innej kolejności</span>
+        }
+        <br />
+        <span class="muted tiny">
+          @for (s of o.steps; track s.key; let last = $last) {
+            {{ labels[s.key] }} {{ s.level }}/{{ s.max }}{{ last ? '' : ' → ' }}
+          }
+        </span>
+      </li>
+    } @empty {
+      <li class="muted">Umiejętności Twoich najsilniejszych postaci są na maks. dla poziomu.</li>
+    }
+  </ul>
+</section>

@@ -1,0 +1,38 @@
+<section class="card panel">
+  <h2>Mechaniki w Twoim rosterze</h2>
+  <p class="muted tiny">
+    Odczytane ze słów w opisach umiejętności Twoich {{ poolSize() }} najsilniejszych postaci (np.
+    „Taunt”, „Heal”, „Cleanse”). Wzmianka nie zawsze znaczy, że postać daje efekt sojusznikom — to
+    profil, nie gwarancja.
+  </p>
+  @if (scarce().length) {
+    <h3>Rzadkie u Ciebie</h3>
+    <ul>
+      @for (c of scarce(); track c.id) {
+        <li>
+          <strong class="warn">{{ c.label }}</strong
+          >&nbsp;<span class="muted">({{ groups[c.group] }}):</span>
+          @for (e of c.characters; track e.id; let last = $last) {
+            <a [routerLink]="['/roster', e.id]">{{ e.name }}</a
+            >{{ last ? '' : ',' }}
+          } @empty {
+            <span class="muted">żadna</span>
+          }
+        </li>
+      }
+    </ul>
+  }
+  <h3>Pozostałe</h3>
+  <ul>
+    @for (c of common(); track c.id) {
+      <li>
+        <strong>{{ c.label }}</strong>
+        <span class="muted">· {{ c.characters.length }} postaci, np.</span>
+        @for (e of c.characters.slice(0, 3); track e.id; let last = $last) {
+          <a [routerLink]="['/roster', e.id]">{{ e.name }}</a
+          >{{ last ? '' : ',' }}
+        }
+      </li>
+    }
+  </ul>
+</section>
