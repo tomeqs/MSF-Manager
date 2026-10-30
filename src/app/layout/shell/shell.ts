@@ -4,6 +4,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { FarmingStore } from '../../core/state/farming.store';
 import { PlayerStore } from '../../core/state/player.store';
 import { RosterStore } from '../../core/state/roster.store';
+import { SquadsStore } from '../../core/state/squads.store';
 import { TeamsStore } from '../../core/state/teams.store';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 
@@ -29,12 +30,14 @@ export class Shell {
   private readonly roster = inject(RosterStore);
   private readonly farming = inject(FarmingStore);
   private readonly teams = inject(TeamsStore);
+  private readonly squads = inject(SquadsStore);
 
   protected readonly nav: NavItem[] = [
     { path: '/dashboard', label: 'Pulpit', icon: '◈' },
     { path: '/roster', label: 'Roster', icon: '☰' },
     { path: '/events', label: 'Eventy', icon: '⚑' },
     { path: '/teams', label: 'Drużyny', icon: '★' },
+    { path: '/squads', label: 'Składy', icon: '⚔' },
     { path: '/key-characters', label: 'Kluczowe', icon: '◆' },
     { path: '/farming', label: 'Farmienie', icon: '⛏' },
   ];
@@ -49,6 +52,7 @@ export class Shell {
     this.roster.refresh();
     this.farming.refresh();
     this.teams.refresh();
+    this.squads.refresh();
   }
 
   protected login(): void {

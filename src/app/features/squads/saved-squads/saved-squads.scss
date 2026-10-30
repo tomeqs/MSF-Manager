@@ -1,0 +1,30 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.verdict {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--c-border);
+  font-size: 0.85rem;
+
+  p {
+    margin: 0 0 4px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+
+  &.ok {
+    color: var(--c-success, #3ecf8e);
+  }
+}
+
+.small {
+  font-size: 0.82rem;
+}

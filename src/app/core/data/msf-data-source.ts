@@ -2,11 +2,13 @@ import { Observable } from 'rxjs';
 import {
   CharacterInfo,
   CharacterInstance,
+  CharacterKit,
   CharacterPotential,
   EventInfo,
   ItemQuantity,
   PlayerCard,
   PotentialTarget,
+  SquadsInfo,
   TeamOrder,
   TeamTab,
   UpgradeData,
@@ -27,6 +29,12 @@ export abstract class MsfDataSource {
 
   /** GET /game/v1/characters?status=playable */
   abstract getCharacters(): Observable<CharacterInfo[]>;
+
+  /** GET /game/v1/characters?abilityKits=max — ability descriptions (for synergies). */
+  abstract getAbilityKits(): Observable<CharacterKit[]>;
+
+  /** GET /player/v1/squads — the player's saved squads per game mode. */
+  abstract getSquads(): Observable<SquadsInfo>;
 
   /** GET /player/v1/events */
   abstract getEvents(): Observable<EventInfo[]>;

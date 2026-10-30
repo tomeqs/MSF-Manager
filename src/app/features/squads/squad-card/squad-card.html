@@ -1,0 +1,70 @@
+<article class="squad" [class.card]="!flat()" [class.saved]="option().saved && !flat()">
+  <header class="head">
+    <div class="title">
+      @if (index()) {
+        <span class="num">{{ index() }}</span>
+      }
+      <strong>{{ title() }}</strong>
+      @if (option().tier) {
+        <span class="tier" [attr.data-tier]="option().tier">{{ option().tier }}</span>
+      }
+    </div>
+    <span class="chips">
+      @for (origin of origins(); track origin) {
+        <span class="chip">{{ origin }}</span>
+      }
+      @if (option().source) {
+        <a class="chip" [href]="option().source" target="_blank" rel="noopener">źródło ↗</a>
+      }
+    </span>
+  </header>
+
+  <ol class="members">
+    @for (m of option().members; track m.id) {
+      <li>
+        <a class="member" [routerLink]="['/roster', m.id]" [title]="m.name">
+          <app-character-avatar
+            [name]="m.name"
+            [portrait]="m.portrait"
+            [traits]="m.traits"
+            style="--avatar-size: 44px"
+          />
+          <span class="member-name">{{ m.name }}</span>
+          <span class="tiny muted">{{ m.power | compactNumber }}</span>
+        </a>
+      </li>
+    }
+    @for (name of option().missing; track name) {
+      <li class="member missing" [title]="name">
+        <span class="lock-icon">🔒</span>
+        <span class="member-name">{{ name }}</span>
+        <span class="tiny muted">brak</span>
+      </li>
+    }
+  </ol>
+
+  <div class="stats small">
+    <span class="muted"
+      >Moc <strong>{{ option().power | compactNumber }}</strong></span
+    >
+    <span class="muted"
+      >Synergia <strong>{{ synergyPct() }}%</strong></span
+    >
+  </div>
+  <app-progress-bar [value]="option().cohesion" [max]="1" />
+
+  @if (details() && option().links.length) {
+    <ul class="links small">
+      @for (l of option().links; track $index) {
+        <li>{{ link(l) }}</li>
+      }
+    </ul>
+  }
+  <p class="tiny muted order">
+    {{ orderLabel() }}
+    @if (option().positional.length) {
+      · {{ option().positional.join(', ') }}: umiejętność działa na sąsiadów — ustaw w środku
+    }
+  </p>
+  <ng-content />
+</article>

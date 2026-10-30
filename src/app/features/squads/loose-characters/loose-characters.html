@@ -1,0 +1,46 @@
+<section>
+  <h2 class="section-title">Luźne postacie</h2>
+  <p class="muted small intro">
+    Silne postacie, których nie ma w żadnej znanej drużynie, popularnym składzie ani Twoim zapisanym
+    składzie — z kim pasują najlepiej według ich umiejętności.
+  </p>
+  @if (!loose().length) {
+    <p class="muted small">Każda z Twoich najsilniejszych postaci ma już swój skład.</p>
+  }
+  <div class="list">
+    @for (l of loose(); track l.entry.id) {
+      <article class="card loose">
+        <a class="who" [routerLink]="['/roster', l.entry.id]">
+          <app-character-avatar
+            [name]="l.entry.name"
+            [portrait]="l.entry.portrait"
+            [traits]="l.entry.traits"
+            style="--avatar-size: 40px"
+          />
+          <span>
+            <strong>{{ l.entry.name }}</strong>
+            <span class="muted small"> · {{ l.entry.power | compactNumber }}</span>
+            @if (l.together.length) {
+              <span class="muted small"> · razem z: {{ names(l.together) }}</span>
+            }
+          </span>
+        </a>
+        @if (l.partners.length) {
+          <ul class="partners small">
+            @for (p of l.partners; track p.entry.id) {
+              <li>
+                <strong>{{ p.entry.name }}</strong>
+                <span class="muted"> — {{ link(p.link) }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted small">
+            Brak wyraźnych synergii w umiejętnościach — pasuje głównie mocą (np. do Blitza).
+          </p>
+        }
+        <app-squad-card [option]="l.squad" [details]="false" [flat]="true" />
+      </article>
+    }
+  </div>
+</section>

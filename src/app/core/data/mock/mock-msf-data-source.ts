@@ -3,11 +3,13 @@ import { Observable, delay, of } from 'rxjs';
 import {
   CharacterInfo,
   CharacterInstance,
+  CharacterKit,
   CharacterPotential,
   EventInfo,
   ItemQuantity,
   PlayerCard,
   PotentialTarget,
+  SquadsInfo,
   TeamOrder,
   TeamTab,
   UpgradeData,
@@ -15,6 +17,8 @@ import {
 import { MsfDataSource } from '../msf-data-source';
 import { MOCK_CHARACTERS } from './mock-characters';
 import { mockEvents } from './mock-events';
+import { MOCK_KITS } from './mock-kits';
+import { MOCK_SQUADS } from './mock-squads';
 import { MOCK_INVENTORY, MOCK_UPGRADE_DATA } from './mock-farming';
 import { MOCK_PLAYER } from './mock-player';
 import { MOCK_ROSTER } from './mock-roster';
@@ -36,6 +40,14 @@ export class MockMsfDataSource extends MsfDataSource {
 
   getCharacters(): Observable<CharacterInfo[]> {
     return of(MOCK_CHARACTERS).pipe(delay(LATENCY_MS));
+  }
+
+  getAbilityKits(): Observable<CharacterKit[]> {
+    return of(MOCK_KITS).pipe(delay(LATENCY_MS));
+  }
+
+  getSquads(): Observable<SquadsInfo> {
+    return of(MOCK_SQUADS).pipe(delay(LATENCY_MS));
   }
 
   getEvents(): Observable<EventInfo[]> {

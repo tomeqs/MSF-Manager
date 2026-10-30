@@ -7,12 +7,14 @@ import {
   ApiResponse,
   CharacterInfo,
   CharacterInstance,
+  CharacterKit,
   CharacterPotential,
   EventInfo,
   IndexedCosts,
   ItemQuantity,
   PlayerCard,
   PotentialTarget,
+  SquadsInfo,
   TeamOrder,
   TeamTab,
   UpgradeData,
@@ -26,6 +28,8 @@ type AllTeamOrders = Partial<Record<TeamTab, TeamOrder | TeamOrder[]>>;
 
 /** Keeps each page well under the API's 472 kB response limit. */
 const PAGE_SIZE = 100;
+/** Ability descriptions are long, so kit pages are smaller. */
+const KIT_PAGE_SIZE = 40;
 
 /** Real MSF API. Auth headers are added by `msfApiInterceptor`, caching by `ApiCache`. */
 @Injectable({ providedIn: 'root' })
@@ -69,6 +73,34 @@ export class ApiMsfDataSource extends MsfDataSource {
           data: data.map((c) => ({ ...c, portrait: resolveImg(c.portrait, meta?.baseImgUrl) })),
         })),
       ),
+    );
+  }
+
+  getAbilityKits(): Observable<CharacterKit[]> {
+    // Only the top level of each ability; the cache keeps just the texts, names and traits.
+    return this.cache.gameData(
+      'kits:v1',
+      'chars',
+      () =>
+        this.pagedEnvelope<CharacterInfo>(
+          '/game/v1/characters',
+          {
+            status: 'playable',
+            itemFormat: 'id',
+            costumes: 'none',
+            abilityKits: 'max',
+            gearTiers: 'none',
+            pieceInfo: 'none',
+          },
+          KIT_PAGE_SIZE,
+        ).pipe(map(({ data, meta }) => ({ meta, data: data.map(toKit) }))),
+      (data) => Array.isArray(data) && data.some((k) => Object.keys(k.texts).length > 0),
+    );
+  }
+
+  getSquads(): Observable<SquadsInfo> {
+    return this.cache.playerData('squads', (since) =>
+      this.envelope<SquadsInfo>('/player/v1/squads', withSince({}, since)),
     );
   }
 
@@ -222,12 +254,16 @@ export class ApiMsfDataSource extends MsfDataSource {
   }
 
   /** Fetches page 1, then the remaining pages (from `meta.perTotal`) in parallel. */
-  private pagedEnvelope<T>(path: string, params: QueryParams): Observable<ApiResponse<T[]>> {
+  private pagedEnvelope<T>(
+    path: string,
+    params: QueryParams,
+    perPage = PAGE_SIZE,
+  ): Observable<ApiResponse<T[]>> {
     const page = (n: number) =>
-      this.envelope<T[]>(path, { ...params, page: String(n), perPage: String(PAGE_SIZE) });
+      this.envelope<T[]>(path, { ...params, page: String(n), perPage: String(perPage) });
     return page(1).pipe(
       switchMap((first) => {
-        const pages = Math.ceil((first.meta?.perTotal ?? 0) / PAGE_SIZE);
+        const pages = Math.ceil((first.meta?.perTotal ?? 0) / perPage);
         if (pages <= 1) return of(first);
         const rest = Array.from({ length: pages - 1 }, (_, i) => page(i + 2));
         return forkJoin(rest).pipe(
@@ -243,6 +279,28 @@ export class ApiMsfDataSource extends MsfDataSource {
   private envelope<T>(path: string, params?: QueryParams): Observable<ApiResponse<T>> {
     return this.http.get<ApiResponse<T>>(`${this.baseUrl}${path}`, { params });
   }
+}
+
+const ABILITY_KEYS = ['basic', 'special', 'ultimate', 'passive'] as const;
+
+/** Description of each ability at its highest level, with name and traits in the same language. */
+export function toKit(info: CharacterInfo): CharacterKit {
+  const texts: CharacterKit['texts'] = {};
+  for (const key of ABILITY_KEYS) {
+    const levels = info.abilityKit?.[key]?.levels ?? {};
+    const top = Object.keys(levels)
+      .map(Number)
+      .filter((n) => !Number.isNaN(n))
+      .sort((a, b) => b - a)[0];
+    const text = top !== undefined ? levels[String(top)]?.description : undefined;
+    if (text) texts[key] = text;
+  }
+  return {
+    id: info.id,
+    name: info.name,
+    traits: (info.traits ?? []).map((t) => (typeof t === 'string' ? { id: t, name: t } : t)),
+    texts,
+  };
 }
 
 function withSince(params: QueryParams, since?: string): QueryParams {

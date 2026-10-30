@@ -1,0 +1,82 @@
+<header class="page-header">
+  <div>
+    <h1>Składy</h1>
+    <p>
+      Jakie drużyny wystawić w każdym trybie — z mety, z popularnych składów graczy i z synergii w
+      umiejętnościach Twoich postaci — oraz co poprawić w Twoich zapisanych składach.
+    </p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Tryb gry">
+  @for (t of tabs; track t.id) {
+    <button type="button" [class.active]="tab() === t.id" (click)="select(t.id)">
+      {{ t.label }}
+    </button>
+  }
+</nav>
+
+@if (status() === 'error') {
+  <p class="state-message">Nie udało się wczytać rosteru.</p>
+} @else if (status() !== 'loaded') {
+  <p class="state-message">Wczytuję roster…</p>
+} @else {
+  @if (kitsMissing() || communityDown()) {
+    <div class="notes small muted">
+      @if (kitsMissing()) {
+        <p>Opisy umiejętności są niedostępne — synergię liczę tylko ze wspólnych cech postaci.</p>
+      }
+      @if (communityDown()) {
+        <p>
+          Analiza popularnych składów z API jest niedostępna — korzystam z drużyn z poradników (<a
+            routerLink="/teams"
+            >Drużyny</a
+          >).
+        </p>
+      }
+    </div>
+  }
+
+  <section>
+    <div class="plan-head">
+      <h2 class="section-title">Plan na ten tryb</h2>
+      <label class="small muted">
+        Ile drużyn
+        <span class="count">
+          @for (n of counts; track n) {
+            <button type="button" [class.active]="count() === n" (click)="setCount(n)">
+              {{ n }}
+            </button>
+          }
+        </span>
+      </label>
+    </div>
+    <p class="muted small explain">
+      Najlepsze drużyny, które możesz wystawić teraz, bez powtarzania postaci — tak jak przy kilku
+      drużynach naraz (obrona w wojnie, ścieżki w raidzie, Crucible). Ocena: moc × siła w mecie
+      (tier, popularność) × synergia z umiejętności.
+    </p>
+    <div class="grid">
+      @for (s of plan().squads; track s.key; let i = $index) {
+        <app-squad-card [option]="s" [index]="i + 1" />
+      }
+    </div>
+
+    @if (plan().alternatives.length) {
+      <h3 class="section-title">Inne opcje</h3>
+      <div class="grid">
+        @for (a of plan().alternatives; track a.option.key) {
+          <app-squad-card [option]="a.option" [details]="false">
+            @if (a.conflicts.length) {
+              <p class="tiny muted conflict">{{ conflicts(a.conflicts) }}</p>
+            }
+          </app-squad-card>
+        }
+      </div>
+    }
+  </section>
+
+  <app-saved-squads [reviews]="saved()" [status]="store.savedStatus()" />
+
+  <app-loose-characters [loose]="store.loose()" />
+}

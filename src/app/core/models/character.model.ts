@@ -1,4 +1,4 @@
-import { Item } from './item.model';
+import { AbilityKey, Item } from './item.model';
 
 /**
  * Character models mirroring the MSF API schemas (CharacterInfo, CharacterInstance, Trait, Iso8).
@@ -30,6 +30,33 @@ export interface CharacterInfo {
   eventTraits?: Trait[];
   /** [0] = yellow-star shard item, [1-7] red star items, [8-10] diamond items. */
   starItems?: Item[];
+  /** Only when requested with `abilityKits`. */
+  abilityKit?: AbilityKit;
+}
+
+/** Mirrors API schemas AbilityKit / Ability / AbilityLevel (descriptions only). */
+export interface AbilityKit {
+  basic?: Ability;
+  special?: Ability;
+  ultimate?: Ability;
+  passive?: Ability;
+}
+
+export interface Ability {
+  name?: string;
+  /** Level number (from 1) → that level. */
+  levels?: Record<string, { description?: string }>;
+}
+
+/**
+ * What the app keeps of a character's kit: the description of each ability at its highest
+ * level, with the character's name and traits in the same language as the text.
+ */
+export interface CharacterKit {
+  id: string;
+  name?: string;
+  traits: TraitObject[];
+  texts: Partial<Record<AbilityKey, string>>;
 }
 
 export type IsoClass = 'striker' | 'fortifier' | 'healer' | 'skirmisher' | 'raider';

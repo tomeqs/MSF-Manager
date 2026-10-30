@@ -55,6 +55,8 @@ src/app/
     events/            trwające i nadchodzące eventy z postępem
     teams/             drużyny per tryb gry dopasowane do rosteru (gotowe / brakuje 1–2);
                        źródło: analiza MSF API, a gdy ta nie działa — lista z poradników
+    squads/            składy per tryb: plan bez powtórzeń postaci, Twoje składy z gry z
+                       podpowiedziami zamian, luźne postacie z partnerami (synergia z pasywek)
     key-characters/    postacie uniwersalne (plug-and-play) i ich priorytet farmienia
     farming/           ranking „Co się najbardziej opłaca” + kalkulator: cele (gwiazdki, umiejętności) → shardy i materiały vs inwentarz
     login/             ekran logowania / wejście w tryb demo
@@ -102,6 +104,11 @@ Komponenty nie znają kształtu odpowiedzi API — operują na `RosterEntry` z m
 - Shard postaci to `starItems[0]` z `/game/v1/characters?starItems=full`.
 - `teamOrder.total` liczy wystąpienia danej kolejności składu; różne kolejności tego samego
   składu są sumowane.
+- `/player/v1/squads` (zakres `m3p.f.pr.ros`) zwraca `{tabs: {arena: [[id…]…], …}, maxSquads}`;
+  API pozwala składy tylko **czytać** — zapisać je trzeba w grze.
+- `/game/v1/characters?abilityKits=max` zwraca opis każdej umiejętności na najwyższym poziomie
+  (`abilityKit.<umiejętność>.levels.<n>.description`); strony po 40 postaci, by zmieścić się w
+  limicie 472 kB.
 
 ## Drużyny: fallback
 
@@ -140,6 +147,35 @@ Zakładki Blitz i Wieża zaczynają od trwających i zapowiedzianych eventów te
 (Blitz: do 3, Wieża: 1) i postacie, które pasują cechami, ale nie spełniają minimów
 (gwiazdki, gear, poziom, czerwone gwiazdki, ISO-8) — z „Farmuj” do wymaganych gwiazdek.
 Cechy porównywane są łącznie z niewidocznymi i eventowymi (`traitKeys`).
+
+## Składy (`squads.ts`, `synergy.ts`)
+
+Strona „Składy” łączy trzy źródła: drużyny z poradników (`known-meta.ts`, tier S/A/B),
+najczęstsze składy graczy (`teamOrder` z API) i **Twoje zapisane składy** (`/player/v1/squads`).
+
+**Synergia z umiejętności.** Opisy umiejętności (pasywka waży najwięcej, ultimate/special
+0,6, basic 0,4) są przeszukiwane pod kątem nazw cech i postaci. „Symbiote allies gain…” łączy
+postać z każdym Symbiote, „when Toxin is an ally” — z Toxinem (najmocniejsze powiązanie).
+Rzadkie cechy ważą więcej niż pospolite (rzadkość = ln(N/liczba)/ln(N); Hero, Villain itp.
+poniżej 0,2 są pomijane). Wzmianki o przeciwnikach („against Mystic enemies”) i „non-…” się
+nie liczą. Wspólna rzadka cecha daje mały bonus nawet bez wzmianki — gdy opisów nie ma, tylko
+to zostaje. Synergia składu = średnia par przeskalowana do 0–100%.
+
+**Plan na tryb.** Ocena składu = moc / najmocniejszy skład × siła w mecie (tier S 1 / A 0,85 /
+B 0,72, popularny 0,7–0,95, bez poparcia 0,65) × (0,75 + 0,25 × synergia). Plan wybiera
+najlepsze składy, które możesz wystawić teraz, **bez powtarzania postaci** (ile — wybierasz;
+domyślnie 1 na arenę, 3 gdzie indziej). Gdy znane składy się skończą, buduje kolejne z
+synergii wokół najsilniejszych wolnych postaci (z 60 najmocniejszych). Kolejność w składzie:
+jak u większości graczy (gdy skład jest w analizie API), Twoja z gry albo z poradnika; postać,
+której opis mówi o sąsiadach („adjacent”), jest oznaczona.
+
+**Twoje składy z gry** dostają werdykt: skład z mety (zostaw), „prawie” znany/popularny skład
+(≥ 3 wspólne postacie — co zamienić, z zablokowanymi oznaczonymi) albo własny — wtedy słabe
+ogniwo (najmniej synergii z resztą) i postać z rosteru, która doda najwięcej.
+
+**Luźne postacie** to silne postacie spoza znanych drużyn, popularnych składów i Twoich
+składów: ich najlepsi partnerzy według umiejętności i skład zbudowany wokół nich. Tryb demo
+ma wymyślone opisy umiejętności w stylu gry — tylko do pokazania działania.
 
 ## Ranking opłacalności
 

@@ -5,4 +5,5 @@ export * from './item.model';
 export * from './player.model';
 export * from './potential.model';
 export * from './roster-entry.model';
+export * from './squad.model';
 export * from './team.model';

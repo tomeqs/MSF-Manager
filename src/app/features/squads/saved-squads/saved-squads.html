@@ -1,0 +1,62 @@
+<section>
+  <h2 class="section-title">Twoje składy z gry</h2>
+  @switch (status()) {
+    @case ('loading') {
+      <p class="muted small">Wczytuję Twoje zapisane składy…</p>
+    }
+    @case ('error') {
+      <p class="muted small">
+        Nie udało się pobrać Twoich składów z gry (/player/v1/squads). Reszta strony działa bez
+        nich.
+      </p>
+    }
+    @default {
+      @if (!reviews().length) {
+        <p class="muted small">Nie masz zapisanych składów dla tego trybu.</p>
+      }
+    }
+  }
+  <div class="grid">
+    @for (r of reviews(); track $index) {
+      <app-squad-card [option]="r.option" [details]="false">
+        @switch (r.verdict) {
+          @case ('meta') {
+            <p class="verdict ok">✓ Skład z mety — zostaw.</p>
+          }
+          @case ('near') {
+            <div class="verdict">
+              <p>{{ nearText(r.target!) }} — zamień:</p>
+              <ul>
+                @for (s of r.swaps; track $index) {
+                  <li>
+                    @if (s.in) {
+                      {{ s.out ? s.out.name + ' → ' : 'dodaj ' }}<strong>{{ s.in.name }}</strong>
+                    } @else if (s.locked) {
+                      {{ s.out ? s.out.name + ' → ' : '' }}<strong>{{ s.locked }}</strong>
+                      <span class="muted">&nbsp;(nie masz — do odblokowania)</span>
+                    }
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+          @case ('custom') {
+            @if (r.swaps[0]; as s) {
+              <div class="verdict">
+                <p>
+                  Słabe ogniwo: <strong>{{ s.out?.name }}</strong> (najmniej synergii z resztą).
+                  Lepiej: <strong>{{ s.in?.name }}</strong>
+                </p>
+                @if (r.reason) {
+                  <p class="muted small">{{ link(r.reason) }}</p>
+                }
+              </div>
+            } @else {
+              <p class="verdict muted">Własny skład — nie widzę w rosterze lepszej zamiany.</p>
+            }
+          }
+        }
+      </app-squad-card>
+    }
+  </div>
+</section>

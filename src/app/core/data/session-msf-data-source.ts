@@ -4,11 +4,13 @@ import { AuthService } from '../auth/auth.service';
 import {
   CharacterInfo,
   CharacterInstance,
+  CharacterKit,
   CharacterPotential,
   EventInfo,
   ItemQuantity,
   PlayerCard,
   PotentialTarget,
+  SquadsInfo,
   TeamOrder,
   TeamTab,
   UpgradeData,
@@ -38,6 +40,14 @@ export class SessionMsfDataSource extends MsfDataSource {
 
   getCharacters(): Observable<CharacterInfo[]> {
     return this.source.getCharacters();
+  }
+
+  getAbilityKits(): Observable<CharacterKit[]> {
+    return this.source.getAbilityKits();
+  }
+
+  getSquads(): Observable<SquadsInfo> {
+    return this.source.getSquads();
   }
 
   getEvents(): Observable<EventInfo[]> {

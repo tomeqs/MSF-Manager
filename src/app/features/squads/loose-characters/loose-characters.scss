@@ -1,0 +1,32 @@
+.intro {
+  margin: 0 0 12px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  gap: 12px;
+}
+
+.loose {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.partners {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.small {
+  font-size: 0.82rem;
+}

@@ -48,6 +48,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/teams/teams').then((m) => m.Teams),
       },
       {
+        path: 'squads',
+        title: 'Składy · MSF Assistant',
+        loadComponent: () => import('./features/squads/squads').then((m) => m.Squads),
+      },
+      {
         path: 'key-characters',
         title: 'Kluczowe postacie · MSF Assistant',
         loadComponent: () =>
