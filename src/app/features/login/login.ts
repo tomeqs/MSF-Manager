@@ -1,6 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DOCUMENT, inject, input, signal } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -12,7 +11,7 @@ import { AuthService } from '../../core/auth/auth.service';
 })
 export class Login {
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly document = inject(DOCUMENT);
 
   /** Query params. */
   readonly returnUrl = input<string>();
@@ -26,9 +25,13 @@ export class Login {
     void this.auth.login(this.target());
   }
 
+  /**
+   * Full page load into demo mode: stores still holding an expired session's account data
+   * must not show it as the demo (or mix demo goals into it).
+   */
   protected demo(): void {
     this.auth.startDemo();
-    void this.router.navigateByUrl(this.target());
+    this.document.location.assign(this.target());
   }
 
   /** Only allow in-app paths as return targets. */

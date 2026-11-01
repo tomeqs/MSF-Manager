@@ -108,6 +108,7 @@ describe('advisor', () => {
     const best = bestByCharacter(recommend(input()));
     expect(advise(input()).progression).toMatchObject({ frontier: 16, top: 18 });
     expect(best.get('B')!.upgrades).toEqual(['G15→G16']);
+    expect(best.get('B')!.target).toMatchObject({ gear: 16, level: 90 }); // what "Farmuj" saves
     expect(best.get('A')!.upgrades).toEqual(['G16→G17 (G17: trudny)']);
     expect(best.get('A')!.gearDifficulty).toBe('hard');
     // Only one of four remaining tiers is aimed for, so only part of the gap counts.

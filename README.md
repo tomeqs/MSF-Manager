@@ -131,9 +131,11 @@ Dla każdego członka drużyny `/game/v1/characterInstances/{id}` zwraca moc prz
 gearze i umiejętnościach dla **poziomu gracza** (postać nie przekroczy poziomu gracza), z
 obecnymi czerwonymi gwiazdkami/diamentami i aktywną klasą ISO-8 na maks. Suma = moc docelowa
 drużyny; różnica z obecną mocą = „brakuje”. Wyniki są cache'owane (hash `chars`), zapytania
-idą po maks. 4 naraz (`PotentialStore`). „Farmuj” tworzy cel: odblokowanie albo 7★ + docelowe
-poziomy umiejętności. Farmienie dzieli cele na „Do odblokowania” i „Do ulepszenia”.
-Gear (G→G) jest pokazywany jako brak, ale kalkulator materiałów gearu jeszcze go nie liczy.
+idą po maks. 4 naraz (`PotentialStore`). „Farmuj” dodaje do celu postaci wszystkie jej
+polecane akcje (albo maks. rozwój, gdy postaci nie ma w rankingu — dopiero gdy moc maks. się
+wczyta). Farmienie dzieli cele na „Do odblokowania” i „Do ulepszenia”. Cel z gearem lub
+poziomem pokazuje te kroki, ale kalkulator materiałów gearu jeszcze ich nie liczy, więc taki
+cel nigdy nie jest oznaczony jako „gotowy do ulepszenia”.
 
 ## Kiedy przestać farmić
 
@@ -264,8 +266,10 @@ fokus i Twój etap gearu.
 shardy na odblokowanie każdej brakującej (z inwentarzem), „Możesz skompletować teraz” i
 „Farmuj brakujące”. Kolejność: gotowe teraz → mniej brakujących → mniej shardów → mocniejsza.
 
-Ranking jest na Farmieniu („Farmuj” zapisuje cel: same umiejętności dla ulepszeń, 7★ dla
-shardów/odblokowania). Cele w grupach są sortowane według rankingu.
+Ranking jest na Farmieniu. „Farmuj” zapisuje dokładnie krok akcji (`goals.ts`): dla ulepszeń
+poziom, gear i umiejętności przy obecnych gwiazdkach, dla shardów 7★, dla odblokowania
+gwiazdki odblokowania — i dołącza go do istniejącego celu (wyższy z celów w każdej części).
+Cel, który niczego nie dodaje, nie jest zapisywany. Cele w grupach są sortowane według rankingu.
 
 ## Źródła postaci i eventy
 
@@ -277,15 +281,18 @@ weryfikacja tez (Overpower zastąpiony przez Chapter Boosts od 4.05.2026), fala 
 Załączniki obu raportów są w aplikacji jako `core/data/character-sources.ts` (143 postacie;
 ze skrawków wyników wyszukiwania — potwierdzaj w grze przyciskiem „Find”, odświeżaj po
 blogach). Okno czasowe może mieć `until` (szacowany koniec) i `afterUntil` — po tej dacie
-status sam przechodzi np. z „event teraz” na „niedostępna teraz”.
+(w lokalnej strefie gracza, sprawdzane co godzinę) status sam przechodzi np. z „event teraz” na
+„niedostępna teraz”, a bez `afterUntil` na „okno minęło — sprawdź w grze” (×1,5).
 
 - **Stan źródła**: stałe (sklep postaci według Age, węzeł kampanii, DD, stały event), tylko
-  losowe orby, event teraz, tylko płatne, za bramką endgame, niedostępne, brak danych.
+  losowe orby, event teraz, tylko płatne, za bramką endgame, niedostępne, brak danych, okno minęło.
 - **Koszt shardów** w rankingu mnożony według stanu (`SOURCE_FACTOR`): event 0,7, stałe 1,
-  orby 1,5, płatne 3, endgame 4, niedostępne 6 — nie farmisz czegoś, czego teraz nie ma.
+  orby i wygasłe okna 1,5, płatne 3, endgame 4, niedostępne 6 — nie farmisz czegoś, czego teraz
+  nie ma. Trwający event z API tanieje tylko shardy, które gwarantuje (suma trwających eventów);
+  reszta zostaje po stawce źródła.
 - **Eventy z API**: `/player/v1/events?objRewards=full` → shardy w nagrodach progów
-  (`event-rewards.ts`). Trwający event z shardami postaci obniża koszt i wygrywa ze stanem
-  z badań; ruch dostaje dopisek „Event „X”: +N shardów (do d.m)”.
+  (`event-rewards.ts`). Trwający event z shardami postaci obniża koszt shardów, które daje, a
+  w fokusie liczy się jako otwarte źródło; ruch dostaje dopisek „Event „X”: +N shardów (do d.m)”.
 - **Fokus pomija drużyny, których nie skompletujesz** — brakujący członek jest płatny, za
   bramką albo niedostępny, chyba że masz już shardy na odblokowanie lub trwa event.
 - **Tryby ważą według nagród** po reformie ekonomii 2026 (`MODE_VALUE`): rajd (gear) i Wojna

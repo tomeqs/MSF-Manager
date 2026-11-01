@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 import { CHARACTER_SOURCES_AS_OF } from '../../core/data/character-sources';
 import { AdvisorStore } from '../../core/state/advisor.store';
 import { offerSummary } from '../../core/state/event-rewards';
-import { goalFor } from '../../core/state/farming-calc';
 import { FarmingStore } from '../../core/state/farming.store';
 import {
   ABILITY_KEYS,
@@ -108,11 +107,14 @@ export class CharacterDetail {
     });
   }
 
-  /** Farming goal towards the max build: unlock, or 7★ with the target ability levels. */
-  protected farm(): void {
+  /** What "Dodaj do farmienia" saves (undefined until there is something to aim for). */
+  protected readonly farmGoal = computed(() => {
     const e = this.entry();
-    if (!e) return;
-    const potential = this.potentials.get(e, this.playerLevel());
-    this.farming.saveGoal(goalFor(e, potential?.abilities));
+    return e ? this.advisor.farmGoal(e) : undefined;
+  });
+
+  /** Farming goal: the recommended actions, or the max build for the player's level. */
+  protected farm(): void {
+    this.farming.farm(this.farmGoal());
   }
 }

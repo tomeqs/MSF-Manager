@@ -8,9 +8,8 @@ import {
 } from '../../../core/state/advisor';
 import { AdvisorStore } from '../../../core/state/advisor.store';
 import { offerSummary } from '../../../core/state/event-rewards';
-import { goalFor } from '../../../core/state/farming-calc';
+import { goalCovers, recommendedGoal } from '../../../core/state/goals';
 import { FarmingStore } from '../../../core/state/farming.store';
-import { PotentialStore } from '../../../core/state/potential.store';
 import { CharacterAvatar } from '../../../shared/ui/character-avatar';
 import { ProgressBar } from '../../../shared/ui/progress-bar';
 import { SourceLine } from '../../../shared/ui/source-line';
@@ -29,7 +28,6 @@ const PREVIEW = 8;
 export class FarmingRanking {
   protected readonly store = inject(FarmingStore);
   private readonly advisor = inject(AdvisorStore);
-  private readonly potentials = inject(PotentialStore);
 
   protected readonly kindLabels = RECOMMENDATION_LABELS;
   protected readonly action = actionSummary;
@@ -47,20 +45,13 @@ export class FarmingRanking {
     () => new Map(this.store.goals().map((g) => [g.characterId, g] as const)),
   );
 
-  /** A saved goal covers the action: any goal for upgrades, a star target for shard actions. */
+  /** The saved goal already includes this action's step. */
   protected inGoals(rec: Recommendation): boolean {
-    const goal = this.goalsById().get(rec.entry.id);
-    if (!goal) return false;
-    return rec.kind === 'upgrade' || goal.targetYellow > rec.entry.yellowStars;
+    return goalCovers(this.goalsById().get(rec.entry.id), rec);
   }
 
-  /**
-   * Goal for a ranked action: abilities at the current stars for upgrades, otherwise 7★ (or
-   * unlock) with the max ability levels.
-   */
+  /** Adds exactly this action's step (gear, level, abilities, stars or unlock) to the goal. */
   protected farmRecommended(rec: Recommendation): void {
-    const potential = this.potentials.get(rec.entry, this.advisor.playerLevel());
-    const stars = rec.kind === 'upgrade' ? rec.entry.yellowStars : undefined;
-    this.store.saveGoal(goalFor(rec.entry, potential?.abilities, stars));
+    this.store.farm(recommendedGoal(rec));
   }
 }

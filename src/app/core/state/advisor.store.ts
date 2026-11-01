@@ -1,7 +1,8 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { CHARACTER_SOURCES } from '../data/character-sources';
 import { KEY_CHARACTERS } from '../data/key-characters';
 import { KNOWN_META } from '../data/known-meta';
+import { RosterEntry } from '../models';
 import {
   Advice,
   Recommendation,
@@ -12,8 +13,10 @@ import {
   completableTeams,
 } from './advisor';
 import { capAt } from './level-caps';
+import { FarmingGoal } from './farming-calc';
+import { maxBuildGoal, mergeGoals, recommendedGoal } from './goals';
 import { progression } from './progression';
-import { sourceLookup } from './sources';
+import { localDate, sourceLookup } from './sources';
 import { shardOffers } from './event-rewards';
 import { MAX_YELLOW_STARS } from './game-rules';
 import { memberPower } from './potential-calc';
@@ -21,6 +24,8 @@ import { FarmingStore } from './farming.store';
 import { PlayerStore } from './player.store';
 import { PotentialStore } from './potential.store';
 import { RosterStore } from './roster.store';
+
+const HOUR_MS = 60 * 60 * 1000;
 
 /** Roster-wide ranking of what pays off most to farm right now (see `advisor.ts`). */
 @Injectable({ providedIn: 'root' })
@@ -37,8 +42,14 @@ export class AdvisorStore {
   /** Needs the inventory and upgrade data (shards), so it follows the farming store. */
   readonly status = this.farming.status;
 
-  /** Researched shard source per character. */
-  readonly sourceOf = sourceLookup(CHARACTER_SOURCES);
+  /** Today's date, checked hourly, so time-limited sources expire while the app stays open. */
+  private readonly today = signal(localDate(new Date()));
+  private readonly sources = computed(() =>
+    sourceLookup(CHARACTER_SOURCES, new Date(`${this.today()}T12:00:00`)),
+  );
+
+  /** Researched shard source per character, as of today. */
+  readonly sourceOf = (entry: RosterEntry) => this.sources()(entry);
 
   /** Running and upcoming events that award shards of roster characters, by shard item id. */
   readonly offers = computed(() =>
@@ -92,6 +103,22 @@ export class AdvisorStore {
 
   /** Best-ranked action per character id. */
   readonly byId = computed(() => bestByCharacter(this.recommendations()));
+
+  /**
+   * What "Farmuj" on a character saves: every action recommended for it (upgrade and/or
+   * stars, or unlock), else its max build once the potential is known; undefined until then.
+   */
+  farmGoal(entry: RosterEntry): FarmingGoal | undefined {
+    const recs = this.recommendations().filter((r) => r.entry.id === entry.id);
+    if (recs.length) {
+      return recs.map(recommendedGoal).reduce<FarmingGoal | undefined>(mergeGoals, undefined);
+    }
+    return maxBuildGoal(entry, this.potentials.get(entry, this.playerLevel()));
+  }
+
+  constructor() {
+    setInterval(() => this.today.set(localDate(new Date())), HOUR_MS);
+  }
 
   load(): void {
     this.farming.load();

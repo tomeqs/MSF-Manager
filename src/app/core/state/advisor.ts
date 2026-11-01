@@ -125,6 +125,13 @@ export interface TeamContext {
   readiness: number;
 }
 
+/** Level, gear tier and ability levels an upgrade action aims for. */
+export interface UpgradeTarget {
+  level: number;
+  gear: number;
+  abilities: Record<AbilityKey, number>;
+}
+
 export interface Recommendation {
   /** `${characterId}:${kind}` — a character can have an upgrade and a stars action. */
   id: string;
@@ -157,6 +164,8 @@ export interface Recommendation {
   upgrades: string[];
   /** Difficulty of the highest gear tier in an upgrade action. */
   gearDifficulty?: Difficulty;
+  /** Upgrade actions: the build they aim for (what "Farmuj" saves as the goal). */
+  target?: UpgradeTarget;
   /** Unlock action: shards to unlock (team completion happens here, before 7★). */
   unlock?: MissingMember;
   /** Shard actions: the best running (or else upcoming) event that awards its shards. */
@@ -318,15 +327,12 @@ export function advise(input: AdvisorInput): Advice {
       });
     };
 
-    // Shards a running event awards for playing it are much cheaper than farming them; the
-    // rest costs more or less depending on whether its source is open now (live API data
-    // about a running event beats the researched status).
+    // Shards running events award for playing them cost the event rate; the rest still comes
+    // from the researched source (a paid or endgame character stays expensive past what the
+    // event gives).
     const offer = entry.shardItemId ? offers?.get(entry.shardItemId)?.[0] : undefined;
-    const fromEvent = offer?.live ? offeredShards(offer) : 0;
     const source = sourceOf(entry);
-    const factor = offer?.live ? SOURCE_FACTOR.event : SOURCE_FACTOR[source?.status ?? 'unknown'];
-    const shardEffort =
-      EFFORT.base + (Math.max(0, shardsMissing - fromEvent) / EFFORT.shardsPerUnit) * factor;
+    const shardEffort = EFFORT.base + shardUnits(shardsMissing, entry, offers, source);
     if (!entry.unlocked) {
       const build =
         EFFORT.levels + gearCost(profile, 1, profile.frontier) + EFFORT.newCharacterAbilities;
@@ -347,6 +353,7 @@ export function advise(input: AdvisorInput): Advice {
       add('upgrade', gain, steps.effort, estimated, {
         upgrades: steps.upgrades,
         gearDifficulty: steps.gearDifficulty,
+        target: { level: target.level, gear: target.gear, abilities: { ...target.abilities } },
       });
     }
     if (entry.yellowStars < MAX_YELLOW_STARS) {
@@ -361,6 +368,22 @@ export function advise(input: AdvisorInput): Advice {
     plans,
     progression: profile,
   };
+}
+
+/** Effort units of `missing` shards: event-awarded ones at the event rate, the rest by source. */
+function shardUnits(
+  missing: number,
+  entry: RosterEntry,
+  offers: ReadonlyMap<string, ShardOffer[]> | undefined,
+  source: CharacterSource | undefined,
+): number {
+  const live = (entry.shardItemId ? offers?.get(entry.shardItemId) : undefined) ?? [];
+  const awarded = live.filter((o) => o.live).reduce((sum, o) => sum + offeredShards(o), 0);
+  const fromEvent = Math.min(missing, awarded);
+  return (
+    (fromEvent / EFFORT.shardsPerUnit) * SOURCE_FACTOR.event +
+    ((missing - fromEvent) / EFFORT.shardsPerUnit) * SOURCE_FACTOR[source?.status ?? 'unknown']
+  );
 }
 
 /** Best (highest ranked) action per character. */

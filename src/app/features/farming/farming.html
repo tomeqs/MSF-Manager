@@ -75,6 +75,18 @@
       </div>
     }
 
+    @if (plan.gear || plan.level) {
+      <p class="small steps">
+        @if (plan.level; as l) {
+          <span>Poziom {{ l.from }}→{{ l.to }}</span>
+        }
+        @if (plan.gear; as g) {
+          <span>Gear G{{ g.from }}→G{{ g.to }}</span>
+          <span class="muted">(materiałów gearu jeszcze nie liczę)</span>
+        }
+      </p>
+    }
+
     @if (plan.materials.length) {
       <ul class="materials">
         @for (m of plan.materials; track m.itemId) {

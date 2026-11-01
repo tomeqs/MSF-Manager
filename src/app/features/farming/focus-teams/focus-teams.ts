@@ -2,13 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { SOURCE_STATUS_LABELS } from '../../../core/data/character-sources';
 import { RosterEntry } from '../../../core/models';
-import { actionSummary } from '../../../core/state/advisor';
+import { Recommendation, actionSummary } from '../../../core/state/advisor';
 import { AdvisorStore } from '../../../core/state/advisor.store';
-import { goalFor } from '../../../core/state/farming-calc';
+import { goalCovers, recommendedGoal } from '../../../core/state/goals';
 import { offerSummary } from '../../../core/state/event-rewards';
 import { FarmingStore } from '../../../core/state/farming.store';
 import { MODE_LABELS } from '../../../core/state/game-rules';
-import { PotentialStore } from '../../../core/state/potential.store';
 import {
   DIFFICULTY_LABELS,
   Difficulty,
@@ -37,7 +36,6 @@ interface TierChip {
 export class FocusTeams {
   private readonly advisor = inject(AdvisorStore);
   private readonly farming = inject(FarmingStore);
-  private readonly potentials = inject(PotentialStore);
 
   protected readonly plans = this.advisor.focusPlans;
   protected readonly profile = this.advisor.progression;
@@ -65,8 +63,8 @@ export class FocusTeams {
     return chips;
   });
 
-  private readonly goalIds = computed(
-    () => new Set(this.farming.goals().map((g) => g.characterId)),
+  private readonly goalsById = computed(
+    () => new Map(this.farming.goals().map((g) => [g.characterId, g])),
   );
 
   protected modes(plan: TeamPlan): string {
@@ -100,18 +98,15 @@ export class FocusTeams {
   }
 
   protected allInGoals(plan: TeamPlan): boolean {
-    return this.todo(plan).every((e) => this.goalIds().has(e.id));
+    return this.todo(plan).every((e) => goalCovers(this.goalsById().get(e.id), this.recOf(e)));
   }
 
-  /** Goals for every member with something worth farming, following its best action. */
+  /** Adds each member's best action to its goal. */
   protected farmTeam(plan: TeamPlan): void {
-    const level = this.advisor.playerLevel();
-    for (const entry of this.todo(plan)) {
-      if (this.goalIds().has(entry.id)) continue;
-      const rec = this.advisor.byId().get(entry.id)!;
-      const potential = this.potentials.get(entry, level);
-      const stars = rec.kind === 'upgrade' ? entry.yellowStars : undefined;
-      this.farming.saveGoal(goalFor(entry, potential?.abilities, stars));
-    }
+    for (const entry of this.todo(plan)) this.farming.farm(recommendedGoal(this.recOf(entry)));
+  }
+
+  private recOf(entry: RosterEntry): Recommendation {
+    return this.advisor.byId().get(entry.id)!;
   }
 }

@@ -44,7 +44,7 @@ export class TeamCompletions {
   /** Unlock goals for every missing member not in the goals yet. */
   protected farmMissing(completion: TeamCompletion): void {
     for (const { entry } of completion.missing) {
-      if (!this.goalIds().has(entry.id)) this.store.saveGoal(goalFor(entry));
+      this.store.farm(goalFor(entry));
     }
   }
 }

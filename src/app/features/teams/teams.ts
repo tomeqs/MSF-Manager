@@ -10,6 +10,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { EventInfo, Requirements, RosterEntry, TeamTab } from '../../core/models';
 import { goalFor } from '../../core/state/farming-calc';
+import { AdvisorStore } from '../../core/state/advisor.store';
 import { FarmingStore } from '../../core/state/farming.store';
 import { PlayerStore } from '../../core/state/player.store';
 import { MemberPower, TeamPower, teamPower } from '../../core/state/potential-calc';
@@ -65,6 +66,7 @@ export class Teams {
   private readonly farming = inject(FarmingStore);
   private readonly player = inject(PlayerStore);
   private readonly potentials = inject(PotentialStore);
+  private readonly advisor = inject(AdvisorStore);
 
   protected readonly maxMissing = MAX_MISSING;
   protected readonly knownAsOf = KNOWN_META_AS_OF;
@@ -230,7 +232,7 @@ export class Teams {
    * its max build for the player's level (when known).
    */
   protected farm(member: TeamMember): void {
-    if (member.entry) this.farmEntry(member.entry);
+    if (member.entry) this.farming.farm(this.advisor.farmGoal(member.entry));
   }
 
   /**
@@ -242,12 +244,7 @@ export class Teams {
   }
 
   protected farmFor(entry: RosterEntry, minYellow: number | undefined): void {
-    this.farmEntry(entry, entry.unlocked ? minYellow : undefined);
-  }
-
-  private farmEntry(entry: RosterEntry, targetYellow?: number): void {
-    const potential = this.potentials.get(entry, this.playerLevel());
-    this.farming.saveGoal(goalFor(entry, potential?.abilities, targetYellow));
+    this.farming.farm(goalFor(entry, undefined, entry.unlocked ? minYellow : undefined));
   }
 
   protected isGoal(entry: RosterEntry): boolean {

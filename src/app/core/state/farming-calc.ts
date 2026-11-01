@@ -14,6 +14,10 @@ export interface FarmingGoal {
   characterId: string;
   targetYellow: number;
   targetAbilities: Record<AbilityKey, number>;
+  /** Gear tier to reach (its materials are not counted yet). */
+  targetGear?: number;
+  /** Character level to reach. */
+  targetLevel?: number;
 }
 
 export interface MaterialLine {
@@ -54,6 +58,10 @@ export interface GoalPlan {
   shards: ShardPlan;
   nextStar?: NextStar;
   materials: MaterialLine[];
+  /** Gear tiers still to equip (materials not counted). */
+  gear?: { from: number; to: number };
+  /** Levels still to gain. */
+  level?: { from: number; to: number };
   /** Nothing left to upgrade. */
   reached: boolean;
   /** Everything needed is in the inventory. */
@@ -142,6 +150,15 @@ export function planGoal(
     ),
   ];
   const materials = toLines(merge(costs), inventory, labelsOf(upgrade));
+  const gear =
+    goal.targetGear !== undefined && goal.targetGear > entry.gearTier
+      ? { from: entry.gearTier, to: goal.targetGear }
+      : undefined;
+  const level =
+    goal.targetLevel !== undefined && goal.targetLevel > entry.level
+      ? { from: entry.level, to: goal.targetLevel }
+      : undefined;
+  const abilitiesLeft = ABILITY_KEYS.some((k) => goal.targetAbilities[k] > entry.abilities[k]);
 
   return {
     goal,
@@ -149,8 +166,11 @@ export function planGoal(
     shards,
     nextStar: nextStar(entry, upgrade, inventory, goal.targetYellow),
     materials,
-    reached: shardsNeeded === 0 && materials.length === 0,
-    affordable: shards.missing === 0 && materials.every((m) => m.missing === 0),
+    gear,
+    level,
+    reached: shardsNeeded === 0 && !abilitiesLeft && !gear && !level,
+    // Gear and levels are not priced, so a goal with them is never shown as covered.
+    affordable: !gear && !level && shards.missing === 0 && materials.every((m) => m.missing === 0),
   };
 }
 

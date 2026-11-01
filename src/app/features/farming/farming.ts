@@ -167,7 +167,10 @@ export class Farming {
   protected save(): void {
     const entry = this.selected();
     if (!entry) return;
+    // Gear and level targets come from "Farmuj"; the form edits stars and abilities only.
+    const existing = this.store.goals().find((g) => g.characterId === entry.id);
     this.store.saveGoal({
+      ...existing,
       characterId: entry.id,
       targetYellow: Math.max(this.targetYellow(), entry.yellowStars),
       targetAbilities: this.targetAbilities(),

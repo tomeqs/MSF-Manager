@@ -74,7 +74,9 @@
           @if (inFarming()) {
             <a routerLink="/farming" class="small">W farmieniu ✓</a>
           } @else {
-            <button type="button" (click)="farm()">Dodaj do farmienia</button>
+            <button type="button" (click)="farm()" [disabled]="!farmGoal()">
+              Dodaj do farmienia
+            </button>
           }
         } @else {
           <p class="muted small">

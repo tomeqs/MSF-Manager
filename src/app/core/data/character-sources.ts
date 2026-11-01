@@ -13,7 +13,9 @@ export type SourceStatus =
   | 'paid'
   | 'endgame'
   | 'unavailable'
-  | 'unknown';
+  | 'unknown'
+  /** A time-limited status ran out and nothing says what follows — check in game. */
+  | 'expired';
 
 export interface CharacterSource {
   /** In-game name. */
@@ -44,6 +46,7 @@ export const SOURCE_STATUS_LABELS: Record<SourceStatus, string> = {
   endgame: 'za bramką endgame',
   unavailable: 'niedostępna teraz',
   unknown: 'brak danych',
+  expired: 'okno minęło — sprawdź w grze',
 };
 
 export const CHARACTER_SOURCES: CharacterSource[] = [

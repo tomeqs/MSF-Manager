@@ -2,12 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@a
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { actionSummary } from '../../core/state/advisor';
-import { goalFor } from '../../core/state/farming-calc';
 import { MODE_LABELS } from '../../core/state/game-rules';
+import { AdvisorStore } from '../../core/state/advisor.store';
 import { FarmingStore } from '../../core/state/farming.store';
 import { KeyCharacterRow } from '../../core/state/key-characters';
 import { KeyCharactersStore } from '../../core/state/key-characters.store';
-import { PotentialStore } from '../../core/state/potential.store';
 import { DEV_STATUS_LABELS } from '../../core/state/potential-calc';
 import { CompactNumberPipe } from '../../shared/pipes/compact-number.pipe';
 import { CharacterAvatar } from '../../shared/ui/character-avatar';
@@ -31,7 +30,7 @@ import { StarRating } from '../../shared/ui/star-rating';
 export class KeyCharacters {
   protected readonly store = inject(KeyCharactersStore);
   private readonly farming = inject(FarmingStore);
-  private readonly potentials = inject(PotentialStore);
+  private readonly advisor = inject(AdvisorStore);
 
   private readonly statusLabels: Record<KeyCharacterRow['status'], string> = {
     ...DEV_STATUS_LABELS,
@@ -82,7 +81,6 @@ export class KeyCharacters {
 
   protected farm(row: KeyCharacterRow): void {
     if (!row.entry) return;
-    const potential = this.potentials.get(row.entry, this.store.playerLevel());
-    this.farming.saveGoal(goalFor(row.entry, potential?.abilities));
+    this.farming.farm(this.advisor.farmGoal(row.entry));
   }
 }

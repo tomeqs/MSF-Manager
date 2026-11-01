@@ -1,4 +1,4 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, linkedSignal, signal } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { MsfDataSource } from '../data/msf-data-source';
@@ -12,6 +12,7 @@ import {
   promotions,
   toInventory,
 } from './farming-calc';
+import { isEmptyGoal, mergeGoals } from './goals';
 import { LevelCap, toLevelCaps } from './level-caps';
 import { RosterStore } from './roster.store';
 
@@ -30,10 +31,11 @@ function readGoals(key: string): FarmingGoal[] {
 export class FarmingStore {
   private readonly data = inject(MsfDataSource);
   private readonly roster = inject(RosterStore);
-  /** Demo and real-account goals are kept apart. */
-  private readonly storageKey = `${GOALS_KEY}.${inject(AuthService).mode() ?? 'none'}`;
+  private readonly auth = inject(AuthService);
+  /** Demo and real-account goals are kept apart, following the current mode. */
+  private readonly storageKey = computed(() => `${GOALS_KEY}.${this.auth.mode() ?? 'none'}`);
 
-  private readonly _goals = signal<FarmingGoal[]>(readGoals(this.storageKey));
+  private readonly _goals = linkedSignal<FarmingGoal[]>(() => readGoals(this.storageKey()));
   private readonly _inventory = signal<Map<string, number>>(new Map());
   private readonly _upgrade = signal<UpgradeData>({});
   private readonly _levelCaps = signal<LevelCap[]>([]);
@@ -71,7 +73,7 @@ export class FarmingStore {
   constructor() {
     effect(() => {
       try {
-        localStorage.setItem(this.storageKey, JSON.stringify(this._goals()));
+        localStorage.setItem(this.storageKey(), JSON.stringify(this._goals()));
       } catch {
         // Storage unavailable — goals live for this session only.
       }
@@ -102,6 +104,21 @@ export class FarmingStore {
       },
       error: () => this._status.set('error'),
     });
+  }
+
+  /**
+   * Adds what a "Farmuj" click recommends to the character's goal (keeping anything already
+   * planned). Goals that ask for nothing new are not saved.
+   */
+  farm(goal: FarmingGoal | undefined): void {
+    if (!goal) return;
+    const entry = this.roster.entry(goal.characterId);
+    const merged = mergeGoals(
+      this._goals().find((g) => g.characterId === goal.characterId),
+      goal,
+    );
+    if (entry && isEmptyGoal(merged, entry)) return;
+    this.saveGoal(merged);
   }
 
   /** Adds a goal or replaces the existing one for the same character. */

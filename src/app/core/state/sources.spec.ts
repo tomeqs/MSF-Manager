@@ -3,7 +3,7 @@ import { KnownTeam } from '../data/known-meta';
 import { RosterEntry, UpgradeData } from '../models';
 import { advise, recommend } from './advisor';
 import { toRosterEntry } from './roster.mapper';
-import { currentSource, isObtainableNow, sourceLookup } from './sources';
+import { currentSource, isObtainableNow, sourceLookup, SOURCE_FACTOR } from './sources';
 import { teamPlans, teamWeight } from './team-plans';
 
 const src = (name: string, status: CharacterSource['status']): CharacterSource => ({
@@ -56,19 +56,22 @@ describe('character sources', () => {
       until: '2026-11-02',
       afterUntil: 'unavailable',
     };
-    expect(currentSource(window, new Date('2026-11-02T12:00:00Z')).status).toBe('event');
-    expect(currentSource(window, new Date('2026-11-03T00:00:00Z')).status).toBe('unavailable');
-    expect(currentSource({ ...window, afterUntil: undefined }, new Date('2027-01-01')).status).toBe(
-      'unknown',
-    );
+    // Dates are the player's local ones: the last day counts until local midnight.
+    expect(currentSource(window, new Date(2026, 10, 2, 23, 30)).status).toBe('event');
+    expect(currentSource(window, new Date(2026, 10, 3, 0, 30)).status).toBe('unavailable');
+    // An ended window with nothing known after it is "check in game", not a free source.
+    const ended = currentSource({ ...window, afterUntil: undefined }, new Date(2027, 0, 1));
+    expect(ended.status).toBe('expired');
+    expect(SOURCE_FACTOR.expired).toBeGreaterThan(SOURCE_FACTOR.permanent);
     const of = sourceLookup([window], new Date('2026-12-01'));
     expect(of(owned('Dracula'))?.status).toBe('unavailable');
   });
 
-  it('prices shards by how open the source is now; a live event wins', () => {
+  it('prices shards by how open the source is now; only event-awarded ones get the event rate', () => {
     const upgrade: UpgradeData = { yellowStarTotalShards: { '3': 50, '7': 410 } };
     const roster = [owned('A'), owned('B'), owned('C'), owned('D'), locked('X')];
-    const run = (status: CharacterSource['status'], live = false) =>
+    // `awarded`: guaranteed shards of a running event (none = no event).
+    const run = (status: CharacterSource['status'], awarded?: number) =>
       recommend({
         roster,
         known: [team('Squad', ['A', 'B', 'C', 'D', 'X'], ['raids'])],
@@ -78,30 +81,38 @@ describe('character sources', () => {
         upgrade,
         inventory: new Map(),
         sourceOf: (e) => (e.id === 'X' ? src('X', status) : undefined),
-        offers: live
-          ? new Map([
-              [
-                'SHARD_X',
+        offers:
+          awarded !== undefined
+            ? new Map([
                 [
-                  {
-                    event: { id: 'e', type: 'milestone', startTime: 0, endTime: 9e12 },
-                    itemId: 'SHARD_X',
-                    guaranteed: 0,
-                    premium: 0,
-                    possible: 0,
-                    live: true,
-                  },
+                  'SHARD_X',
+                  [
+                    {
+                      event: { id: 'e', type: 'milestone', startTime: 0, endTime: 9e12 },
+                      itemId: 'SHARD_X',
+                      guaranteed: awarded,
+                      premium: 0,
+                      possible: 0,
+                      live: true,
+                    },
+                  ],
                 ],
-              ],
-            ])
-          : undefined,
+              ])
+            : undefined,
       }).find((r) => r.id === 'X:unlock')!;
 
     expect(run('permanent').source?.status).toBe('permanent');
     expect(run('event').effort).toBeLessThan(run('permanent').effort);
     expect(run('orb').effort).toBeGreaterThan(run('permanent').effort);
     expect(run('unavailable').effort).toBeGreaterThan(run('paid').effort);
-    expect(run('unavailable', true).effort).toBeCloseTo(run('event').effort);
+    // An event covering all 410 shards makes a closed source as cheap as an event one…
+    expect(run('unavailable', 410).effort).toBeCloseTo(run('event').effort);
+    // …but one giving 30 leaves the other 380 at the closed-source rate.
+    const units = (shards: number, factor: number) => (shards / 5) * factor;
+    expect(run('unavailable', 30).effort).toBeCloseTo(
+      run('unavailable').effort - units(30, 6) + units(30, 0.7),
+    );
+    expect(run('unavailable', 30).effort).toBeGreaterThan(run('paid').effort);
   });
 });
 

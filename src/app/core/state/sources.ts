@@ -19,6 +19,8 @@ export const SOURCE_FACTOR: Record<SourceStatus, number> = {
   paid: 3,
   endgame: 4,
   unavailable: 6,
+  // Most event windows close until a rerun; without knowing, price it like random orbs.
+  expired: 1.5,
 };
 
 /** Colour of a status: open now, slow or uncertain, closed. */
@@ -28,15 +30,25 @@ export const SOURCE_TONE: Record<SourceStatus, 'good' | 'warn' | 'bad'> = {
   event: 'good',
   orb: 'warn',
   unknown: 'warn',
+  expired: 'warn',
   paid: 'bad',
   endgame: 'bad',
   unavailable: 'bad',
 };
 
-/** The source as of `now`: a time-limited status past its `until` date falls back. */
+/**
+ * The source as of `now` (the player's local date): a time-limited status past its `until`
+ * date becomes `afterUntil`, or `expired` when nothing says what follows.
+ */
 export function currentSource(source: CharacterSource, now = new Date()): CharacterSource {
-  if (!source.until || now.toISOString().slice(0, 10) <= source.until) return source;
-  return { ...source, status: source.afterUntil ?? 'unknown' };
+  if (!source.until || localDate(now) <= source.until) return source;
+  return { ...source, status: source.afterUntil ?? 'expired' };
+}
+
+/** "2026-11-01" in the player's time zone. */
+export function localDate(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 /** Source of a roster entry, matched by name ignoring case and punctuation. */
