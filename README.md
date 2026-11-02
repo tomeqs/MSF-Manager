@@ -206,7 +206,20 @@ propozycji: znane i popularne składy, które możesz wystawić (ocena = moc / n
 zabiera postacie z propozycji (zapamiętane w przeglądarce, osobno dla konta i demo, do czasu
 aż skład pojawi się w `/player/v1/squads` — „Wczytaj składy z gry” odświeża listę); „Inna
 propozycja” pokazuje następną (pominięty skład z synergii oddaje swój pierwszy wybór).
-**Ustawienie**: jak u większości graczy, gdy skład jest w analizie API; inaczej kolejność ma
+**Gotowe i do dofarmienia.** „Gotowe — zapisz teraz” to składy, w których każda postać jest
+odblokowana, ma 7★ i gear co najmniej o jeden poziom niższy od Twojego etapu (frontier);
+składy z synergii budowane są tylko z takich postaci. „Do dofarmienia” to znane i popularne
+składy z wolnych postaci, którym brakuje niewiele (najwyżej 2 nieodblokowane i 3 postacie do
+pracy): przy każdej postaci co zrobić („odblokuj — masz 20/50 shardów”, „5★→7★, brakuje 460
+shardów”, „G14→G16”), ułożone według siły w mecie × udziału gotowych; „Farmuj brakujące” dodaje
+cele dla nich.
+**Wojna: obrona i atak.** Osobne plany: najpierw obrona (ile drużyn — wybierasz, domyślnie 3),
+potem atak z postaci, których nie ma na obronie. Drużyny z rolą w `known-meta.ts` (`war`) trafiają
+tylko na swoją stronę: obrona — Timeless Eternals, Hellfire Club; atak — West Coast Avengers,
+Omen, Secret Warriors, Nightreavers, Menace, Savage Land; reszta na obie. „Zapisałem” zapamiętuje
+też stronę (gra jej nie podaje — składy z gry liczą się dla obu).
+**Ustawienie**: jak u większości graczy, gdy skład jest w analizie API; potem rada z poradnika
+(`lineup`, np. WCA: Tigra w rogu, War Machine obok); inaczej kolejność ma
 znaczenie tylko dla umiejętności działających na sąsiadów („adjacent”) — taka postać idzie w
 środek, obok swoich najlepszych partnerów; bez nich aplikacja mówi wprost, że kolejność jest
 dowolna.

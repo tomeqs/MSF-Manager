@@ -35,37 +35,6 @@
   margin: 0 0 6px;
 }
 
-.next {
-  max-width: 560px;
-  margin-bottom: 12px;
-
-  app-squad-card {
-    --c-border: var(--c-accent);
-  }
-}
-
-.order {
-  margin: 0;
-}
-
-.buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  .primary {
-    border-color: var(--c-success);
-    background: rgb(62 207 142 / 0.15);
-  }
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
 .link-btn {
   padding: 0 6px;
 }

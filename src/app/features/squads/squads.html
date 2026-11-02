@@ -4,6 +4,8 @@
     <p>
       Buduj składy krok po kroku: zapisz w grze proponowany skład w podanej kolejności, kliknij
       „Zapisałem w grze” (albo wczytaj składy z gry), a jego postacie znikną z kolejnych propozycji.
+      „Gotowe” możesz wystawić od razu; „Do dofarmienia” to znane składy, którym brakuje niewiele. W
+      Wojnie osobno obrona i atak — bez tych samych postaci.
     </p>
   </div>
 </header>
@@ -58,57 +60,8 @@
     </div>
   }
 
-  <section>
-    <h2 class="section-title">Następny skład do zapisania</h2>
-    @if (next(); as p) {
-      <div class="next">
-        <app-squad-card [option]="p.option" [lineup]="p.arrangement" [index]="1">
-          <p class="order small">W grze: {{ order(p) }}</p>
-          <div class="buttons">
-            <button type="button" class="primary" (click)="accept(p)">✓ Zapisałem w grze</button>
-            <button type="button" (click)="skip(p)">Inna propozycja</button>
-          </div>
-        </app-squad-card>
-      </div>
-    } @else {
-      <p class="muted small">
-        Z wolnych postaci nie złożę już kolejnego składu w tym trybie.
-        @if (hasSkips()) {
-          <button type="button" (click)="resetSkips()">Pokaż pominięte propozycje</button>
-        }
-      </p>
-    }
-    @if (next() && hasSkips()) {
-      <p class="muted tiny">
-        Pominięte propozycje są ukryte.
-        <button type="button" class="link-btn" (click)="resetSkips()">Pokaż znowu</button>
-      </p>
-    }
-  </section>
-
-  @if (later().length) {
-    <section>
-      <h2 class="section-title">Potem — z pozostałych wolnych postaci</h2>
-      <p class="muted small">
-        Bez powtarzania postaci. Ocena: moc × siła w mecie (tier, popularność) × synergia z
-        umiejętności.
-      </p>
-      <div class="grid">
-        @for (p of later(); track p.option.key; let i = $index) {
-          <app-squad-card
-            [option]="p.option"
-            [lineup]="p.arrangement"
-            [index]="i + 2"
-            [details]="false"
-          >
-            <div class="buttons">
-              <button type="button" (click)="accept(p)">✓ Zapisałem</button>
-              <button type="button" (click)="skip(p)">Pomiń</button>
-            </div>
-          </app-squad-card>
-        }
-      </div>
-    </section>
+  @for (plan of view().plans; track plan.id) {
+    <app-assistant-plan [view]="plan" />
   }
 
   <app-saved-squads

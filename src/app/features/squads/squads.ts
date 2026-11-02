@@ -2,12 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { TeamTab } from '../../core/models';
 import { RosterStore } from '../../core/state/roster.store';
-import { Proposal } from '../../core/state/squad-assistant';
 import { SQUAD_TABS, SquadsStore } from '../../core/state/squads.store';
 import { TeamsStore } from '../../core/state/teams.store';
+import { AssistantPlan } from './assistant-plan/assistant-plan';
 import { LooseCharacters } from './loose-characters/loose-characters';
 import { SavedSquads } from './saved-squads/saved-squads';
-import { SquadCard } from './squad-card/squad-card';
 
 const TAB_KEY = 'msf.squads.tab';
 const TAB_LABELS: Record<string, string> = {
@@ -26,7 +25,7 @@ const TAB_LABELS: Record<string, string> = {
  */
 @Component({
   selector: 'app-squads',
-  imports: [RouterLink, SquadCard, SavedSquads, LooseCharacters],
+  imports: [RouterLink, AssistantPlan, SavedSquads, LooseCharacters],
   templateUrl: './squads.html',
   styleUrl: './squads.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,9 +41,6 @@ export class Squads {
 
   protected readonly status = this.roster.status;
   protected readonly view = computed(() => this.store.tab(this.tab()));
-  protected readonly next = computed(() => this.view().proposals[0]);
-  protected readonly later = computed(() => this.view().proposals.slice(1));
-  protected readonly hasSkips = computed(() => this.store.hasSkips(this.tab()));
   protected readonly communityDown = computed(() => this.teams.tab(this.tab()).source === 'known');
   protected readonly kitsMissing = computed(
     () => this.store.kitsStatus() === 'error' || !this.store.synergy().fromKits,
@@ -63,33 +59,12 @@ export class Squads {
     }
   }
 
-  /** The player saved it in game: its characters leave the proposals. */
-  protected accept(proposal: Proposal): void {
-    this.store.accept(
-      this.tab(),
-      proposal.arrangement.members.map((m) => m.id),
-    );
-  }
-
-  protected skip(proposal: Proposal): void {
-    this.store.skip(this.tab(), proposal.option.key);
-  }
-
-  protected resetSkips(): void {
-    this.store.resetSkips(this.tab());
-  }
-
   protected removeLocal(key: string): void {
     this.store.removeLocal(this.tab(), key);
   }
 
   protected setExclusive(event: Event): void {
     this.store.setExclusive((event.target as HTMLInputElement).checked);
-  }
-
-  /** "1. Riot · 2. Toxin · …" — the order to set in game. */
-  protected order(proposal: Proposal): string {
-    return proposal.arrangement.members.map((m, i) => `${i + 1}. ${m.name}`).join(' · ');
   }
 }
 

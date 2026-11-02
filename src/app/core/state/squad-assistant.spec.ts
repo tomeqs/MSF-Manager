@@ -1,6 +1,6 @@
 import { CharacterKit, RosterEntry } from '../models';
 import { toRosterEntry } from './roster.mapper';
-import { arrange, assistantProposals } from './squad-assistant';
+import { arrange, assistantProposals, memberNeeds, planSquads } from './squad-assistant';
 import { squadOptions } from './squads';
 import { buildSynergy } from './synergy';
 
@@ -90,5 +90,92 @@ describe('squad assistant', () => {
     expect([lineup.members[1].id, lineup.members[3].id].sort()).toEqual(['W2', 'W3']);
     expect(lineup.note).toContain('w środku');
     expect(arrange(options[0], synergy).note).toContain('ustaw dowolnie');
+  });
+});
+
+describe('ready vs to-farm plans', () => {
+  // A: a known team; A4 is 5★ (needs stars), A5 locked. W: a ready trait trio + fillers.
+  const ownedAt = (id: string, power: number, yellow: number, traits: string[]) =>
+    toRosterEntry(
+      { id, name: id, traits: traits.map(t), unlockStars: 3 },
+      { id, level: 90, power, activeYellow: yellow, gearTier: 16 },
+    );
+  const team: RosterEntry[] = [
+    ...['A1', 'A2', 'A3'].map((id) => ownedAt(id, 700, 7, ['Av'])),
+    ownedAt('A4', 650, 5, ['Av']),
+    toRosterEntry({ id: 'A5', name: 'A5', traits: [t('Av')], unlockStars: 3 }),
+    ...['W1', 'W2', 'W3', 'F1', 'F2'].map((id) =>
+      ownedAt(id, 600, 7, id.startsWith('W') ? ['Wak'] : []),
+    ),
+  ];
+  const s = buildSynergy(team, []);
+  const opts = squadOptions({
+    tab: 'war',
+    roster: team,
+    known: [
+      {
+        name: 'Avengers',
+        modes: ['war'],
+        tier: 'S',
+        war: 'offense',
+        members: ['A1', 'A2', 'A3', 'A4', 'A5'],
+        source: '',
+      },
+    ],
+    community: [],
+    saved: [],
+    synergy: s,
+  });
+  const ctx = {
+    frontier: 16,
+    upgrade: { yellowStarTotalShards: { '3': 50, '5': 155, '7': 410 } },
+    inventory: new Map(),
+  };
+  const needsOf = (e: RosterEntry) => memberNeeds(e, ctx);
+
+  it('says what each character still needs: unlock, stars, gear behind the stage', () => {
+    expect(memberNeeds(team[3], ctx)).toEqual([
+      expect.objectContaining({ kind: 'stars', text: '5★→7★, brakuje 255 shardów' }),
+    ]);
+    expect(memberNeeds(team[4], ctx)[0]).toMatchObject({
+      kind: 'unlock',
+      text: 'odblokuj — masz 0/50 shardów',
+    });
+    const behind = ownedAt('G', 1, 7, []);
+    expect(memberNeeds({ ...behind, gearTier: 13 }, ctx)).toEqual([
+      expect.objectContaining({ kind: 'gear', text: 'G13→G16' }),
+    ]);
+    expect(memberNeeds(team[0], ctx)).toEqual([]);
+  });
+
+  it('proposes only ready squads now and lists the known team that needs farming', () => {
+    const plan = planSquads({
+      options: opts,
+      roster: team,
+      taken: new Set(),
+      skipped: new Set(),
+      synergy: s,
+      needsOf,
+    });
+    const readyIds = plan.ready.flatMap((p) => ids(p.option.members));
+    expect(readyIds).not.toContain('A4'); // 5★: not ready
+    expect(plan.toFarm[0].option.name).toBe('Avengers');
+    expect(plan.toFarm[0].needs.map((n) => [n.name, n.kind])).toEqual([
+      ['A4', 'stars'],
+      ['A5', 'unlock'],
+    ]);
+  });
+
+  it('keeps War teams to their side', () => {
+    const defense = planSquads({
+      options: opts,
+      roster: team,
+      taken: new Set(),
+      skipped: new Set(),
+      synergy: s,
+      needsOf,
+      allows: (o) => o.warRole !== 'offense',
+    });
+    expect(defense.toFarm.some((p) => p.option.name === 'Avengers')).toBe(false);
   });
 });

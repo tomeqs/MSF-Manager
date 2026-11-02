@@ -27,6 +27,9 @@
       <app-squad-card [option]="r.option" [details]="false">
         @if (r.local) {
           <p class="local small">
+            @if (r.role) {
+              <strong class="role">{{ r.role }}</strong> ·
+            }
             Oznaczony tutaj jako zapisany — zniknie z tej listy, gdy pojawi się w grze.
             <button type="button" class="link-btn" (click)="removeLocal.emit(r.option.key)">
               Usuń

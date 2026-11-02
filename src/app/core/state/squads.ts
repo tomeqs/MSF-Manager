@@ -17,8 +17,14 @@ export interface SquadOption {
   origins: SquadOrigin[];
   /** Members in the recommended order (see `order`). */
   members: RosterEntry[];
-  /** Members the player does not have (names). */
+  /** Members the player does not have (names; includes ones not in the game data). */
   missing: string[];
+  /** Members in the game data the player has not unlocked yet. */
+  locked: RosterEntry[];
+  /** Alliance War role from the sources (absent = either). */
+  warRole?: 'offense' | 'defense';
+  /** Line-up advice from the sources. */
+  lineupNote?: string;
   /** Whose ordering `members` follows: most players', the player's own, or the guide's. */
   order: 'community' | 'saved' | 'meta' | 'synergy';
   /** Popularity among players' saved squads, relative to the top squad (0–1). */
@@ -90,6 +96,8 @@ export function squadOptions(input: SquadInput): SquadOption[] {
     d.name ??= team.name;
     d.tier ??= team.tier ?? 'A';
     d.source ??= team.source;
+    d.warRole ??= team.war;
+    d.lineupNote ??= team.lineup;
     d.missingNames = members.filter((m) => !m.owned).map((m) => m.name);
   }
   for (const team of community) {
@@ -128,6 +136,8 @@ interface Draft {
   source?: string;
   popularity?: number;
   missingNames?: string[];
+  warRole?: 'offense' | 'defense';
+  lineupNote?: string;
 }
 
 function toOption(d: Draft, byId: Map<string, RosterEntry>, synergy: SynergyIndex): SquadOption {
@@ -145,6 +155,9 @@ function toOption(d: Draft, byId: Map<string, RosterEntry>, synergy: SynergyInde
     origins: d.origins,
     members,
     missing,
+    locked: entries.filter((e): e is RosterEntry => !!e && !e.unlocked),
+    warRole: d.warRole,
+    lineupNote: d.lineupNote,
     order: d.order,
     popularity: d.popularity,
     saved: d.saved,
@@ -156,13 +169,17 @@ function toOption(d: Draft, byId: Map<string, RosterEntry>, synergy: SynergyInde
   };
 }
 
-function scoreOf(o: SquadOption, strongest: number): number {
-  const standing = Math.max(
+/** How well the meta backs a squad: its tier, else its popularity, else a base value. */
+export function standingOf(o: SquadOption): number {
+  return Math.max(
     o.tier ? TIER_FACTOR[o.tier] : 0,
     o.popularity !== undefined ? COMMUNITY_BASE + COMMUNITY_RANGE * o.popularity : 0,
     UNBACKED_FACTOR,
   );
-  return (o.power / strongest) * standing * (1 - COHESION_RANGE + COHESION_RANGE * o.cohesion);
+}
+
+function scoreOf(o: SquadOption, strongest: number): number {
+  return (o.power / strongest) * standingOf(o) * (1 - COHESION_RANGE + COHESION_RANGE * o.cohesion);
 }
 
 export interface Alternative {
@@ -270,6 +287,7 @@ export function synergySquad(members: RosterEntry[], synergy: SynergyIndex): Squ
     origins: ['synergy'],
     members,
     missing: [],
+    locked: [],
     order: 'synergy',
     saved: false,
     power: members.reduce((sum, m) => sum + m.power, 0),
@@ -299,6 +317,8 @@ export interface SavedReview {
   reason?: SynergyLink;
   /** Saved here with "Zapisałem" and not seen in the game's squads yet. */
   local?: boolean;
+  /** For War squads saved here: "obrona" or "atak". */
+  role?: string;
 }
 
 /**

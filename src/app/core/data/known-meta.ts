@@ -17,7 +17,11 @@ import { TeamTab } from '../models';
  * spelling can be fixed here. `traits` (instead of `members`) builds the best five from
  * every character with that trait.
  */
-/** S = top of the current meta, A = strong, B = viable / budget. */
+/**
+ * S = top of the current meta, A = strong, B = viable / budget. War roles: Timeless Eternals and
+ * Hellfire Club defense; West Coast Avengers, Omen, Secret Warriors, Nightreavers, Menace and
+ * Savage Land offense (research of 14.10 and official posts); the rest either.
+ */
 export type TeamTier = 'S' | 'A' | 'B';
 
 export interface KnownTeam {
@@ -28,6 +32,10 @@ export interface KnownTeam {
   tier?: TeamTier;
   members?: string[];
   traits?: string[];
+  /** Alliance War: where the sources say it belongs (absent = either). */
+  war?: 'offense' | 'defense';
+  /** Line-up advice from the sources (who goes where). */
+  lineup?: string;
   source: string;
 }
 
@@ -92,6 +100,7 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Timeless Eternals',
     modes: ['war'],
     tier: 'S',
+    war: 'defense',
     // Top defense (same bonuses on offense); weak to Speed manipulation.
     members: ['Gilgamesh', 'Thena', 'Kingo', 'Ikaris', 'Sersi'],
     source: `${BLOG}/blog-update-7-29-26`,
@@ -100,6 +109,8 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'West Coast Avengers',
     modes: ['war'],
     tier: 'S',
+    war: 'offense',
+    lineup: 'Tigra (Protector) w rogu, War Machine obok niej.',
     // Offense; counters Shadow Conclave and Winter Guard.
     members: ['Wasp (Janet)', 'Hawkeye', 'Tigra', 'Mockingbird', 'War Machine'],
     source: `${BLOG}/blog-update-9-14-26`,
@@ -121,6 +132,7 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Omen',
     modes: ['war', 'crucible'],
     tier: 'S',
+    war: 'offense',
     // Top attacker into Absolute A-Force; also Crucible offense.
     members: [
       'Silver Surfer (Breaker)',
@@ -148,6 +160,7 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Secret Warriors',
     modes: ['war'],
     tier: 'A',
+    war: 'offense',
     // Offense only — loses its bonuses on defense.
     members: ['Yo-Yo', 'Domino', 'Phantom Rider', 'Quake', 'Negasonic|Negasonic Teenage Warhead'],
     source: `${CHURCH}/secret-warrior/`,
@@ -163,6 +176,7 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Nightreavers',
     modes: ['war'],
     tier: 'B',
+    war: 'offense',
     // New 3-character War offense (13.10.2026) against Winter Guard, Brimstone and Shadow
     // Conclave; Dracula only from King of the Night (19.10 – ~2.11.2026) until next year.
     // Rated B+/A only if the campaign unlocks Dracula; Blade and Bleed characters fill slots 4–5.
@@ -173,6 +187,7 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Menace',
     modes: ['war'],
     tier: 'A',
+    war: 'offense',
     // War offense (27.10.2026): Sabretooth (Breaker) — first Corruption character, released by
     // the Breaker Event from 2.11, first unlock 11.11 — plus reworked Blob, Toad, Silver
     // Samurai and Stryfe. Rated before anyone could test it: older tier lists rank the
@@ -184,6 +199,7 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Savage Land',
     modes: ['war'],
     tier: 'A',
+    war: 'offense',
     // War offense announced 28.10.2026 as "the new top-tier Alliance War squad" (official
     // marketing, not a community rating): new Ka-Zar (from 6.11), Sauron and Cyclops (Mighty)
     // with upgraded Rogue and X-23. The exact five is read from the announcement.
@@ -194,6 +210,7 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Hellfire Club',
     modes: ['war'],
     tier: 'B',
+    war: 'defense',
     // Left the Trepidation raid (official 17.09.2026); still a War defense option.
     members: ['Sebastian Shaw', 'Emma Frost', 'Azazel', 'Madelyne Pryor', 'Rachel Summers'],
     source: `${CHURCH}/alliance-war-defense-list/`,

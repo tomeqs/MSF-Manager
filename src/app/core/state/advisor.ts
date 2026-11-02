@@ -741,7 +741,11 @@ export function completableTeams(
   );
 }
 
-function unlockCost(entry: RosterEntry, upgrade: UpgradeData, inventory: Inventory): MissingMember {
+export function unlockCost(
+  entry: RosterEntry,
+  upgrade: UpgradeData,
+  inventory: Inventory,
+): MissingMember {
   const stars = entry.unlockStars ?? MAX_YELLOW_STARS;
   const needed = upgrade.yellowStarTotalShards
     ? shardsBetween(upgrade.yellowStarTotalShards, 0, stars)

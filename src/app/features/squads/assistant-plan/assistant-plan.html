@@ -1,0 +1,104 @@
+<section class="plan">
+  @if (view().label) {
+    <div class="plan-head">
+      <h2>{{ view().label }}</h2>
+      @if (isDefense()) {
+        <label class="small muted">
+          ile drużyn na obronę
+          @for (n of counts; track n) {
+            <button
+              type="button"
+              class="count"
+              [class.active]="store.defenseCount() === n"
+              (click)="store.setDefenseCount(n)"
+            >
+              {{ n }}
+            </button>
+          }
+        </label>
+      } @else {
+        <span class="small muted">z postaci, których nie ma na obronie</span>
+      }
+    </div>
+  }
+
+  <h3 class="section-title">Gotowe — zapisz teraz</h3>
+  <p class="muted tiny">
+    Gotowe = każda postać odblokowana, 7★ i gear co najmniej G{{ store.readyGear() }} (Twój etap
+    minus jeden).
+  </p>
+  @if (next(); as p) {
+    <div class="next">
+      <app-squad-card [option]="p.option" [lineup]="p.arrangement" [index]="1">
+        <p class="small">W grze: {{ order(p) }}</p>
+        <div class="buttons">
+          <button type="button" class="primary" (click)="accept(p)">✓ Zapisałem w grze</button>
+          <button type="button" (click)="skip(p)">Inna propozycja</button>
+        </div>
+      </app-squad-card>
+    </div>
+  } @else {
+    <p class="muted small">
+      Z gotowych wolnych postaci nie złożę już kolejnego składu — zobacz „Do dofarmienia”.
+    </p>
+  }
+  @if (hasSkips()) {
+    <p class="muted tiny">
+      Pominięte propozycje są ukryte.
+      <button type="button" class="link-btn" (click)="resetSkips()">Pokaż znowu</button>
+    </p>
+  }
+  @if (later().length) {
+    <div class="grid">
+      @for (p of later(); track p.option.key; let i = $index) {
+        <app-squad-card
+          [option]="p.option"
+          [lineup]="p.arrangement"
+          [index]="i + 2"
+          [details]="false"
+        >
+          <div class="buttons">
+            <button type="button" (click)="accept(p)">✓ Zapisałem</button>
+            <button type="button" (click)="skip(p)">Pomiń</button>
+          </div>
+        </app-squad-card>
+      }
+    </div>
+  }
+
+  @if (toFarm().length) {
+    <h3 class="section-title">Do dofarmienia</h3>
+    <p class="muted small">
+      Znane i popularne składy, którym brakuje niewiele: odblokowania, 7★ albo gearu bliżej Twojego
+      etapu. Zaczynaj od tych, gdzie brakuje mniej.
+    </p>
+    <div class="grid">
+      @for (p of toFarm(); track p.option.key) {
+        <app-squad-card [option]="p.option" [lineup]="p.arrangement" [details]="false">
+          <ul class="needs small">
+            @for (n of p.needs; track $index) {
+              <li>
+                @if (n.entry) {
+                  <a [routerLink]="['/roster', n.entry.id]">{{ n.name }}</a>
+                } @else {
+                  <strong>{{ n.name }}</strong>
+                }
+                — {{ n.text }}
+              </li>
+            }
+          </ul>
+          @if (p.overlap.length) {
+            <p class="muted tiny">{{ names(p) }} są też w gotowej propozycji powyżej.</p>
+          }
+          <div class="buttons">
+            @if (allFarmed(p)) {
+              <a routerLink="/farming" class="small">W farmieniu ✓</a>
+            } @else {
+              <button type="button" (click)="farm(p)">Farmuj brakujące</button>
+            }
+          </div>
+        </app-squad-card>
+      }
+    </div>
+  }
+</section>
