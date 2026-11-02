@@ -5,7 +5,9 @@ import { TeamTab } from '../models';
  *
  * Compiled from community guides and official posts (see `source` per team), 9 October 2026
  * (Crucible Season 25, Trepidation raid with Iron Raiders, War season of September); checked
- * again 19 October 2026 — tiers unchanged, Nightreavers added. Research came from search snippets — the guides themselves were not reachable —
+ * again 19 October 2026 — tiers unchanged, Nightreavers added — and 2 November 2026: the new
+ * War offense squads Menace and Savage Land added (rated before release, see comments). Research
+ * came from search snippets — the guides themselves were not reachable —
  * so treat tiers as a well-informed estimate. It is NOT live data and goes stale as new teams
  * release — edit freely.
  *
@@ -29,7 +31,7 @@ export interface KnownTeam {
   source: string;
 }
 
-export const KNOWN_META_AS_OF = '19 października 2026';
+export const KNOWN_META_AS_OF = '2 listopada 2026';
 
 const CHURCH = 'https://www.marvel.church';
 const BLOG = 'https://marvelstrikeforce.com/en/updates';
@@ -166,6 +168,27 @@ export const KNOWN_META: KnownTeam[] = [
     // Rated B+/A only if the campaign unlocks Dracula; Blade and Bleed characters fill slots 4–5.
     members: ['Dracula', 'Morbius', 'Oath'],
     source: `${BLOG}/blog-update-10-13-26`,
+  },
+  {
+    name: 'Menace',
+    modes: ['war'],
+    tier: 'A',
+    // War offense (27.10.2026): Sabretooth (Breaker) — first Corruption character, released by
+    // the Breaker Event from 2.11, first unlock 11.11 — plus reworked Blob, Toad, Silver
+    // Samurai and Stryfe. Rated before anyone could test it: older tier lists rank the
+    // pre-rework members last. From 8.11 a temporary War rule favours it until the chapter ends.
+    members: ['Sabretooth (Breaker)', 'Blob', 'Toad', 'Silver Samurai', 'Stryfe'],
+    source: `${BLOG}/blog-update-10-27-26`,
+  },
+  {
+    name: 'Savage Land',
+    modes: ['war'],
+    tier: 'A',
+    // War offense announced 28.10.2026 as "the new top-tier Alliance War squad" (official
+    // marketing, not a community rating): new Ka-Zar (from 6.11), Sauron and Cyclops (Mighty)
+    // with upgraded Rogue and X-23. The exact five is read from the announcement.
+    members: ['Ka-Zar', 'Sauron', 'Cyclops (Mighty)', 'Rogue', 'X-23'],
+    source: 'https://marvelstrikeforce.com/en/',
   },
   {
     name: 'Hellfire Club',

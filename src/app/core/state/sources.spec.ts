@@ -155,3 +155,10 @@ describe('team plans with sources and modes', () => {
     expect(teamWeight(team('Both', [], ['arena', 'war']))).toBeCloseTo(0.75 * 1.15);
   });
 });
+
+describe('character source data', () => {
+  it('gives every running event an end date, so it cannot stay "event now" forever', () => {
+    const open = CHARACTER_SOURCES.filter((s) => s.status === 'event' && !s.until);
+    expect(open.map((s) => s.name)).toEqual([]);
+  });
+});

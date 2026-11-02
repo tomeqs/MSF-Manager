@@ -3,7 +3,8 @@ import { TeamTab } from '../models';
 /**
  * "Plug-and-play" characters that community guides add to many lineups, so one investment
  * pays off in several modes. Updated 9 October 2026 (Crucible Season 25 / Ultimate 32
- * setups, War season of September; see `source`); edit freely.
+ * setups, War season of September; see `source`); Sabretooth (Breaker) added 2 November 2026;
+ * edit freely.
  */
 export interface KeyCharacter {
   /** In-game name; "A|B" accepts alternative spellings. */
@@ -34,6 +35,12 @@ export const KEY_CHARACTERS: KeyCharacter[] = [
     modes: ['war', 'crucible'],
     why: 'Pasuje do niemal każdego ataku w wojnie; omija Defense Up i Safeguard.',
     source: `${CHURCH}/omen/`,
+  },
+  {
+    name: 'Sabretooth (Breaker)',
+    modes: ['war'],
+    why: 'Oficjalnie „plug-and-play” Breaker do ataku w Wojnie: żadna umiejętność nie zależy od drużyny, pierwszy z Corruption (zdejmuje buffy mimo Safeguard). Odblokowanie od 11.11.',
+    source: 'https://marvelstrikeforce.com/en/updates/blog-update-10-27-26',
   },
   {
     name: 'Magik (Breaker)',

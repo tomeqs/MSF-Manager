@@ -278,11 +278,16 @@ które drużyny się opłacają, skąd brać ich postacie, co trwa teraz i co zr
 Aktualizacja z 19.10.2026 — **[raport](reports/Opłacalne%20drużyny%20MSF%20aktualizacja%20październik.md)**:
 weryfikacja tez (Overpower zastąpiony przez Chapter Boosts od 4.05.2026), fala halloweenowa
 (King of the Night / Nightreavers, Mephisto's Summoning) i polecenia na 19.10–2.11.
-Załączniki obu raportów są w aplikacji jako `core/data/character-sources.ts` (143 postacie;
+Aktualizacja z 2.11.2026 — **[raport](reports/Ulepszenia%20aplikacji%20MSF%20listopad.md)**:
+Breaker Event: Sabretooth (od 2.11, 22:00), ostatni pass Wasp (Janet), Echoes of Dystopia
+(Maestro), Ka-Zar i drużyny Wojny Menace i Savage Land, szacowane końce fal halloweenowej i
+A.I. Takeover; listopadowe starty są o 22:00 czasu polskiego.
+Załączniki raportów są w aplikacji jako `core/data/character-sources.ts` (146 postaci;
 ze skrawków wyników wyszukiwania — potwierdzaj w grze przyciskiem „Find”, odświeżaj po
 blogach). Okno czasowe może mieć `until` (szacowany koniec) i `afterUntil` — po tej dacie
 (w lokalnej strefie gracza, sprawdzane co godzinę) status sam przechodzi np. z „event teraz” na
-„niedostępna teraz”, a bez `afterUntil` na „okno minęło — sprawdź w grze” (×1,5).
+„niedostępna teraz”, a bez `afterUntil` na „okno minęło — sprawdź w grze” (×1,5). Każdy
+wpis „event teraz” musi mieć `until` (pilnuje tego test), nawet szacunkowe.
 
 - **Stan źródła**: stałe (sklep postaci według Age, węzeł kampanii, DD, stały event), tylko
   losowe orby, event teraz, tylko płatne, za bramką endgame, niedostępne, brak danych, okno minęło.

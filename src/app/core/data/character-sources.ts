@@ -1,7 +1,8 @@
 /**
  * Where each character's shards come from and whether that source is open now — the appendix
  * of `reports/Opłacalne drużyny MSF i źródła postaci.md` (14 October 2026) with the changes from
- * `reports/Opłacalne drużyny MSF aktualizacja październik.md` (19 October 2026). Research from
+ * `reports/Opłacalne drużyny MSF aktualizacja październik.md` (19 October 2026) and
+ * `reports/Ulepszenia aplikacji MSF listopad.md` (2 November 2026). Research from
  * search snippets; confirm in game with the character's "Find" button, and update by hand when
  * the weekly MSF blog changes a source.
  */
@@ -35,7 +36,7 @@ export interface CharacterSource {
   afterUntil?: SourceStatus;
 }
 
-export const CHARACTER_SOURCES_AS_OF = '19 października 2026';
+export const CHARACTER_SOURCES_AS_OF = '2 listopada 2026';
 
 export const SOURCE_STATUS_LABELS: Record<SourceStatus, string> = {
   permanent: 'stałe źródło',
@@ -155,6 +156,16 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     url: 'https://www.marvel.church/omen/',
   },
   {
+    name: 'Cyclops (Mighty)',
+    teams: 'Savage Land (W, atak)',
+    status: 'unavailable',
+    source:
+      'Tower Cyclopsa (Mighty) zapowiedziany bez daty; kampania Savage Land (od 6.11) jest jego wstępem',
+    confidence: 'OFF',
+    next: 'gdy ruszy Tower, zmień na EVENT',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
+  },
+  {
     name: 'Daimon Hellstrom',
     teams: 'Brimstone (W)',
     status: 'permanent',
@@ -193,10 +204,10 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'Nightreavers (W)',
     status: 'event',
     source:
-      'King of the Night (19.10, 23:00 → ok. 2.11): Nightreaver Orbs i ich fragmenty; Red Stars z misji bonusowych; płatne oferty limitowane',
+      'King of the Night (19.10, 23:00 → ok. 2.11, 22:00): Nightreaver Orbs i ich fragmenty; Red Stars z misji bonusowych; płatne oferty limitowane; do 5 Diamentów z Halloween Leaderboard (do 2.11)',
     confidence: 'OFF',
-    next: '„jedyna okazja do przyszłego roku”, czyli następne okno w 2027 r. Po 2.11 zmień na NIE. Postać Epic (3P).',
-    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-13-26',
+    next: '„jedyna okazja do przyszłego roku”, czyli następne okno w 2027 r.; od 3.11 aplikacja sama zmienia status na NIE. Koniec 2.11 to szacunek (dwa tygodnie od 19.10). Postać Epic (3P).',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-16-26',
     until: '2026-11-02',
     afterUntil: 'unavailable',
   },
@@ -295,8 +306,9 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source:
       'AI Takeover Orbs z kampanii A.I. Takeover (od 9.10.2026); Gilgamesh S.T.R.I.K.E. Pass (płatny, w sklepie internetowym); Elite Red Star Orb, gdy wyróżniony',
     confidence: 'OFF',
-    next: 'koniec kampanii nieznany; w orbach lub sklepie ok. stycznia 2027 (szac.)',
+    next: 'koniec kampanii nieznany — szacuję ok. 4 tygodnie od 9.10, potem „sprawdź w grze”; w orbach lub sklepie ok. stycznia 2027 (szac.)',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-2-26',
+    until: '2026-11-06',
   },
   {
     name: 'Gladiator',
@@ -358,8 +370,10 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source:
       'The Hunger (od 14.10.2026, dodana do składu jako nowa); Villains 3-9 (3P); Undying Orb (2025)',
     confidence: 'OFF + 3P',
-    next: 'The Hunger wraca co roku w październiku',
+    next: 'The Hunger wraca co roku w październiku; koniec tegorocznego runu nieznany — szacuję go na koniec fali halloweenowej (Halloween Leaderboard do 2.11), potem „sprawdź w grze”; po evencie zostaje Villains 3-9 (do sprawdzenia)',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
+    until: '2026-11-02',
+    afterUntil: 'permanentUnverified',
   },
   {
     name: 'Hellcat',
@@ -462,8 +476,9 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source:
       'The Hunger (shardy „postaci Undying”, dokładna lista niepotwierdzona); Undying Orb (2025)',
     confidence: 'OFF + szac.',
-    next: 'The Hunger wraca co roku w październiku',
+    next: 'The Hunger wraca co roku w październiku; koniec tegorocznego runu nieznany — szacuję go na koniec fali halloweenowej (Halloween Leaderboard do 2.11), potem „sprawdź w grze”',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
+    until: '2026-11-02',
   },
   {
     name: 'Iron Monger',
@@ -472,8 +487,9 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source:
       'AI Takeover Orbs (od 9.10.2026); War Monger Orb (625 PC, do 400 shardów); Mega Orb w sklepie internetowym',
     confidence: 'OFF',
-    next: 'koniec kampanii nieznany; w orbach lub sklepie ok. stycznia 2027 (szac.)',
+    next: 'koniec kampanii nieznany — szacuję ok. 4 tygodnie od 9.10, potem „sprawdź w grze”; w orbach lub sklepie ok. stycznia 2027 (szac.)',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-2-26',
+    until: '2026-11-06',
   },
   {
     name: 'Ironheart',
@@ -522,9 +538,20 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'Undying (W)',
     status: 'event',
     source:
-      'The Hunger (prawdopodobnie); darmowy dzienny odbiór w sklepie internetowym (data nieznana)',
+      'The Hunger (prawdopodobnie); darmowy dzienny odbiór w sklepie internetowym — od 30.10 darmowe odbiory zastąpił Daily Web Free Claim (losowy orb, do 300 shardów różnych postaci)',
     confidence: 'OFF + 3P',
-    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
+    next: 'The Hunger wraca co roku w październiku; koniec tegorocznego runu nieznany — szacuję go na koniec fali halloweenowej (Halloween Leaderboard do 2.11), potem „sprawdź w grze”',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
+    until: '2026-11-02',
+  },
+  {
+    name: 'Ka-Zar',
+    teams: 'Savage Land (W, atak)',
+    status: 'orb',
+    source: 'Orb za 625 Power Cores od 6.11, 22:00: szansa na do 400 shardów',
+    confidence: 'OFF',
+    next: 'jedyne podane źródło; kampania Savage Land od 6.11',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
   },
   {
     name: 'Kahhori',
@@ -538,10 +565,12 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     name: 'Kestrel (Zombie)',
     teams: 'Undying (W)',
     status: 'event',
-    source: 'The Hunger (prawdopodobnie); Undying Orb i event Amassed Horde (październik 2025)',
+    source:
+      'The Hunger (prawdopodobnie); Undying Orb i event Amassed Horde (październik 2025); do 5 Diamentów z Halloween Leaderboard (do 2.11)',
     confidence: 'OFF + 3P',
-    next: 'The Hunger wraca co roku w październiku',
+    next: 'The Hunger wraca co roku w październiku; koniec tegorocznego runu nieznany — szacuję go na koniec fali halloweenowej (Halloween Leaderboard do 2.11), potem „sprawdź w grze”',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
+    until: '2026-11-02',
   },
   {
     name: 'Kingo',
@@ -599,12 +628,14 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   {
     name: 'Maestro',
     teams: 'brak drużyny w tabeli',
-    status: 'unknown',
+    status: 'event',
     source:
-      'Battleworld Dystopia zakończony 6.10; od 20.10 Echoes of Dystopia z Maestro (nagrody nieznane)',
+      'Echoes of Dystopia od 3.11, 22:00: solowy boss Maestro — Character Upgrade Tokens i Red Stars Maestro, do 7 Yellow i 7 Red Stars',
     confidence: 'OFF',
-    next: 'sprawdź w grze, czy Echoes daje shardy, czy tylko ulepszenia',
-    url: 'https://x.com/MarvelStrikeF',
+    next: 'koniec nieznany — ok. 17.11 (szac., dwa tygodnie)',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
+    until: '2026-11-17',
+    afterUntil: 'unavailable',
   },
   {
     name: 'Magik',
@@ -914,12 +945,15 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Sabretooth (Breaker)',
-    teams: 'brak drużyny; w evencie kluczowi A.I. Avengers i Iron Raiders',
-    status: 'unavailable',
-    source: 'Breaker Event: Sabretooth „na początku listopada”',
+    teams: 'Menace (W, atak); w evencie kluczowi A.I. Avengers i Iron Raiders',
+    status: 'event',
+    source:
+      'Breaker Event: Sabretooth od 2.11, 22:00 (jedno streszczenie podaje 23:00): 10 misji, 4 poziomy, liczy się najlepszy run; kamienie milowe do 7 Yellow Stars i 2 Diamentów, leaderboard do 5 Diamentów. Bramki: Beginner poz. 50–60, 5★ + 3 RS; Normal poz. 80–100, 7 RS, Blue L5, GT18; Hard poz. 105, 2 Diamenty, Purple L4, GT19, Iron Raiders i A.I. Avengers; Omega poz. 110, 4 Diamenty, Orange L1, GT21',
     confidence: 'OFF',
-    next: 'Na początku listopada zmień na EVENT; dokładna data nieznana',
-    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
+    next: 'pierwsza szansa na odblokowanie 11.11, 22:00; koniec ok. 16.11 (szac., jak Scorpion: dwa tygodnie)',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-27-26',
+    until: '2026-11-16',
+    afterUntil: 'unavailable',
   },
   {
     name: 'Satana',
@@ -930,13 +964,24 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     url: 'https://www.marvel.church/accursed/',
   },
   {
+    name: 'Sauron',
+    teams: 'Savage Land (W, atak)',
+    status: 'unknown',
+    source: 'nowa postać (zapowiedź 28.10); źródła shardów nie podano',
+    confidence: 'OFF',
+    next: 'sprawdź w grze przyciskiem „Find”',
+    url: 'https://marvelstrikeforce.com/en/',
+  },
+  {
     name: 'Scarlet Witch (Zombie)',
     teams: 'Undying (W)',
     status: 'event',
-    source: 'The Hunger (prawdopodobnie); Undying Orb (2025)',
+    source:
+      'The Hunger (prawdopodobnie); Undying Orb (2025); jej darmowy odbiór webowy zastąpił 30.10 Daily Web Free Claim',
     confidence: 'OFF + szac.',
-    next: 'The Hunger wraca co roku w październiku',
+    next: 'The Hunger wraca co roku w październiku; koniec tegorocznego runu nieznany — szacuję go na koniec fali halloweenowej (Halloween Leaderboard do 2.11), potem „sprawdź w grze”',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-9-26',
+    until: '2026-11-02',
   },
   {
     name: 'Scorpion',
@@ -1122,10 +1167,11 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'brak drużyny w tabeli (BW)',
     status: 'event',
     source:
-      'Battleworld: Fallen Asgard (kontynent 4): run 2 od 13.10.2026, do 5 orbów po 4–14 shardów + nagrody za bossa i VP; odblokowanie na 5★',
+      'Battleworld: Fallen Asgard (kontynent 4): runy co ok. 2 tygodnie (run 2 od 13.10.2026), do 5 orbów po 4–14 shardów + nagrody za bossa i VP; od 23.10 zapowiedziane większe nagrody w jego shardach; odblokowanie na 5★',
     confidence: 'OFF',
-    next: 'kolejne runy co ok. 2 tygodnie (ok. 27.10 i ok. 10.11, szac.)',
+    next: 'kolejne runy ok. 10.11 i 24.11 (szac.); po listopadzie „sprawdź w grze”',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-9-24-26',
+    until: '2026-11-30',
   },
   {
     name: 'The Hood',
@@ -1151,8 +1197,9 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source:
       'AI Takeover Orbs (od 9.10.2026); na premierę 21.08.2026 orb w sklepie internetowym, oferta łańcuchowa i darmowe odbiory',
     confidence: 'OFF',
-    next: 'koniec kampanii nieznany',
+    next: 'koniec kampanii nieznany — szacuję ok. 4 tygodnie od 9.10, potem „sprawdź w grze”',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-2-26',
+    until: '2026-11-06',
   },
   {
     name: 'Tigra',
@@ -1194,8 +1241,9 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     status: 'event',
     source: 'AI Takeover Orbs (od 9.10.2026)',
     confidence: 'OFF',
-    next: 'koniec kampanii nieznany; w orbach lub sklepie ok. stycznia 2027 (szac.)',
+    next: 'koniec kampanii nieznany — szacuję ok. 4 tygodnie od 9.10, potem „sprawdź w grze”; w orbach lub sklepie ok. stycznia 2027 (szac.)',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-2-26',
+    until: '2026-11-06',
   },
   {
     name: 'Venom',
@@ -1252,10 +1300,12 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'West Coast Avengers (W)',
     status: 'event',
     source:
-      'Chapter Battle Passy: #3 potwierdzony od 19.10; darmowo 45 shardów za pass (łącznie 4★ + 4 RS), Premium daje 7★ + 1 Diament',
+      'Chapter Battle Passy: #4, ostatni, od 2.11, 22:00 — 45 shardów za darmo, +160 w Premium (razem 205); wcześniej #3 od 19.10 (łącznie darmowo 4★ + 4 RS, Premium 7★ + 1 Diament)',
     confidence: 'OFF',
-    next: '#4 ok. 2.11 (szac.); zapowiedziano oferty dla spóźnionych',
-    url: 'https://x.com/MarvelStrikeF',
+    next: 'po #4 źródło się kończy; koniec #4 ok. 16.11 (szac., rytm dwutygodniowy); zapowiedziano oferty dla spóźnionych',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
+    until: '2026-11-16',
+    afterUntil: 'unavailable',
   },
   {
     name: 'Whiplash',
