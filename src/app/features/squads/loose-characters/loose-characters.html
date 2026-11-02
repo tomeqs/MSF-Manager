@@ -1,11 +1,11 @@
 <section>
-  <h2 class="section-title">Luźne postacie</h2>
+  <h2 class="section-title">Pozostałe wolne postacie</h2>
   <p class="muted small intro">
-    Silne postacie, których nie ma w żadnej znanej drużynie, popularnym składzie ani Twoim zapisanym
-    składzie — z kim pasują najlepiej według ich umiejętności.
+    Silne postacie, które nie są w żadnym Twoim składzie tego trybu ani w propozycjach powyżej — z
+    kim z wolnych postaci pasują najlepiej według umiejętności.
   </p>
   @if (!loose().length) {
-    <p class="muted small">Każda z Twoich najsilniejszych postaci ma już swój skład.</p>
+    <p class="muted small">Wszystkie Twoje najsilniejsze wolne postacie są już w propozycjach.</p>
   }
   <div class="list">
     @for (l of loose(); track l.entry.id) {

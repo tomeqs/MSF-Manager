@@ -55,8 +55,9 @@ src/app/
     events/            trwające i nadchodzące eventy z postępem
     teams/             drużyny per tryb gry dopasowane do rosteru (gotowe / brakuje 1–2);
                        źródło: analiza MSF API, a gdy ta nie działa — lista z poradników
-    squads/            składy per tryb: plan bez powtórzeń postaci, Twoje składy z gry z
-                       podpowiedziami zamian, luźne postacie z partnerami (synergia z pasywek)
+    squads/            asystent składów per tryb: następny skład do zapisania (z ustawieniem),
+                       kolejne propozycje tylko z wolnych postaci, Twoje składy z podpowiedziami
+                       zamian, pozostałe wolne postacie z partnerami (synergia z pasywek)
     analysis/          analiza 60 najsilniejszych postaci: potencjał mocy, ISO-8 i kolejność
                        umiejętności vs wybory graczy, mechaniki z opisów umiejętności
     key-characters/    postacie uniwersalne (plug-and-play) i ich priorytet farmienia
@@ -195,20 +196,28 @@ poniżej 0,2 są pomijane). Wzmianki o przeciwnikach („against Mystic enemies�
 nie liczą. Wspólna rzadka cecha daje mały bonus nawet bez wzmianki — gdy opisów nie ma, tylko
 to zostaje. Synergia składu = średnia par przeskalowana do 0–100%.
 
-**Plan na tryb.** Ocena składu = moc / najmocniejszy skład × siła w mecie (tier S 1 / A 0,85 /
-B 0,72, popularny 0,7–0,95, bez poparcia 0,65) × (0,75 + 0,25 × synergia). Plan wybiera
-najlepsze składy, które możesz wystawić teraz, **bez powtarzania postaci** (ile — wybierasz;
-domyślnie 1 na arenę, 3 gdzie indziej). Gdy znane składy się skończą, buduje kolejne z
-synergii wokół najsilniejszych wolnych postaci (z 60 najmocniejszych). Kolejność w składzie:
-jak u większości graczy (gdy skład jest w analizie API), Twoja z gry albo z poradnika; postać,
-której opis mówi o sąsiadach („adjacent”), jest oznaczona.
+**Asystent składów** (`squad-assistant.ts`). Dla każdego trybu proponuje **następny skład do
+zapisania** i kolejne, wyłącznie z postaci, których nie ma jeszcze w żadnym Twoim składzie
+tego trybu (z opcją „postać tylko w jednym składzie we wszystkich trybach”). Kolejność
+propozycji: znane i popularne składy, które możesz wystawić (ocena = moc / najmocniejszy skład
+× siła w mecie: tier S 1 / A 0,85 / B 0,72, popularny 0,7–0,95, bez poparcia 0,65 × (0,75 +
+0,25 × synergia)), potem pełne składy zbudowane z synergii wokół najsilniejszych wolnych postaci
+(z 60 najmocniejszych; z resztek mniejszych niż 5 nie składa). „Zapisałem w grze” od razu
+zabiera postacie z propozycji (zapamiętane w przeglądarce, osobno dla konta i demo, do czasu
+aż skład pojawi się w `/player/v1/squads` — „Wczytaj składy z gry” odświeża listę); „Inna
+propozycja” pokazuje następną (pominięty skład z synergii oddaje swój pierwszy wybór).
+**Ustawienie**: jak u większości graczy, gdy skład jest w analizie API; inaczej kolejność ma
+znaczenie tylko dla umiejętności działających na sąsiadów („adjacent”) — taka postać idzie w
+środek, obok swoich najlepszych partnerów; bez nich aplikacja mówi wprost, że kolejność jest
+dowolna.
 
-**Twoje składy z gry** dostają werdykt: skład z mety (zostaw), „prawie” znany/popularny skład
+**Twoje składy** (z gry i oznaczone tu jako zapisane) dostają werdykt: skład z mety (zostaw), „prawie” znany/popularny skład
 (≥ 3 wspólne postacie — co zamienić, z zablokowanymi oznaczonymi) albo własny — wtedy słabe
-ogniwo (najmniej synergii z resztą) i postać z rosteru, która doda najwięcej.
+ogniwo (najmniej synergii z resztą) i postać z rosteru, która doda najwięcej. Zamiany nigdy nie
+biorą postaci z innego Twojego składu tego trybu.
 
-**Luźne postacie** to silne postacie spoza znanych drużyn, popularnych składów i Twoich
-składów: ich najlepsi partnerzy według umiejętności i skład zbudowany wokół nich. Tryb demo
+**Pozostałe wolne postacie** to silne postacie spoza Twoich składów trybu i spoza propozycji:
+ich najlepsi wolni partnerzy według umiejętności i skład zbudowany wokół nich. Tryb demo
 ma wymyślone opisy umiejętności w stylu gry — tylko do pokazania działania.
 
 ## Analiza postaci (`insights.ts`, `capabilities.ts`)

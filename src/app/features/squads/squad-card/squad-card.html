@@ -20,9 +20,12 @@
   </header>
 
   <ol class="members">
-    @for (m of option().members; track m.id) {
+    @for (m of members(); track m.id; let i = $index) {
       <li>
         <a class="member" [routerLink]="['/roster', m.id]" [title]="m.name">
+          @if (lineup()) {
+            <span class="slot">{{ i + 1 }}</span>
+          }
           <app-character-avatar
             [name]="m.name"
             [portrait]="m.portrait"
@@ -70,11 +73,15 @@
       }
     </ul>
   }
-  <p class="tiny muted order">
-    {{ orderLabel() }}
-    @if (option().positional.length) {
-      · {{ option().positional.join(', ') }}: umiejętność działa na sąsiadów — ustaw w środku
-    }
-  </p>
+  @if (lineup(); as l) {
+    <p class="small order lineup-note">Ustawienie: {{ l.note }}</p>
+  } @else {
+    <p class="tiny muted order">
+      {{ orderLabel() }}
+      @if (option().positional.length) {
+        · {{ option().positional.join(', ') }}: umiejętność działa na sąsiadów — ustaw w środku
+      }
+    </p>
+  }
   <ng-content />
 </article>

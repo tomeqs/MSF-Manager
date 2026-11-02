@@ -62,19 +62,30 @@ describe('squads', () => {
   it('reviews saved squads: meta, a few swaps from it, or a weak link', () => {
     const saved = [
       ['S1', 'S2', 'S3', 'S4', 'S5'],
-      ['S1', 'S2', 'S3', 'F1', 'F2'],
+      ['A1', 'A2', 'A3', 'F1', 'F2'],
       ['W1', 'F3', 'F4', 'F5', 'F6'],
     ];
     const reviews = reviewSaved(saved, options(saved), roster, synergy);
     expect(reviews.map((r) => r.verdict)).toEqual(['meta', 'near', 'custom']);
-    expect(reviews[1].target?.name).toBe('Symbiotes');
-    expect(reviews[1].swaps.map((s) => [s.out?.id, s.in?.id])).toEqual([
-      ['F1', 'S4'],
-      ['F2', 'S5'],
+    expect(reviews[1].target?.name).toBe('Avengers');
+    expect(reviews[1].swaps.map((s) => [s.out?.id, s.in?.id, s.locked])).toEqual([
+      ['F1', 'A4', undefined],
+      ['F2', undefined, 'A5'],
     ]);
     // W2 shares a rare trait with W1 — a better fit than any filler.
     expect(reviews[2].swaps[0].in?.id).toBe('W2');
     expect(reviews[2].reason).toMatchObject({ kind: 'shared', via: 'Wak' });
+  });
+
+  it('never suggests a swap with a character another saved squad uses', () => {
+    const saved = [
+      ['S1', 'S2', 'S3', 'F1', 'F2'],
+      ['S4', 'S5', 'F3', 'F4', 'F5'],
+    ];
+    const reviews = reviewSaved(saved, options(saved), roster, synergy);
+    expect(reviews[0].verdict).not.toBe('near'); // Symbiotes would need S4 and S5
+    const swapped = reviews.flatMap((r) => r.swaps.map((s) => s.in?.id));
+    for (const id of ['S1', 'S2', 'S3', 'S4', 'S5']) expect(swapped).not.toContain(id);
   });
 
   it('pairs strong characters that have no squad with their best partners', () => {

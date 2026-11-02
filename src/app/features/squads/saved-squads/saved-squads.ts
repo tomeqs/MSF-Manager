@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { LoadStatus } from '../../../core/models';
 import { RosterStore } from '../../../core/state/roster.store';
 import { SavedReview, SquadOption } from '../../../core/state/squads';
@@ -19,6 +19,8 @@ export class SavedSquads {
 
   readonly reviews = input.required<SavedReview[]>();
   readonly status = input.required<LoadStatus>();
+  /** Forget a squad marked saved here (by key). */
+  readonly removeLocal = output<string>();
 
   /** "Prawie Symbiote Six (S)" / "Prawie popularny skład graczy" */
   protected nearText(target: SquadOption): string {

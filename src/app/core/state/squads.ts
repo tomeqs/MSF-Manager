@@ -262,7 +262,8 @@ export function buildAround(
   return members;
 }
 
-function synergySquad(members: RosterEntry[], synergy: SynergyIndex): SquadOption {
+/** A squad built from the kits (no known or popular squad behind it). */
+export function synergySquad(members: RosterEntry[], synergy: SynergyIndex): SquadOption {
   const ids = members.map((m) => m.id);
   return {
     key: [...ids].sort().join('|'),
@@ -296,15 +297,21 @@ export interface SavedReview {
   swaps: Swap[];
   /** For `custom`: why the suggested swap helps. */
   reason?: SynergyLink;
+  /** Saved here with "Zapisałem" and not seen in the game's squads yet. */
+  local?: boolean;
 }
 
-/** Reviews the player's saved squads for a mode against the options. */
+/**
+ * Reviews the player's saved squads for a mode against the options. Swaps never bring in a
+ * character another saved squad of the mode already uses.
+ */
 export function reviewSaved(
   saved: Squad[],
   options: SquadOption[],
   roster: RosterEntry[],
   synergy: SynergyIndex,
 ): SavedReview[] {
+  const usedBy = (own: string[]) => new Set(saved.flat().filter((id) => !!id && !own.includes(id)));
   const byKey = new Map(options.map((o) => [o.key, o]));
   const byId = new Map(roster.map((e) => [e.id, e]));
   const backed = options.filter((o) => o.origins.some((x) => x === 'meta' || x === 'community'));
@@ -317,12 +324,24 @@ export function reviewSaved(
       reviews.push({ option, verdict: 'meta', swaps: [] });
       continue;
     }
-    const near = nearest(ids, backed);
+    const blocked = usedBy(ids);
+    const near = nearest(
+      ids,
+      backed.filter((o) => !o.members.some((m) => blocked.has(m.id))),
+    );
     if (near) {
       reviews.push({ option, verdict: 'near', target: near, swaps: swapsTo(ids, near, byId) });
       continue;
     }
-    reviews.push({ option, verdict: 'custom', ...weakestLink(option, roster, synergy) });
+    reviews.push({
+      option,
+      verdict: 'custom',
+      ...weakestLink(
+        option,
+        roster.filter((e) => !blocked.has(e.id)),
+        synergy,
+      ),
+    });
   }
   return reviews;
 }

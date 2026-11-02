@@ -2,16 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { TeamTab } from '../../core/models';
 import { RosterStore } from '../../core/state/roster.store';
-import { Alternative } from '../../core/state/squads';
+import { Proposal } from '../../core/state/squad-assistant';
 import { SQUAD_TABS, SquadsStore } from '../../core/state/squads.store';
 import { TeamsStore } from '../../core/state/teams.store';
 import { LooseCharacters } from './loose-characters/loose-characters';
 import { SavedSquads } from './saved-squads/saved-squads';
 import { SquadCard } from './squad-card/squad-card';
-import { squadTitle } from './squad-labels';
 
 const TAB_KEY = 'msf.squads.tab';
-const COUNT_KEY = 'msf.squads.count';
 const TAB_LABELS: Record<string, string> = {
   arena: 'Arena',
   war: 'Wojna',
@@ -20,13 +18,11 @@ const TAB_LABELS: Record<string, string> = {
   tower: 'Wieża',
   crucible: 'Crucible',
 };
-/** Arena needs one defence; elsewhere several squads are used at once. */
-const DEFAULT_COUNT: Partial<Record<TeamTab, number>> = { arena: 1 };
-const COUNTS = [1, 2, 3, 4, 5, 6];
 
 /**
- * Squads per game mode: the best ones to field (no character twice), alternatives, the
- * player's saved squads with suggested swaps, and strong characters without a squad.
+ * Squad assistant per game mode: the next squad to save (with its line-up), the ones after
+ * it, the player's squads, and strong characters still free. Characters in a saved squad are
+ * never proposed again.
  */
 @Component({
   selector: 'app-squads',
@@ -41,21 +37,18 @@ export class Squads {
   private readonly teams = inject(TeamsStore);
 
   protected readonly tabs = SQUAD_TABS.map((id) => ({ id, label: TAB_LABELS[id] }));
-  protected readonly counts = COUNTS;
-  protected readonly tab = signal<TeamTab>(read<TeamTab>(TAB_KEY, 'arena'));
-  private readonly countByTab = signal<Partial<Record<TeamTab, number>>>(read(COUNT_KEY, {}));
-  protected readonly count = computed(
-    () => this.countByTab()[this.tab()] ?? DEFAULT_COUNT[this.tab()] ?? 3,
-  );
+  protected readonly tab = signal<TeamTab>(readTab());
+  protected readonly label = computed(() => TAB_LABELS[this.tab()]);
 
   protected readonly status = this.roster.status;
-  protected readonly plan = computed(() => this.store.plan(this.tab(), this.count()));
-  protected readonly saved = computed(() => this.store.tab(this.tab()).saved);
+  protected readonly view = computed(() => this.store.tab(this.tab()));
+  protected readonly next = computed(() => this.view().proposals[0]);
+  protected readonly later = computed(() => this.view().proposals.slice(1));
+  protected readonly hasSkips = computed(() => this.store.hasSkips(this.tab()));
   protected readonly communityDown = computed(() => this.teams.tab(this.tab()).source === 'known');
   protected readonly kitsMissing = computed(
     () => this.store.kitsStatus() === 'error' || !this.store.synergy().fromKits,
   );
-  protected readonly title = squadTitle;
 
   constructor() {
     this.store.load();
@@ -63,37 +56,48 @@ export class Squads {
 
   protected select(tab: TeamTab): void {
     this.tab.set(tab);
-    write(TAB_KEY, tab);
+    try {
+      localStorage.setItem(TAB_KEY, tab);
+    } catch {
+      // Remembering the tab is optional.
+    }
   }
 
-  protected setCount(count: number): void {
-    this.countByTab.update((c) => ({ ...c, [this.tab()]: count }));
-    write(COUNT_KEY, this.countByTab());
-  }
-
-  /** "Koliduje z #1 (Riot, Toxin) · #3 (Thanos)" */
-  protected conflicts(list: Alternative['conflicts']): string {
-    const squads = this.plan().squads;
-    const parts = list.map(
-      (c) => `#${squads.indexOf(c.with) + 1} (${c.members.map((m) => m.name).join(', ')})`,
+  /** The player saved it in game: its characters leave the proposals. */
+  protected accept(proposal: Proposal): void {
+    this.store.accept(
+      this.tab(),
+      proposal.arrangement.members.map((m) => m.id),
     );
-    return `Koliduje z ${parts.join(' · ')}`;
+  }
+
+  protected skip(proposal: Proposal): void {
+    this.store.skip(this.tab(), proposal.option.key);
+  }
+
+  protected resetSkips(): void {
+    this.store.resetSkips(this.tab());
+  }
+
+  protected removeLocal(key: string): void {
+    this.store.removeLocal(this.tab(), key);
+  }
+
+  protected setExclusive(event: Event): void {
+    this.store.setExclusive((event.target as HTMLInputElement).checked);
+  }
+
+  /** "1. Riot · 2. Toxin · …" — the order to set in game. */
+  protected order(proposal: Proposal): string {
+    return proposal.arrangement.members.map((m, i) => `${i + 1}. ${m.name}`).join(' · ');
   }
 }
 
-function read<T>(key: string, fallback: T): T {
+function readTab(): TeamTab {
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
+    const tab = localStorage.getItem(TAB_KEY) as TeamTab | null;
+    return tab && SQUAD_TABS.includes(tab) ? tab : 'arena';
   } catch {
-    return fallback;
-  }
-}
-
-function write(key: string, value: unknown): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Remembering choices is optional.
+    return 'arena';
   }
 }

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { GROUP_LABELS, capabilityLabel, squadProfile } from '../../../core/state/capabilities';
 import { KitsStore } from '../../../core/state/kits.store';
 import { RosterStore } from '../../../core/state/roster.store';
+import { Arrangement } from '../../../core/state/squad-assistant';
 import { SquadOption } from '../../../core/state/squads';
 import { SynergyLink } from '../../../core/state/synergy';
 import { CompactNumberPipe } from '../../../shared/pipes/compact-number.pipe';
@@ -29,6 +30,10 @@ export class SquadCard {
   readonly details = input(true);
   /** Without the card frame (inside another card). */
   readonly flat = input(false);
+  /** How to line the squad up in game (numbered slots and why), when known. */
+  readonly lineup = input<Arrangement>();
+
+  protected readonly members = computed(() => this.lineup()?.members ?? this.option().members);
 
   protected readonly title = computed(() => squadTitle(this.option()));
   protected readonly origins = computed(() =>

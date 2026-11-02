@@ -1,24 +1,38 @@
 <section>
-  <h2 class="section-title">Twoje składy z gry</h2>
+  <h2 class="section-title">Twoje składy w tym trybie</h2>
+  <p class="muted small">
+    Ich postacie nie trafiają już do propozycji. Podpowiedzi zamian biorą tylko postacie spoza
+    innych składów.
+  </p>
   @switch (status()) {
     @case ('loading') {
       <p class="muted small">Wczytuję Twoje zapisane składy…</p>
     }
     @case ('error') {
       <p class="muted small">
-        Nie udało się pobrać Twoich składów z gry (/player/v1/squads). Reszta strony działa bez
-        nich.
+        Nie udało się pobrać Twoich składów z gry (/player/v1/squads) — liczą się tylko te, które
+        oznaczysz tu jako zapisane.
       </p>
     }
     @default {
       @if (!reviews().length) {
-        <p class="muted small">Nie masz zapisanych składów dla tego trybu.</p>
+        <p class="muted small">
+          Nie masz jeszcze składów w tym trybie — zacznij od propozycji powyżej.
+        </p>
       }
     }
   }
   <div class="grid">
     @for (r of reviews(); track $index) {
       <app-squad-card [option]="r.option" [details]="false">
+        @if (r.local) {
+          <p class="local small">
+            Oznaczony tutaj jako zapisany — zniknie z tej listy, gdy pojawi się w grze.
+            <button type="button" class="link-btn" (click)="removeLocal.emit(r.option.key)">
+              Usuń
+            </button>
+          </p>
+        }
         @switch (r.verdict) {
           @case ('meta') {
             <p class="verdict ok">✓ Skład z mety — zostaw.</p>

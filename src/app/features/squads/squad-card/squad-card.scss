@@ -80,6 +80,16 @@
   }
 }
 
+.slot {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--c-accent);
+}
+
+.lineup-note {
+  margin: 0;
+}
+
 .lock-icon {
   display: grid;
   place-items: center;

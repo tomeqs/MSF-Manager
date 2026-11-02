@@ -2,7 +2,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 
   button {
     padding: 6px 14px;
@@ -15,36 +15,48 @@
   }
 }
 
-.notes p {
-  margin: 0 0 6px;
-}
-
-.plan-head {
+.toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 8px 16px;
+  margin-bottom: 20px;
 }
 
-.count {
-  display: inline-flex;
-  gap: 4px;
-  margin-left: 6px;
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
 
-  button {
-    min-width: 30px;
-    padding: 3px 8px;
+.notes p {
+  margin: 0 0 6px;
+}
 
-    &.active {
-      border-color: var(--c-accent);
-      background: var(--c-accent-soft);
-    }
+.next {
+  max-width: 560px;
+  margin-bottom: 12px;
+
+  app-squad-card {
+    --c-border: var(--c-accent);
   }
 }
 
-.explain {
-  margin: 0 0 12px;
+.order {
+  margin: 0;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .primary {
+    border-color: var(--c-success);
+    background: rgb(62 207 142 / 0.15);
+  }
 }
 
 .grid {
@@ -54,8 +66,8 @@
   margin-bottom: 28px;
 }
 
-.conflict {
-  margin: 0;
+.link-btn {
+  padding: 0 6px;
 }
 
 .small {
@@ -63,5 +75,5 @@
 }
 
 .tiny {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
 }
