@@ -9,6 +9,7 @@ import {
   ItemQuantity,
   PlayerCard,
   PotentialTarget,
+  ShardDrops,
   SquadsInfo,
   TeamOrder,
   TeamTab,
@@ -16,6 +17,7 @@ import {
 } from '../../models';
 import { MsfDataSource } from '../msf-data-source';
 import { MOCK_CHARACTERS } from './mock-characters';
+import { MOCK_SHARD_DROPS, mockGameEvents } from './mock-drops';
 import { mockEvents } from './mock-events';
 import { MOCK_KITS } from './mock-kits';
 import { MOCK_SQUADS } from './mock-squads';
@@ -52,6 +54,14 @@ export class MockMsfDataSource extends MsfDataSource {
 
   getEvents(): Observable<EventInfo[]> {
     return of(mockEvents(Date.now())).pipe(delay(LATENCY_MS));
+  }
+
+  getGameEvents(): Observable<EventInfo[]> {
+    return of(mockGameEvents(Date.now())).pipe(delay(LATENCY_MS));
+  }
+
+  getShardDrops(): Observable<ShardDrops> {
+    return of(MOCK_SHARD_DROPS).pipe(delay(LATENCY_MS));
   }
 
   getInventory(): Observable<ItemQuantity[]> {

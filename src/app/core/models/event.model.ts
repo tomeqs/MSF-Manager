@@ -84,4 +84,6 @@ export interface EventInfo {
   tower?: { requirements?: Requirements; brackets?: Bracket[] };
   battlePass?: { brackets?: Bracket[] };
   strikePass?: { brackets?: Bracket[] };
+  /** Episodic events: the event campaign(s) (`ids`) or flash/unlock event (`id`) it runs. */
+  episodic?: { type?: string; ids?: string[]; id?: string };
 }

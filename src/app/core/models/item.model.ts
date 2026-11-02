@@ -11,6 +11,7 @@ export interface ItemObject {
   /** Shard/star items only. */
   characterId?: string;
   tier?: number;
+  isOrb?: boolean;
 }
 
 export interface ItemCost {
@@ -51,4 +52,23 @@ export interface UpgradeData {
 
 export function itemId(item: Item | undefined): string | undefined {
   return typeof item === 'string' ? item : item?.id;
+}
+
+/**
+ * Visits every item in a reward package with its (maximum) quantity, and whether it is only
+ * a chance (inside `oneOf`/`chanceOf`). `pulls` multiply what a random package can give.
+ */
+export function forEachRewardItem(
+  reward: ItemQuantity | undefined,
+  visit: (id: string, quantity: number, random: boolean) => void,
+  multiplier = 1,
+  random = false,
+): void {
+  if (!reward) return;
+  const id = itemId(reward.item);
+  if (id) visit(id, (reward.maxQuantity ?? reward.quantity ?? 1) * multiplier, random);
+  for (const child of reward.allOf ?? []) forEachRewardItem(child, visit, multiplier, random);
+  const pulls = reward.pulls ?? 1;
+  for (const child of reward.oneOf ?? []) forEachRewardItem(child, visit, multiplier * pulls, true);
+  forEachRewardItem(reward.chanceOf, visit, multiplier * pulls, true);
 }

@@ -1,4 +1,4 @@
-import { Bracket, EventInfo, ItemQuantity, itemId } from '../models';
+import { Bracket, EventInfo, forEachRewardItem } from '../models';
 
 /** Shards of one character an event can award (summed over all its reward tiers). */
 export interface ShardOffer {
@@ -45,11 +45,13 @@ export function shardOffers(
     };
     for (const bracket of bracketsOf(event)) {
       for (const tier of Object.values(bracket.objective?.tiers ?? {})) {
-        walk(tier.rewards, 1, false, shardIds, (id, qty, random) => {
+        forEachRewardItem(tier.rewards, (id, qty, random) => {
+          if (!shardIds.has(id)) return;
           if (random) offer(id).possible += qty;
           else offer(id).guaranteed += qty;
         });
-        walk(tier.premiumRewards, 1, false, shardIds, (id, qty, random) => {
+        forEachRewardItem(tier.premiumRewards, (id, qty, random) => {
+          if (!shardIds.has(id)) return;
           if (random) offer(id).possible += qty;
           else offer(id).premium += qty;
         });
@@ -76,25 +78,6 @@ function bracketsOf(event: EventInfo): Bracket[] {
     ...(event.battlePass?.brackets ?? []),
     ...(event.strikePass?.brackets ?? []),
   ];
-}
-
-/** Visits every shard item in a reward package with its (maximum) quantity. */
-function walk(
-  reward: ItemQuantity | undefined,
-  multiplier: number,
-  random: boolean,
-  shardIds: ReadonlySet<string>,
-  visit: (id: string, quantity: number, random: boolean) => void,
-): void {
-  if (!reward) return;
-  const id = itemId(reward.item);
-  if (id && shardIds.has(id)) {
-    visit(id, (reward.maxQuantity ?? reward.quantity ?? 1) * multiplier, random);
-  }
-  for (const child of reward.allOf ?? []) walk(child, multiplier, random, shardIds, visit);
-  const pulls = reward.pulls ?? 1;
-  for (const child of reward.oneOf ?? []) walk(child, multiplier * pulls, true, shardIds, visit);
-  walk(reward.chanceOf, multiplier * pulls, true, shardIds, visit);
 }
 
 /** "Event „Fear Tower”: +120 shardów (do 18.10)" / "… od 20.10" for upcoming ones. */

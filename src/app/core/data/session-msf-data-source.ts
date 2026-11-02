@@ -10,6 +10,7 @@ import {
   ItemQuantity,
   PlayerCard,
   PotentialTarget,
+  ShardDrops,
   SquadsInfo,
   TeamOrder,
   TeamTab,
@@ -52,6 +53,14 @@ export class SessionMsfDataSource extends MsfDataSource {
 
   getEvents(): Observable<EventInfo[]> {
     return this.source.getEvents();
+  }
+
+  getGameEvents(): Observable<EventInfo[]> {
+    return this.source.getGameEvents();
+  }
+
+  getShardDrops(): Observable<ShardDrops> {
+    return this.source.getShardDrops();
   }
 
   getInventory(): Observable<ItemQuantity[]> {

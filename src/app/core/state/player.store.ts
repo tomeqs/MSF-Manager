@@ -11,10 +11,22 @@ export class PlayerStore {
 
   private readonly _card = signal<PlayerCard | null>(null);
   private readonly _events = signal<EventInfo[]>([]);
+  private readonly _gameEvents = signal<EventInfo[]>([]);
   private readonly _status = signal<LoadStatus>('idle');
 
   readonly card = this._card.asReadonly();
+  /** Events the player qualifies for, with their progress. */
   readonly events = this._events.asReadonly();
+  /**
+   * Every scheduled and running event in the game: the player's own (with progress) plus
+   * those they do not qualify for yet (`/game/v1/events`).
+   */
+  readonly allEvents = computed(() => {
+    const own = new Set(this._events().map((e) => e.id));
+    return [...this._events(), ...this._gameEvents().filter((e) => !own.has(e.id))];
+  });
+  /** Ids of events the player qualifies for (the rest of `allEvents` they do not). */
+  readonly ownEventIds = computed(() => new Set(this._events().map((e) => e.id)));
   /**
    * Player level — no character can be levelled past it, so max powers and upgrade targets
    * are computed for it. The highest character level is a floor and stands in when the card
@@ -29,17 +41,17 @@ export class PlayerStore {
   });
   readonly status = this._status.asReadonly();
 
-  /** Events running now, soonest-ending first. */
+  /** Events running now (the player's and the rest of the game's), soonest-ending first. */
   readonly activeEvents = computed(() => {
     const now = Date.now() / 1000;
-    return this._events()
+    return this.allEvents()
       .filter((e) => e.startTime <= now && e.endTime > now)
       .sort((a, b) => a.endTime - b.endTime);
   });
 
   readonly upcomingEvents = computed(() => {
     const now = Date.now() / 1000;
-    return this._events()
+    return this.allEvents()
       .filter((e) => e.startTime > now)
       .sort((a, b) => a.startTime - b.startTime);
   });
@@ -60,6 +72,11 @@ export class PlayerStore {
         this._status.set('loaded');
       },
       error: () => this._status.set('error'),
+    });
+    // Optional: without it only the player's own events are known.
+    this.data.getGameEvents().subscribe({
+      next: (events) => this._gameEvents.set(events),
+      error: () => this._gameEvents.set([]),
     });
   }
 }

@@ -8,6 +8,7 @@ import {
   ItemQuantity,
   PlayerCard,
   PotentialTarget,
+  ShardDrops,
   SquadsInfo,
   TeamOrder,
   TeamTab,
@@ -38,6 +39,15 @@ export abstract class MsfDataSource {
 
   /** GET /player/v1/events */
   abstract getEvents(): Observable<EventInfo[]>;
+
+  /** GET /game/v1/events — scheduled and running events for everyone, not only the player's. */
+  abstract getGameEvents(): Observable<EventInfo[]>;
+
+  /**
+   * Where shards drop: campaign nodes, nodes of event campaigns that events link to, and orbs
+   * found in those rewards (`/game/v1/episodics/…`, `/game/v1/orbRewards/{id}`).
+   */
+  abstract getShardDrops(): Observable<ShardDrops>;
 
   /** GET /player/v1/inventory */
   abstract getInventory(): Observable<ItemQuantity[]>;

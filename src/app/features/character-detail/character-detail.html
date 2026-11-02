@@ -34,17 +34,27 @@
     }
   </header>
 
-  @if (source() || offers().length) {
+  @if (source() || offers().length || drops().length) {
     <section class="card sources">
       <h2>Skąd shardy</h2>
       @for (o of offers(); track o.event.id) {
         <p class="offer" [class.upcoming]="!o.live">{{ offerText(o) }}</p>
       }
+      @if (drops().length) {
+        <ul class="drops small">
+          @for (d of drops(); track d.label) {
+            <li [class.muted]="!d.live">{{ d.label }}</li>
+          }
+        </ul>
+        <p class="muted small">Z danych gry (węzły kampanii, kampanie eventowe, orby).</p>
+      }
       @if (source(); as s) {
         <app-source-line [source]="s" />
-        <p class="muted small">
-          Stan z badań z {{ sourcesAsOf }} — potwierdź w grze przyciskiem „Find” przy postaci.
-        </p>
+        @if (s.confidence !== 'API') {
+          <p class="muted small">
+            Stan z badań z {{ sourcesAsOf }} — potwierdź w grze przyciskiem „Find” przy postaci.
+          </p>
+        }
       }
     </section>
   }

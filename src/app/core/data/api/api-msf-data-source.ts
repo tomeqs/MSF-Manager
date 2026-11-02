@@ -1,25 +1,52 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
+import {
+  EMPTY,
+  Observable,
+  catchError,
+  forkJoin,
+  from,
+  map,
+  mergeMap,
+  of,
+  switchMap,
+  tap,
+  throwError,
+  toArray,
+} from 'rxjs';
 import { ApiCache } from '../../cache/api-cache.service';
 import { MSF_CONFIG } from '../../config/msf-config';
 import {
   ApiResponse,
+  ChapterInfo,
   CharacterInfo,
   CharacterInstance,
   CharacterKit,
   CharacterPotential,
+  EpisodicInfo,
   EventInfo,
   IndexedCosts,
+  ItemObject,
   ItemQuantity,
+  OrbDrop,
   PlayerCard,
   PotentialTarget,
+  ShardDrops,
   SquadsInfo,
   TeamOrder,
   TeamTab,
   UpgradeData,
+  itemId,
 } from '../../models';
 import { MsfDataSource } from '../msf-data-source';
+import {
+  EpisodicRef,
+  allRewards,
+  linkedEpisodics,
+  nodeDrops,
+  orbCandidates,
+  orbDrops,
+} from './shard-drops';
 
 type QueryParams = Record<string, string>;
 
@@ -30,6 +57,11 @@ type AllTeamOrders = Partial<Record<TeamTab, TeamOrder | TeamOrder[]>>;
 const PAGE_SIZE = 100;
 /** Ability descriptions are long, so kit pages are smaller. */
 const KIT_PAGE_SIZE = 40;
+/** Events carry all their reward tiers. */
+const EVENT_PAGE_SIZE = 25;
+/** Game data crawled for shard drops: requests at once, and orbs looked into at most. */
+const CRAWL_CONCURRENCY = 3;
+const MAX_ORBS = 40;
 
 /** Real MSF API. Auth headers are added by `msfApiInterceptor`, caching by `ApiCache`. */
 @Injectable({ providedIn: 'root' })
@@ -115,6 +147,82 @@ export class ApiMsfDataSource extends MsfDataSource {
       pieceInfo: 'none',
       objRewards: 'full',
     });
+  }
+
+  getGameEvents(): Observable<EventInfo[]> {
+    // Everyone's events (scheduled, running and past), not only those the player qualifies
+    // for; item ids keep the reward tiers small.
+    return this.cache.gameData(
+      'gameEvents:v1',
+      'events',
+      () =>
+        this.pagedEnvelope<EventInfo>(
+          '/game/v1/events',
+          { itemFormat: 'id', pieceInfo: 'none' },
+          EVENT_PAGE_SIZE,
+        ),
+      (data) => Array.isArray(data),
+    );
+  }
+
+  getShardDrops(): Observable<ShardDrops> {
+    // Campaign nodes for everyone, plus the event campaigns running/scheduled events link to,
+    // plus orbs met in those rewards. Large on first read, then cached until nodes change.
+    return this.cache.gameData(
+      'shardDrops:v1',
+      'nodes',
+      () =>
+        forkJoin({
+          characters: this.getCharacters(),
+          events: this.getGameEvents().pipe(catchError(() => of([] as EventInfo[]))),
+          campaigns: this.pagedEnvelope<EpisodicInfo>('/game/v1/episodics/campaign', {
+            itemFormat: 'id',
+          }),
+        }).pipe(
+          switchMap(({ characters, events, campaigns }) => {
+            const shardIds = new Set(
+              characters.flatMap((c) => {
+                const id = itemId(c.starItems?.[0]);
+                return id ? [id] : [];
+              }),
+            );
+            const refs: EpisodicRef[] = [
+              ...campaigns.data.map((c) => ({ type: 'campaign' as const, id: c.id })),
+              ...linkedEpisodics(events),
+            ];
+            return from(refs).pipe(
+              mergeMap(
+                (ref) =>
+                  this.episodicRewards(ref).pipe(
+                    map((info) => ({ ref, info })),
+                    catchError(() => EMPTY),
+                  ),
+                CRAWL_CONCURRENCY,
+              ),
+              toArray(),
+              switchMap((read) => {
+                const nodes = read.flatMap(({ ref, info }) => nodeDrops(info, ref.type, shardIds));
+                const orbs = orbCandidates(
+                  allRewards(
+                    read.map((r) => r.info),
+                    events,
+                  ),
+                ).slice(0, MAX_ORBS);
+                return from(orbs).pipe(
+                  mergeMap(
+                    (id) =>
+                      this.orbContents(id, shardIds).pipe(catchError(() => of([] as OrbDrop[]))),
+                    CRAWL_CONCURRENCY,
+                  ),
+                  toArray(),
+                  map((found) => ({ meta: campaigns.meta, data: { nodes, orbs: found.flat() } })),
+                );
+              }),
+            );
+          }),
+        ),
+      (data) => data.nodes.length + data.orbs.length > 0,
+    );
   }
 
   getInventory(): Observable<ItemQuantity[]> {
@@ -247,6 +355,55 @@ export class ApiMsfDataSource extends MsfDataSource {
           };
         }),
       );
+  }
+
+  /** One episodic with its node rewards; chapter by chapter when the whole is too large (472). */
+  private episodicRewards(ref: EpisodicRef): Observable<EpisodicInfo> {
+    const path = `/game/v1/episodics/${ref.type}/${encodeURIComponent(ref.id)}`;
+    const params = {
+      itemFormat: 'id',
+      nodeInfo: 'part',
+      nodeRewards: 'full',
+      nodeReqs: 'none',
+      pieceInfo: 'none',
+    };
+    return this.envelope<EpisodicInfo>(path, params).pipe(
+      map((res) => res.data),
+      catchError((error: unknown) => {
+        if (!(error instanceof HttpErrorResponse) || error.status !== 472) {
+          return throwError(() => error);
+        }
+        return this.envelope<EpisodicInfo>(path, { nodeInfo: 'none' }).pipe(
+          switchMap(({ data: info }) =>
+            from(Array.from({ length: info.numChapters ?? 0 }, (_, i) => i + 1)).pipe(
+              mergeMap(
+                (n) =>
+                  this.envelope<ChapterInfo>(`${path}/${n}`, params).pipe(
+                    map((res) => [String(n), res.data] as const),
+                  ),
+                CRAWL_CONCURRENCY,
+              ),
+              toArray(),
+              map((chapters) => ({ ...info, chapters: Object.fromEntries(chapters) })),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  /** Shards an orb can give, with the orb's name (NOT_FOUND when the id is not an orb). */
+  private orbContents(orbId: string, shardIds: ReadonlySet<string>): Observable<OrbDrop[]> {
+    const id = encodeURIComponent(orbId);
+    return forkJoin({
+      contents: this.envelope<ItemQuantity>(`/game/v1/orbRewards/${id}`, {
+        itemFormat: 'id',
+        pieceInfo: 'none',
+      }),
+      item: this.envelope<ItemObject>(`/game/v1/items/${id}`, { pieceInfo: 'none' }).pipe(
+        catchError(() => of(undefined)),
+      ),
+    }).pipe(map(({ contents, item }) => orbDrops(orbId, item?.data.name, contents.data, shardIds)));
   }
 
   private data<T>(path: string, params?: QueryParams): Observable<T> {

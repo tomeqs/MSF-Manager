@@ -12,6 +12,7 @@ import {
   bestByCharacter,
   completableTeams,
 } from './advisor';
+import { AutoSource, autoSourceIndex, withAutoSources } from './auto-sources';
 import { capAt } from './level-caps';
 import { FarmingGoal } from './farming-calc';
 import { maxBuildGoal, mergeGoals, recommendedGoal } from './goals';
@@ -21,6 +22,7 @@ import { shardOffers } from './event-rewards';
 import { MAX_YELLOW_STARS } from './game-rules';
 import { memberPower } from './potential-calc';
 import { FarmingStore } from './farming.store';
+import { ShardDropsStore } from './shard-drops.store';
 import { PlayerStore } from './player.store';
 import { PotentialStore } from './potential.store';
 import { RosterStore } from './roster.store';
@@ -34,6 +36,7 @@ export class AdvisorStore {
   private readonly player = inject(PlayerStore);
   private readonly potentials = inject(PotentialStore);
   private readonly farming = inject(FarmingStore);
+  private readonly drops = inject(ShardDropsStore);
 
   readonly playerLevel = this.player.level;
   /** Max gear tier and ability levels at the player's level (undefined if not loaded). */
@@ -42,20 +45,41 @@ export class AdvisorStore {
   /** Needs the inventory and upgrade data (shards), so it follows the farming store. */
   readonly status = this.farming.status;
 
-  /** Today's date, checked hourly, so time-limited sources expire while the app stays open. */
-  private readonly today = signal(localDate(new Date()));
+  /**
+   * The time, ticking hourly, so time-limited sources expire and events start or end while
+   * the app stays open.
+   */
+  private readonly clock = signal(Date.now());
+  private readonly today = computed(() => localDate(new Date(this.clock())));
   private readonly sources = computed(() =>
     sourceLookup(CHARACTER_SOURCES, new Date(`${this.today()}T12:00:00`)),
   );
 
-  /** Researched shard source per character, as of today. */
-  readonly sourceOf = (entry: RosterEntry) => this.sources()(entry);
+  /** Shard sources read from game data (event rewards, campaign/event nodes, orbs). */
+  private readonly autoIndex = computed(() =>
+    autoSourceIndex(
+      this.roster.entries(),
+      this.drops.drops(),
+      this.offers(),
+      this.player.allEvents(),
+      this.clock() / 1000,
+    ),
+  );
+
+  /** What game data says about where a character's shards come from. */
+  readonly autoSourcesOf = (entry: RosterEntry): AutoSource[] =>
+    this.autoIndex().get(entry.id) ?? [];
+
+  /** Shard source per character as of today: research corrected by game data. */
+  readonly sourceOf = (entry: RosterEntry) =>
+    withAutoSources(this.sources()(entry), this.autoSourcesOf(entry), entry);
 
   /** Running and upcoming events that award shards of roster characters, by shard item id. */
   readonly offers = computed(() =>
     shardOffers(
-      this.player.events(),
+      this.player.allEvents(),
       new Set(this.roster.entries().flatMap((e) => (e.shardItemId ? [e.shardItemId] : []))),
+      this.clock() / 1000,
     ),
   );
 
@@ -117,10 +141,11 @@ export class AdvisorStore {
   }
 
   constructor() {
-    setInterval(() => this.today.set(localDate(new Date())), HOUR_MS);
+    setInterval(() => this.clock.set(Date.now()), HOUR_MS);
   }
 
   load(): void {
+    this.drops.load();
     this.farming.load();
     this.player.load();
   }

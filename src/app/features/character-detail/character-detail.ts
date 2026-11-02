@@ -73,6 +73,11 @@ export class CharacterDetail {
     return (id && this.advisor.offers().get(id)) || [];
   });
   protected readonly offerText = offerSummary;
+  /** Nodes, event campaigns and orbs that drop its shards (event tiers are listed above). */
+  protected readonly drops = computed(() => {
+    const e = this.entry();
+    return e ? this.advisor.autoSourcesOf(e).filter((a) => a.kind !== 'event') : [];
+  });
   protected readonly sourcesAsOf = CHARACTER_SOURCES_AS_OF;
 
   protected readonly inFarming = computed(() =>
