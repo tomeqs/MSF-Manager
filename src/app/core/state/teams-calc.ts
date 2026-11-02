@@ -136,7 +136,8 @@ export interface ResolvedKnownTeam {
 
 /**
  * Builds known teams from the roster.
- * - `members`: the listed lineup; for "A|B" slots the first owned option wins.
+ * - `members`: the listed lineup; for "A|B" slots the first owned option wins. When some
+ *   names are not in the game data, the trait named like the team is used instead, if any.
  * - `traits`: the five strongest owned characters with the trait, locked ones filling gaps.
  * Teams with too few members found in the game data are reported in `report.unmatched`.
  */
@@ -148,9 +149,17 @@ export function resolveKnownTeams(
   const byName = rosterByName(roster);
   const resolved: ResolvedKnownTeam[] = [];
   for (const team of known) {
-    const members = team.members
-      ? lineupMembers(team.members, byName, report.unrecognized)
+    const unknown: string[] = [];
+    let members = team.members
+      ? lineupMembers(team.members, byName, unknown)
       : traitMembers(team.traits ?? [], roster);
+    // A lineup naming characters the game data does not have (not released yet, renamed)
+    // falls back to the team's own trait when the game has one ("Savage Land" → SavageLand).
+    if (unknown.length) {
+      const byTrait = traitMembers([team.name], roster);
+      if (byTrait.length >= MIN_RECOGNISED) members = byTrait;
+      else report.unrecognized.push(...unknown);
+    }
     const recognised = members.filter((m) => !m.unknown).length;
     if (recognised === 0 || recognised < Math.min(MIN_RECOGNISED, members.length)) {
       report.unmatched.push(team.name);

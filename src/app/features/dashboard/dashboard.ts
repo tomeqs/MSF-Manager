@@ -14,9 +14,12 @@ import { ProgressBar } from '../../shared/ui/progress-bar';
 import { StarRating } from '../../shared/ui/star-rating';
 import { StatTile } from '../../shared/ui/stat-tile';
 
+import { NewsCard } from './news-card/news-card';
+
 @Component({
   selector: 'app-dashboard',
   imports: [
+    NewsCard,
     RouterLink,
     DecimalPipe,
     CompactNumberPipe,

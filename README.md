@@ -154,6 +154,34 @@ Zakładki Blitz i Wieża zaczynają od trwających i zapowiedzianych eventów te
 (gwiazdki, gear, poziom, czerwone gwiazdki, ISO-8) — z „Farmuj” do wymaganych gwiazdek.
 Cechy porównywane są łącznie z niewidocznymi i eventowymi (`traitKeys`).
 
+## Wykrywanie z danych gry (`auto-sources.ts`, `news.ts`)
+
+Ręczne tabele uzupełniają tylko to, czego API nie mówi. Resztę aplikacja odczytuje sama:
+
+- **Eventy całej gry** — `/game/v1/events` (zaplanowane i trwające dla wszystkich, nie tylko
+  te, do których się kwalifikujesz). Strona Eventy pokazuje je z oznaczeniem „nie kwalifikujesz
+  się (jeszcze)” i z shardami, które dają (progi nagród oraz węzły kampanii eventowych).
+  Ranking wycenia shardy z nich po stawce eventu.
+- **Gdzie dropią shardy** — przejście przez kampanie (`/game/v1/episodics/campaign/…` z
+  `nodeRewards=full`), kampanie eventowe, do których prowadzą eventy (`episodic.ids`), i orby
+  spotkane w tych nagrodach (`/game/v1/orbRewards/{id}`; orb rozpoznaję po „orb” w id, błędny
+  strzał kończy się NOT_FOUND). Cache do zmiany hasha `nodes`; za duży epizod (472) czytam po
+  rozdziałach. Szczegóły postaci pokazują znalezione węzły i orby.
+- **Status źródła = badania poprawione przez dane gry**: trwająca kampania eventowa z jej
+  shardami → „event teraz” do końca eventu; powtarzalny węzeł kampanii → „stałe źródło”; orb →
+  „losowe orby”. Dane gry zastępują „brak danych”, „okno minęło”, „niedostępna” i „do
+  sprawdzenia”, a w pozostałych przypadkach wygrywają, gdy są tańsze. Progi nagród eventów nie
+  zmieniają statusu (wycenia je osobno ranking). Zegar odświeża statusy co godzinę.
+- **Nowości** (Pulpit) — migawka gry w przeglądarce: nowe postacie, zmienione opisy
+  umiejętności (przeróbki; z drużynami, których ocena może być nieaktualna), nowe eventy i nowe
+  cechy drużynowe (cecha 3–10 postaci, poza pochodzeniem, rolą i stroną). „Oznacz jako
+  przeczytane” zapamiętuje stan; pierwsza wizyta tylko zapamiętuje.
+- **Drużyny po cechach** — gdy lista drużyny w `known-meta.ts` zawiera postać, której nie ma w
+  danych gry (np. przed premierą), skład bierze się z cechy nazwanej jak drużyna, jeśli gra ją
+  ma („Savage Land” → SavageLand).
+
+Ręcznie zostają: sklepy i płatne oferty (API ich nie zwraca), reguły Wojny i oceny drużyn.
+
 ## Składy (`squads.ts`, `synergy.ts`)
 
 Strona „Składy” łączy trzy źródła: drużyny z poradników (`known-meta.ts`, tier S/A/B),

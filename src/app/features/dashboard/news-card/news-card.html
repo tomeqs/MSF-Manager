@@ -1,0 +1,79 @@
+@if (news(); as n) {
+  <section class="card news">
+    <div class="head">
+      <h2>Nowości od {{ n.since | date: 'd MMM, HH:mm' }}</h2>
+      @if (!empty()) {
+        <button type="button" (click)="store.markSeen()">Oznacz jako przeczytane</button>
+      }
+    </div>
+    @if (empty()) {
+      <p class="muted small">Nic nowego w danych gry od ostatniej wizyty.</p>
+    }
+    @if (n.newCharacters.length) {
+      <div class="group">
+        <h3>Nowe postacie</h3>
+        <p>
+          @for (e of n.newCharacters; track e.id; let last = $last) {
+            <a [routerLink]="['/roster', e.id]">{{ e.name }}</a>
+            <span class="muted">{{ e.unlocked ? '' : ' (zablokowana)' }}</span
+            >{{ last ? '' : ', ' }}
+          }
+        </p>
+      </div>
+    }
+    @if (n.reworked.length) {
+      <div class="group">
+        <h3>Zmienione umiejętności</h3>
+        <p>
+          @for (e of n.reworked; track e.id; let last = $last) {
+            <a [routerLink]="['/roster', e.id]">{{ e.name }}</a
+            >{{ last ? '' : ', ' }}
+          }
+        </p>
+        @if (affectedTeams().length) {
+          <p class="muted small">
+            Ocena drużyn {{ affectedTeams().join(', ') }} może być nieaktualna — przeróbka zmienia
+            ich siłę.
+          </p>
+        }
+      </div>
+    }
+    @if (n.newEvents.length) {
+      <div class="group">
+        <h3>Nowe eventy</h3>
+        <ul>
+          @for (e of n.newEvents; track e.id) {
+            <li>
+              <strong>{{ e.name }}</strong>
+              <span class="muted">
+                {{ e.startTime * 1000 | date: 'd MMM, HH:mm' }} –
+                {{ e.endTime * 1000 | date: 'd MMM, HH:mm' }}
+                {{ qualifies(e.id) ? '' : '· nie kwalifikujesz się (jeszcze)' }}
+              </span>
+            </li>
+          }
+        </ul>
+        <a routerLink="/events" class="small">Wszystkie eventy →</a>
+      </div>
+    }
+    @if (n.newTeams.length) {
+      <div class="group">
+        <h3>Nowe drużyny (cechy w grze)</h3>
+        <ul>
+          @for (t of n.newTeams; track t.id) {
+            <li>
+              <strong>{{ t.name }}</strong>
+              <span class="muted">
+                · masz {{ owned(t.members) }}/{{ t.members.length }}: {{ names(t.members) }}
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
+} @else if (store.since() === undefined) {
+  <p class="muted small first">
+    Zapamiętuję stan gry — od następnej wizyty pokażę tu nowe postacie, przeróbki, eventy i drużyny.
+  </p>
+}

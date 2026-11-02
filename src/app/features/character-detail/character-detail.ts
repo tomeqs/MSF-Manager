@@ -104,6 +104,8 @@ export class CharacterDetail {
   constructor() {
     this.store.load();
     this.player.load();
+    // Shard drops, event offers and the ranking behind "Farmuj".
+    this.advisor.load();
     effect(() => {
       const e = this.entry();
       const playerStatus = this.player.status();

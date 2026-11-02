@@ -5,6 +5,8 @@
   </div>
 </header>
 
+<app-news-card />
+
 @if (player.card(); as card) {
   <section class="tiles">
     <app-stat-tile label="TCP" [value]="card.tcp | compactNumber" hint="Total collection power" />

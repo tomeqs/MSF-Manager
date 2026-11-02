@@ -126,4 +126,21 @@ describe('knownTeamFits', () => {
     expect(fits.almost.map((f) => f.members.map((m) => m.id))).toEqual([['G2', 'G1', 'G3']]);
     expect(fits.almost[0].missing.map((m) => m.id)).toEqual(['G3']);
   });
+
+  it('uses the trait named like the team when its lineup names are not in the game yet', () => {
+    const fits = knownTeamFits(
+      [
+        {
+          name: 'Gamma',
+          modes: ['raids'],
+          members: ['Gamma One', 'Gamma Two', 'Gamma Unreleased'],
+          source: 's',
+        },
+      ],
+      'raids',
+      roster,
+    );
+    expect(fits.unrecognized).toEqual([]);
+    expect(fits.almost.map((f) => f.members.map((m) => m.id))).toEqual([['G2', 'G1', 'G3']]);
+  });
 });

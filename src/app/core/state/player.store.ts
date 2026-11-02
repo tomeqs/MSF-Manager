@@ -12,6 +12,7 @@ export class PlayerStore {
   private readonly _card = signal<PlayerCard | null>(null);
   private readonly _events = signal<EventInfo[]>([]);
   private readonly _gameEvents = signal<EventInfo[]>([]);
+  private readonly _gameEventsStatus = signal<LoadStatus>('idle');
   private readonly _status = signal<LoadStatus>('idle');
 
   readonly card = this._card.asReadonly();
@@ -25,6 +26,8 @@ export class PlayerStore {
     const own = new Set(this._events().map((e) => e.id));
     return [...this._events(), ...this._gameEvents().filter((e) => !own.has(e.id))];
   });
+  /** Game-wide events load on their own; `error` just means only the player's are known. */
+  readonly gameEventsStatus = this._gameEventsStatus.asReadonly();
   /** Ids of events the player qualifies for (the rest of `allEvents` they do not). */
   readonly ownEventIds = computed(() => new Set(this._events().map((e) => e.id)));
   /**
@@ -74,9 +77,13 @@ export class PlayerStore {
       error: () => this._status.set('error'),
     });
     // Optional: without it only the player's own events are known.
+    this._gameEventsStatus.set('loading');
     this.data.getGameEvents().subscribe({
-      next: (events) => this._gameEvents.set(events),
-      error: () => this._gameEvents.set([]),
+      next: (events) => {
+        this._gameEvents.set(events);
+        this._gameEventsStatus.set('loaded');
+      },
+      error: () => this._gameEventsStatus.set('error'),
     });
   }
 }
