@@ -5,13 +5,12 @@ import { LooseCharacter } from '../../../core/state/squads';
 import { SynergyLink } from '../../../core/state/synergy';
 import { CompactNumberPipe } from '../../../shared/pipes/compact-number.pipe';
 import { CharacterAvatar } from '../../../shared/ui/character-avatar';
-import { SquadCard } from '../squad-card/squad-card';
 import { linkText } from '../squad-labels';
 
 /** Strong characters without a squad: their best partners and a squad built around each. */
 @Component({
   selector: 'app-loose-characters',
-  imports: [RouterLink, CompactNumberPipe, CharacterAvatar, SquadCard],
+  imports: [RouterLink, CompactNumberPipe, CharacterAvatar],
   templateUrl: './loose-characters.html',
   styleUrl: './loose-characters.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,8 +20,11 @@ export class LooseCharacters {
 
   readonly loose = input.required<LooseCharacter[]>();
 
-  protected names(entries: { name: string }[]): string {
-    return entries.map((e) => e.name).join(', ');
+  protected others(partners: LooseCharacter['partners']): string {
+    return partners
+      .slice(1)
+      .map((p) => p.entry.name)
+      .join(', ');
   }
 
   protected link(link: SynergyLink | undefined): string {

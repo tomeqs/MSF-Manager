@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { GROUP_LABELS, capabilityLabel, squadProfile } from '../../../core/state/capabilities';
 import { KitsStore } from '../../../core/state/kits.store';
@@ -26,14 +26,30 @@ export class SquadCard {
   readonly option = input.required<SquadOption>();
   /** Position in a plan (1, 2, …). */
   readonly index = input<number>();
-  /** Show synergy reasons (off for compact cards). */
-  readonly details = input(true);
+  /**
+   * Compact: members, power, synergy, one reason and the gaps only — the mechanics, all
+   * reasons and the full line-up note behind "Szczegóły".
+   */
+  readonly compact = input(true);
   /** Without the card frame (inside another card). */
   readonly flat = input(false);
   /** How to line the squad up in game (numbered slots and why), when known. */
   readonly lineup = input<Arrangement>();
 
   protected readonly members = computed(() => this.lineup()?.members ?? this.option().members);
+  protected readonly open = signal(false);
+  protected readonly full = computed(() => !this.compact() || this.open());
+  /** The strongest reason the squad fits, in one line. */
+  protected readonly why = computed(() => {
+    const top = this.option().links[0];
+    return top ? this.link(top) : undefined;
+  });
+  /** Line-up advice in short (full text in the details). */
+  protected readonly lineupShort = computed(() => {
+    const note = this.lineup()?.note;
+    if (!note) return undefined;
+    return note.includes('ustaw dowolnie') ? 'Kolejność dowolna.' : note;
+  });
 
   protected readonly title = computed(() => squadTitle(this.option()));
   protected readonly origins = computed(() =>

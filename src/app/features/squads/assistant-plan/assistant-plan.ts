@@ -20,13 +20,13 @@ export class AssistantPlan {
   private readonly farming = inject(FarmingStore);
 
   readonly view = input.required<PlanView>();
+  /** Which part to show: the next squad, the ones after it, or squads to farm towards. */
+  readonly part = input<'next' | 'later' | 'farm'>('next');
 
   protected readonly next = computed(() => this.view().plan.ready[0]);
   protected readonly later = computed(() => this.view().plan.ready.slice(1));
   protected readonly toFarm = computed(() => this.view().plan.toFarm);
   protected readonly hasSkips = computed(() => this.store.hasSkips(this.view().id));
-  protected readonly isDefense = computed(() => this.view().id === 'war:defense');
-  protected readonly counts = [1, 2, 3, 4, 5];
   private readonly goalIds = computed(
     () => new Set(this.farming.goals().map((g) => g.characterId)),
   );
@@ -44,11 +44,6 @@ export class AssistantPlan {
 
   protected resetSkips(): void {
     this.store.resetSkips(this.view().id);
-  }
-
-  /** "1. Riot · 2. Toxin · …" — the order to set in game. */
-  protected order(p: Proposal): string {
-    return p.arrangement.members.map((m, i) => `${i + 1}. ${m.name}`).join(' · ');
   }
 
   /** Adds farming goals for every member that needs something. */

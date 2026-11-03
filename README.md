@@ -196,18 +196,24 @@ poniżej 0,2 są pomijane). Wzmianki o przeciwnikach („against Mystic enemies�
 nie liczą. Wspólna rzadka cecha daje mały bonus nawet bez wzmianki — gdy opisów nie ma, tylko
 to zostaje. Synergia składu = średnia par przeskalowana do 0–100%.
 
-**Asystent składów** (`squad-assistant.ts`). Dla każdego trybu proponuje **następny skład do
-zapisania** i kolejne, wyłącznie z postaci, których nie ma jeszcze w żadnym Twoim składzie
-tego trybu (z opcją „postać tylko w jednym składzie we wszystkich trybach”). Kolejność
-propozycji: znane i popularne składy, które możesz wystawić (ocena = moc / najmocniejszy skład
+**Asystent składów** (`squad-assistant.ts`) działa jak kreator: na górze tylko **następny skład
+do zapisania** (w Wojnie dwa — obrona i atak) z przyciskami „Zapisałem w grze” i „Inna
+propozycja”; reszta w zakładkach na żądanie: „Potem”, „Do dofarmienia”, „Twoje składy”, „Wolne
+postacie” (lista: postać → najlepszy wolny partner i powód). Karta składu jest zwarta: postacie z
+numerami pozycji, gwiazdki i gear, moc, synergia, jeden powód, ustawienie i braki — mechaniki i
+wszystkie powody pod „Szczegóły”. Ustawienia (⚙): próg gotowości 6★/7★, liczba drużyn na obronę
+w Wojnie, „postać tylko w jednym składzie we wszystkich trybach”.
+Propozycje biorą wyłącznie postacie, których nie ma jeszcze w żadnym Twoim składzie trybu.
+Kolejność: znane i popularne składy, które możesz wystawić (ocena = moc / najmocniejszy skład
 × siła w mecie: tier S 1 / A 0,85 / B 0,72, popularny 0,7–0,95, bez poparcia 0,65 × (0,75 +
 0,25 × synergia)), potem pełne składy zbudowane z synergii wokół najsilniejszych wolnych postaci
 (z 60 najmocniejszych; z resztek mniejszych niż 5 nie składa). „Zapisałem w grze” od razu
 zabiera postacie z propozycji (zapamiętane w przeglądarce, osobno dla konta i demo, do czasu
-aż skład pojawi się w `/player/v1/squads` — „Wczytaj składy z gry” odświeża listę); „Inna
+aż skład pojawi się w `/player/v1/squads` — „⟳ Składy z gry” odświeża listę); „Inna
 propozycja” pokazuje następną (pominięty skład z synergii oddaje swój pierwszy wybór).
-**Gotowe i do dofarmienia.** „Gotowe — zapisz teraz” to składy, w których każda postać jest
-odblokowana, ma 7★ i gear co najmniej o jeden poziom niższy od Twojego etapu (frontier);
+
+**Gotowe i do dofarmienia.** Gotowe są składy, w których każda postać jest odblokowana, ma 7★
+(albo 6★, jeśli tak ustawisz) i gear co najmniej o jeden poziom niższy od Twojego etapu (frontier);
 składy z synergii budowane są tylko z takich postaci. „Do dofarmienia” to znane i popularne
 składy z wolnych postaci, którym brakuje niewiele (najwyżej 2 nieodblokowane i 3 postacie do
 pracy): przy każdej postaci co zrobić („odblokuj — masz 20/50 shardów”, „5★→7★, brakuje 460

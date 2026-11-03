@@ -148,6 +148,16 @@ describe('ready vs to-farm plans', () => {
     expect(memberNeeds(team[0], ctx)).toEqual([]);
   });
 
+  it('can count 6★ as ready', () => {
+    const six = {
+      ...ctx,
+      minStars: 6,
+      upgrade: { yellowStarTotalShards: { '5': 155, '6': 255, '7': 410 } },
+    };
+    expect(memberNeeds(ownedAt('X', 1, 6, []), six)).toEqual([]);
+    expect(memberNeeds(team[3], six)[0].text).toBe('5★→6★, brakuje 100 shardów');
+  });
+
   it('proposes only ready squads now and lists the known team that needs farming', () => {
     const plan = planSquads({
       options: opts,

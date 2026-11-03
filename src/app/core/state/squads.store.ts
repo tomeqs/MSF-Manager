@@ -26,6 +26,7 @@ const ACCEPTED_KEY = 'msf.squads.accepted';
 const EXCLUSIVE_KEY = 'msf.squads.exclusive';
 const DEFENSE_KEY = 'msf.squads.warDefense';
 const DEFAULT_DEFENSE = 3;
+const MIN_STARS_KEY = 'msf.squads.minStars';
 
 /**
  * Squads the player marked as saved here ("Zapisałem"), per plan ("arena", "war:defense",
@@ -109,6 +110,7 @@ export class SquadsStore {
   private readonly _skipped = signal<Record<string, string[]>>({});
   private readonly _exclusive = signal<boolean>(readJson(EXCLUSIVE_KEY, false));
   private readonly _defenseCount = signal<number>(readJson(DEFENSE_KEY, DEFAULT_DEFENSE));
+  private readonly _minStars = signal<number>(readJson(MIN_STARS_KEY, 7));
 
   /** Saved squads load or fail independently; the rest works without them. */
   readonly savedStatus = this._savedStatus.asReadonly();
@@ -120,6 +122,8 @@ export class SquadsStore {
 
   /** Lowest gear tier a member may have and count as ready (the player's stage minus one). */
   readonly readyGear = computed(() => Math.max(0, this.advisor.progression().frontier - 1));
+  /** Yellow stars from which a character counts as ready (6 or 7). */
+  readonly minStars = this._minStars.asReadonly();
 
   /** What a character still needs to be squad-ready (unlock, 7★, gear vs the player's stage). */
   readonly needsOf = computed(() => {
@@ -127,6 +131,7 @@ export class SquadsStore {
       frontier: this.advisor.progression().frontier,
       upgrade: this.farming.upgrade(),
       inventory: this.farming.inventory(),
+      minStars: this._minStars(),
     };
     const memo = new Map<string, MemberNeed[]>();
     return (entry: RosterEntry) => {
@@ -270,6 +275,11 @@ export class SquadsStore {
 
   hasSkips(planId: string): boolean {
     return (this._skipped()[planId]?.length ?? 0) > 0;
+  }
+
+  setMinStars(stars: number): void {
+    this._minStars.set(stars);
+    writeJson(MIN_STARS_KEY, stars);
   }
 
   setDefenseCount(count: number): void {

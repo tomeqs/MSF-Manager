@@ -142,3 +142,17 @@
 .tiny {
   font-size: 0.7rem;
 }
+
+.why {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+.more {
+  align-self: flex-start;
+  padding: 0 6px;
+  border: none;
+  background: none;
+  color: var(--c-text-muted);
+  cursor: pointer;
+}

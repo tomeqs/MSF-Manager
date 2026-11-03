@@ -2,10 +2,8 @@
   <div>
     <h1>Asystent składów</h1>
     <p>
-      Buduj składy krok po kroku: zapisz w grze proponowany skład w podanej kolejności, kliknij
-      „Zapisałem w grze” (albo wczytaj składy z gry), a jego postacie znikną z kolejnych propozycji.
-      „Gotowe” możesz wystawić od razu; „Do dofarmienia” to znane składy, którym brakuje niewiele. W
-      Wojnie osobno obrona i atak — bez tych samych postaci.
+      Zapisz w grze proponowany skład w podanej kolejności i kliknij „Zapisałem w grze” — jego
+      postacie znikną z kolejnych propozycji.
     </p>
   </div>
 </header>
@@ -23,52 +21,118 @@
 } @else if (status() !== 'loaded') {
   <p class="state-message">Wczytuję roster…</p>
 } @else {
-  <section class="card toolbar small">
-    <span>
-      {{ label() }}: <strong>{{ view().saved.length }}</strong> Twoich składów ·
-      <strong>{{ view().taken.size }}</strong> zajętych postaci ·
-      <strong>{{ view().freeCount }}</strong> wolnych z najsilniejszych
+  <div class="toolbar small">
+    <span class="muted">
+      {{ label() }}: {{ view().saved.length }} Twoich składów · {{ view().freeCount }} wolnych
+      postaci
     </span>
     <span class="actions">
-      <label class="muted">
-        <input type="checkbox" [checked]="store.exclusive()" (change)="setExclusive($event)" />
-        postać tylko w jednym składzie we wszystkich trybach
-      </label>
       <button
         type="button"
         (click)="store.reloadFromGame()"
         [disabled]="store.savedStatus() === 'loading'"
+        title="Po zapisaniu lub usunięciu składów w grze"
       >
-        ⟳ Wczytaj składy z gry
+        ⟳ Składy z gry
+      </button>
+      <button type="button" [class.active]="settingsOpen()" (click)="toggleSettings()">
+        ⚙ Ustawienia
       </button>
     </span>
-  </section>
+  </div>
 
-  @if (kitsMissing() || communityDown()) {
-    <div class="notes small muted">
+  @if (settingsOpen()) {
+    <section class="card settings small">
+      <label>
+        Gotowa postać od
+        @for (n of starOptions; track n) {
+          <button
+            type="button"
+            class="pick"
+            [class.active]="store.minStars() === n"
+            (click)="store.setMinStars(n)"
+          >
+            {{ n }}★
+          </button>
+        }
+        <span class="muted">i gearu G{{ store.readyGear() }}+</span>
+      </label>
+      @if (tab() === 'war') {
+        <label>
+          Drużyn na obronę w Wojnie
+          @for (n of defenseOptions; track n) {
+            <button
+              type="button"
+              class="pick"
+              [class.active]="store.defenseCount() === n"
+              (click)="store.setDefenseCount(n)"
+            >
+              {{ n }}
+            </button>
+          }
+        </label>
+      }
+      <label>
+        <input type="checkbox" [checked]="store.exclusive()" (change)="setExclusive($event)" />
+        postać tylko w jednym składzie we wszystkich trybach
+      </label>
       @if (kitsMissing()) {
-        <p>Opisy umiejętności są niedostępne — synergię liczę tylko ze wspólnych cech postaci.</p>
+        <p class="muted">
+          Opisy umiejętności są niedostępne — synergię liczę tylko ze wspólnych cech postaci.
+        </p>
       }
       @if (communityDown()) {
-        <p>
+        <p class="muted">
           Analiza popularnych składów z API jest niedostępna — korzystam z drużyn z poradników (<a
             routerLink="/teams"
             >Drużyny</a
           >).
         </p>
       }
-    </div>
+    </section>
   }
 
-  @for (plan of view().plans; track plan.id) {
-    <app-assistant-plan [view]="plan" />
+  <div class="nexts" [class.two]="view().plans.length > 1">
+    @for (plan of view().plans; track plan.id) {
+      <app-assistant-plan [view]="plan" part="next" />
+    }
+  </div>
+
+  <nav class="sections" aria-label="Więcej">
+    @for (s of sections(); track s.id) {
+      <button type="button" [class.active]="section() === s.id" (click)="openSection(s.id)">
+        {{ s.label }} <span class="count">{{ s.count }}</span>
+      </button>
+    }
+  </nav>
+
+  @switch (section()) {
+    @case ('later') {
+      <p class="muted small hint">Kolejne gotowe składy, bez powtarzania postaci.</p>
+      @for (plan of view().plans; track plan.id) {
+        <app-assistant-plan [view]="plan" part="later" />
+      }
+    }
+    @case ('farm') {
+      <p class="muted small hint">
+        Znane i popularne składy, którym brakuje niewiele — przy każdej postaci, co dofarmić.
+      </p>
+      @for (plan of view().plans; track plan.id) {
+        <app-assistant-plan [view]="plan" part="farm" />
+      }
+    }
+    @case ('saved') {
+      <app-saved-squads
+        [reviews]="view().saved"
+        [status]="store.savedStatus()"
+        (removeLocal)="removeLocal($event)"
+      />
+    }
+    @case ('free') {
+      <p class="muted small hint">
+        Silne postacie spoza Twoich składów i propozycji — z kim z wolnych pasują najlepiej.
+      </p>
+      <app-loose-characters [loose]="view().free" />
+    }
   }
-
-  <app-saved-squads
-    [reviews]="view().saved"
-    [status]="store.savedStatus()"
-    (removeLocal)="removeLocal($event)"
-  />
-
-  <app-loose-characters [loose]="view().free" />
 }

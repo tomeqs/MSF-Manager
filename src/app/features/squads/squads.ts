@@ -2,13 +2,15 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { TeamTab } from '../../core/models';
 import { RosterStore } from '../../core/state/roster.store';
-import { SQUAD_TABS, SquadsStore } from '../../core/state/squads.store';
+import { PlanView, SQUAD_TABS, SquadsStore } from '../../core/state/squads.store';
 import { TeamsStore } from '../../core/state/teams.store';
 import { AssistantPlan } from './assistant-plan/assistant-plan';
 import { LooseCharacters } from './loose-characters/loose-characters';
 import { SavedSquads } from './saved-squads/saved-squads';
 
 const TAB_KEY = 'msf.squads.tab';
+
+type Section = 'later' | 'farm' | 'saved' | 'free';
 const TAB_LABELS: Record<string, string> = {
   arena: 'Arena',
   war: 'Wojna',
@@ -42,6 +44,25 @@ export class Squads {
   protected readonly status = this.roster.status;
   protected readonly view = computed(() => this.store.tab(this.tab()));
   protected readonly communityDown = computed(() => this.teams.tab(this.tab()).source === 'known');
+  protected readonly starOptions = [6, 7];
+  protected readonly defenseOptions = [1, 2, 3, 4, 5];
+  protected readonly settingsOpen = signal(false);
+  /** The open "more" section (none until the player picks one). */
+  protected readonly section = signal<Section | undefined>(undefined);
+  protected readonly sections = computed(() => {
+    const v = this.view();
+    const count = (f: (p: PlanView) => number) => v.plans.reduce((n, p) => n + f(p), 0);
+    return [
+      {
+        id: 'later' as const,
+        label: 'Potem',
+        count: count((p) => Math.max(0, p.plan.ready.length - 1)),
+      },
+      { id: 'farm' as const, label: 'Do dofarmienia', count: count((p) => p.plan.toFarm.length) },
+      { id: 'saved' as const, label: 'Twoje składy', count: v.saved.length },
+      { id: 'free' as const, label: 'Wolne postacie', count: v.free.length },
+    ];
+  });
   protected readonly kitsMissing = computed(
     () => this.store.kitsStatus() === 'error' || !this.store.synergy().fromKits,
   );
@@ -57,6 +78,14 @@ export class Squads {
     } catch {
       // Remembering the tab is optional.
     }
+  }
+
+  protected openSection(id: Section): void {
+    this.section.set(this.section() === id ? undefined : id);
+  }
+
+  protected toggleSettings(): void {
+    this.settingsOpen.set(!this.settingsOpen());
   }
 
   protected removeLocal(key: string): void {

@@ -1,46 +1,34 @@
-<section>
-  <h2 class="section-title">Pozostałe wolne postacie</h2>
-  <p class="muted small intro">
-    Silne postacie, które nie są w żadnym Twoim składzie tego trybu ani w propozycjach powyżej — z
-    kim z wolnych postaci pasują najlepiej według umiejętności.
-  </p>
-  @if (!loose().length) {
-    <p class="muted small">Wszystkie Twoje najsilniejsze wolne postacie są już w propozycjach.</p>
-  }
-  <div class="list">
-    @for (l of loose(); track l.entry.id) {
-      <article class="card loose">
-        <a class="who" [routerLink]="['/roster', l.entry.id]">
-          <app-character-avatar
-            [name]="l.entry.name"
-            [portrait]="l.entry.portrait"
-            [traits]="l.entry.traits"
-            style="--avatar-size: 40px"
-          />
-          <span>
-            <strong>{{ l.entry.name }}</strong>
-            <span class="muted small"> · {{ l.entry.power | compactNumber }}</span>
-            @if (l.together.length) {
-              <span class="muted small"> · razem z: {{ names(l.together) }}</span>
-            }
-          </span>
-        </a>
-        @if (l.partners.length) {
-          <ul class="partners small">
-            @for (p of l.partners; track p.entry.id) {
-              <li>
-                <strong>{{ p.entry.name }}</strong>
-                <span class="muted"> — {{ link(p.link) }}</span>
-              </li>
-            }
-          </ul>
+@if (!loose().length) {
+  <p class="muted small">Wszystkie Twoje najsilniejsze wolne postacie są już w propozycjach.</p>
+}
+<ul class="list">
+  @for (l of loose(); track l.entry.id) {
+    <li class="row">
+      <a class="who" [routerLink]="['/roster', l.entry.id]">
+        <app-character-avatar
+          [name]="l.entry.name"
+          [portrait]="l.entry.portrait"
+          [traits]="l.entry.traits"
+          style="--avatar-size: 32px"
+        />
+        <span>
+          <strong>{{ l.entry.name }}</strong>
+          <span class="muted tiny">
+            {{ l.entry.yellowStars }}★ · {{ l.entry.power | compactNumber }}</span
+          >
+        </span>
+      </a>
+      <span class="small partners">
+        @if (l.partners[0]; as p) {
+          najlepiej z <strong>{{ p.entry.name }}</strong>
+          <span class="muted">({{ link(p.link) }})</span>
+          @if (l.partners.length > 1) {
+            <span class="muted">, też: {{ others(l.partners) }}</span>
+          }
         } @else {
-          <p class="muted small">
-            Brak wyraźnych synergii w umiejętnościach — pasuje głównie mocą (np. do Blitza).
-          </p>
+          <span class="muted">brak wyraźnych synergii — pasuje głównie mocą (np. Blitz)</span>
         }
-        <app-squad-card [option]="l.squad" [details]="false" [flat]="true" />
-      </article>
-    }
-  </div>
-</section>
+      </span>
+    </li>
+  }
+</ul>

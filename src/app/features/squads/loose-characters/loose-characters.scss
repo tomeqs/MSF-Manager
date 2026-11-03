@@ -1,32 +1,39 @@
-.intro {
-  margin: 0 0 12px;
-}
-
 .list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
-  gap: 12px;
-}
-
-.loose {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface);
 }
 
 .who {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
 }
 
 .partners {
-  margin: 0;
-  padding-left: 18px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .small {
   font-size: 0.82rem;
+}
+
+.tiny {
+  font-size: 0.72rem;
 }

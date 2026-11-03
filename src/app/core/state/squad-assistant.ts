@@ -1,4 +1,4 @@
-import { Inventory } from './farming-calc';
+import { Inventory, shardsBetween } from './farming-calc';
 import { RosterEntry, UpgradeData } from '../models';
 import { shardsToMax, unlockCost } from './advisor';
 import { MAX_YELLOW_STARS } from './game-rules';
@@ -68,11 +68,13 @@ export interface ReadinessContext {
   frontier: number;
   upgrade: UpgradeData;
   inventory: Inventory;
+  /** Yellow stars from which a character counts as ready (6 or 7; default 7). */
+  minStars?: number;
 }
 
 /**
- * What a character still needs to be squad-ready: unlocked, 7★ (shards are the hard part)
- * and gear no more than one tier below the player's stage.
+ * What a character still needs to be squad-ready: unlocked, `minStars` (7★ by default —
+ * shards are the hard part) and gear no more than one tier below the player's stage.
  */
 export function memberNeeds(entry: RosterEntry, ctx: ReadinessContext): MemberNeed[] {
   const name = entry.name;
@@ -90,20 +92,31 @@ export function memberNeeds(entry: RosterEntry, ctx: ReadinessContext): MemberNe
     ];
   }
   const needs: MemberNeed[] = [];
-  if (entry.yellowStars < MAX_YELLOW_STARS) {
-    const missing = shardsToMax(entry, ctx.upgrade, ctx.inventory);
+  const minStars = ctx.minStars ?? MAX_YELLOW_STARS;
+  if (entry.yellowStars < minStars) {
+    const missing = shardsTo(entry, minStars, ctx);
     needs.push({
       name,
       entry,
       kind: 'stars',
       text:
-        `${entry.yellowStars}★→7★` + (missing ? `, brakuje ${missing} shardów` : ', masz shardy'),
+        `${entry.yellowStars}★→${minStars}★` +
+        (missing === undefined ? '' : missing ? `, brakuje ${missing} shardów` : ', masz shardy'),
     });
   }
   if (ctx.frontier && entry.gearTier < ctx.frontier - GEAR_SLACK) {
     needs.push({ name, entry, kind: 'gear', text: `G${entry.gearTier}→G${ctx.frontier}` });
   }
   return needs;
+}
+
+/** Shards still to collect to reach `stars`, net of the inventory (undefined if unknown). */
+function shardsTo(entry: RosterEntry, stars: number, ctx: ReadinessContext): number | undefined {
+  if (stars >= MAX_YELLOW_STARS) return shardsToMax(entry, ctx.upgrade, ctx.inventory);
+  const totals = ctx.upgrade.yellowStarTotalShards;
+  if (totals?.[String(stars)] === undefined) return undefined;
+  const owned = entry.shardItemId ? (ctx.inventory.get(entry.shardItemId) ?? 0) : 0;
+  return Math.max(0, shardsBetween(totals, entry.yellowStars, stars) - owned);
 }
 
 /**

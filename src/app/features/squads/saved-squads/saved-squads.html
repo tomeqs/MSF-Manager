@@ -1,8 +1,6 @@
 <section>
-  <h2 class="section-title">Twoje składy w tym trybie</h2>
   <p class="muted small">
-    Ich postacie nie trafiają już do propozycji. Podpowiedzi zamian biorą tylko postacie spoza
-    innych składów.
+    Ich postacie nie trafiają już do propozycji. Zamiany biorą tylko postacie spoza innych składów.
   </p>
   @switch (status()) {
     @case ('loading') {
@@ -24,7 +22,7 @@
   }
   <div class="grid">
     @for (r of reviews(); track $index) {
-      <app-squad-card [option]="r.option" [details]="false">
+      <app-squad-card [option]="r.option">
         @if (r.local) {
           <p class="local small">
             @if (r.role) {

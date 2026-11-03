@@ -9,13 +9,8 @@
         <span class="tier" [attr.data-tier]="option().tier">{{ option().tier }}</span>
       }
     </div>
-    <span class="chips">
-      @for (origin of origins(); track origin) {
-        <span class="chip">{{ origin }}</span>
-      }
-      @if (option().source) {
-        <a class="chip" [href]="option().source" target="_blank" rel="noopener">źródło ↗</a>
-      }
+    <span class="muted small">
+      {{ option().power | compactNumber }} · synergia {{ synergyPct() }}%
     </span>
   </header>
 
@@ -33,7 +28,7 @@
             style="--avatar-size: 44px"
           />
           <span class="member-name">{{ m.name }}</span>
-          <span class="tiny muted">{{ m.power | compactNumber }}</span>
+          <span class="tiny muted">{{ m.yellowStars }}★ · G{{ m.gearTier }}</span>
         </a>
       </li>
     }
@@ -46,42 +41,58 @@
     }
   </ol>
 
-  <div class="stats small">
-    <span class="muted"
-      >Moc <strong>{{ option().power | compactNumber }}</strong></span
-    >
-    <span class="muted"
-      >Synergia <strong>{{ synergyPct() }}%</strong></span
-    >
-  </div>
-  <app-progress-bar [value]="option().cohesion" [max]="1" />
+  @if (why() && !full()) {
+    <p class="small why">{{ why() }}</p>
+  }
+  @if (lineupShort() && !full()) {
+    <p class="small lineup-note">Ustawienie: {{ lineupShort() }}</p>
+  }
+  @if (profile()?.gaps?.length && !full()) {
+    <p class="tiny gaps">brak: {{ profile()!.gaps.join(', ') }}</p>
+  }
 
-  @if (profile(); as p) {
-    <p class="mechanics tiny">
-      @for (c of p.present; track c.label) {
-        <span class="chip" [title]="c.by">{{ c.label }}</span>
+  @if (full()) {
+    <app-progress-bar [value]="option().cohesion" [max]="1" />
+    <span class="chips">
+      @for (origin of origins(); track origin) {
+        <span class="chip">{{ origin }}</span>
       }
-      @if (p.gaps.length) {
-        <span class="gaps">brak: {{ p.gaps.join(', ') }}</span>
+      @if (option().source) {
+        <a class="chip" [href]="option().source" target="_blank" rel="noopener">źródło ↗</a>
       }
-    </p>
-  }
-  @if (details() && option().links.length) {
-    <ul class="links small">
-      @for (l of option().links; track $index) {
-        <li>{{ link(l) }}</li>
-      }
-    </ul>
-  }
-  @if (lineup(); as l) {
-    <p class="small order lineup-note">Ustawienie: {{ l.note }}</p>
-  } @else {
-    <p class="tiny muted order">
-      {{ orderLabel() }}
-      @if (option().positional.length) {
-        · {{ option().positional.join(', ') }}: umiejętność działa na sąsiadów — ustaw w środku
-      }
-    </p>
+    </span>
+    @if (profile(); as p) {
+      <p class="mechanics tiny">
+        @for (c of p.present; track c.label) {
+          <span class="chip" [title]="c.by">{{ c.label }}</span>
+        }
+        @if (p.gaps.length) {
+          <span class="gaps">brak: {{ p.gaps.join(', ') }}</span>
+        }
+      </p>
+    }
+    @if (option().links.length) {
+      <ul class="links small">
+        @for (l of option().links; track $index) {
+          <li>{{ link(l) }}</li>
+        }
+      </ul>
+    }
+    @if (lineup(); as l) {
+      <p class="small order lineup-note">Ustawienie: {{ l.note }}</p>
+    } @else {
+      <p class="tiny muted order">
+        {{ orderLabel() }}
+        @if (option().positional.length) {
+          · {{ option().positional.join(', ') }}: umiejętność działa na sąsiadów — ustaw w środku
+        }
+      </p>
+    }
   }
   <ng-content />
+  @if (compact()) {
+    <button type="button" class="more tiny" (click)="open.set(!open())">
+      {{ open() ? 'Mniej ▴' : 'Szczegóły ▾' }}
+    </button>
+  }
 </article>

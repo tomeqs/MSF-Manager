@@ -1,8 +1,8 @@
-.tabs {
+.tabs,
+.sections {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 16px;
 
   button {
     padding: 6px 14px;
@@ -15,34 +15,75 @@
   }
 }
 
+.tabs {
+  margin-bottom: 12px;
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 16px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
+  gap: 8px;
+
+  .active {
+    border-color: var(--c-accent);
+  }
 }
 
-.notes p {
-  margin: 0 0 6px;
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  p {
+    margin: 0;
+  }
 }
 
-.link-btn {
-  padding: 0 6px;
+.pick {
+  min-width: 34px;
+  margin-left: 4px;
+  padding: 2px 8px;
+
+  &.active {
+    border-color: var(--c-accent);
+    background: var(--c-accent-soft);
+  }
+}
+
+.nexts {
+  display: grid;
+  grid-template-columns: minmax(0, 560px);
+  gap: 16px;
+  margin-bottom: 20px;
+
+  &.two {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  }
+}
+
+.sections {
+  margin-bottom: 12px;
+
+  .count {
+    margin-left: 4px;
+    color: var(--c-text-muted);
+    font-size: 0.75rem;
+  }
+}
+
+.hint {
+  margin: 0 0 10px;
 }
 
 .small {
   font-size: 0.82rem;
-}
-
-.tiny {
-  font-size: 0.72rem;
 }
