@@ -48,6 +48,9 @@ src/app/
       sources.ts                            dostępność źródeł → koszt shardów, blokada drużyn
       game-rules.ts           limity umiejętności i gwiazdek
   layout/shell/    sidebar + topbar, responsywne menu
+  layout/section/  sekcja menu z zakładkami (Składy: Asystent · Drużyny z mety; Rozwój:
+                   Farmienie · Kluczowe postacie · Analiza); stare adresy /teams,
+                   /key-characters i /analysis przekierowują na nowe
   features/        widoki ładowane leniwie (lazy routes)
     dashboard/         pulpit: „Co farmić dziś”, kafelki statystyk, top postacie, aktywne eventy
     roster/            siatka postaci z filtrami (cecha, ★, gear, ulubione) i sortowaniem

@@ -43,31 +43,62 @@ export const routes: Routes = [
         loadComponent: () => import('./features/events/events').then((m) => m.Events),
       },
       {
-        path: 'teams',
-        title: 'Drużyny · MSF Assistant',
-        loadComponent: () => import('./features/teams/teams').then((m) => m.Teams),
-      },
-      {
+        // Składy: the squad assistant and the meta teams per mode (with Blitz/Tower events).
         path: 'squads',
-        title: 'Składy · MSF Assistant',
-        loadComponent: () => import('./features/squads/squads').then((m) => m.Squads),
+        loadComponent: () => import('./layout/section/section').then((m) => m.Section),
+        data: {
+          tabs: [
+            { path: '/squads', label: 'Asystent' },
+            { path: '/squads/meta', label: 'Drużyny z mety' },
+          ],
+        },
+        children: [
+          {
+            path: '',
+            title: 'Składy · MSF Assistant',
+            loadComponent: () => import('./features/squads/squads').then((m) => m.Squads),
+          },
+          {
+            path: 'meta',
+            title: 'Drużyny z mety · MSF Assistant',
+            loadComponent: () => import('./features/teams/teams').then((m) => m.Teams),
+          },
+        ],
       },
       {
-        path: 'analysis',
-        title: 'Analiza · MSF Assistant',
-        loadComponent: () => import('./features/analysis/analysis').then((m) => m.Analysis),
-      },
-      {
-        path: 'key-characters',
-        title: 'Kluczowe postacie · MSF Assistant',
-        loadComponent: () =>
-          import('./features/key-characters/key-characters').then((m) => m.KeyCharacters),
-      },
-      {
+        // Rozwój: what to farm, key characters and the roster analysis.
         path: 'farming',
-        title: 'Farmienie · MSF Assistant',
-        loadComponent: () => import('./features/farming/farming').then((m) => m.Farming),
+        loadComponent: () => import('./layout/section/section').then((m) => m.Section),
+        data: {
+          tabs: [
+            { path: '/farming', label: 'Farmienie' },
+            { path: '/farming/key', label: 'Kluczowe postacie' },
+            { path: '/farming/analysis', label: 'Analiza' },
+          ],
+        },
+        children: [
+          {
+            path: '',
+            title: 'Farmienie · MSF Assistant',
+            loadComponent: () => import('./features/farming/farming').then((m) => m.Farming),
+          },
+          {
+            path: 'key',
+            title: 'Kluczowe postacie · MSF Assistant',
+            loadComponent: () =>
+              import('./features/key-characters/key-characters').then((m) => m.KeyCharacters),
+          },
+          {
+            path: 'analysis',
+            title: 'Analiza · MSF Assistant',
+            loadComponent: () => import('./features/analysis/analysis').then((m) => m.Analysis),
+          },
+        ],
       },
+      // Old addresses (bookmarks, earlier links).
+      { path: 'teams', redirectTo: 'squads/meta' },
+      { path: 'key-characters', redirectTo: 'farming/key' },
+      { path: 'analysis', redirectTo: 'farming/analysis' },
       { path: '**', redirectTo: 'dashboard' },
     ],
   },

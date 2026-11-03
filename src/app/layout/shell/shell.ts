@@ -36,11 +36,8 @@ export class Shell {
     { path: '/dashboard', label: 'Pulpit', icon: '◈' },
     { path: '/roster', label: 'Roster', icon: '☰' },
     { path: '/events', label: 'Eventy', icon: '⚑' },
-    { path: '/teams', label: 'Drużyny', icon: '★' },
     { path: '/squads', label: 'Składy', icon: '⚔' },
-    { path: '/analysis', label: 'Analiza', icon: '◎' },
-    { path: '/key-characters', label: 'Kluczowe', icon: '◆' },
-    { path: '/farming', label: 'Farmienie', icon: '⛏' },
+    { path: '/farming', label: 'Rozwój', icon: '⛏' },
   ];
 
   constructor() {
