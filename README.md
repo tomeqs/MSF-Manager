@@ -4,6 +4,10 @@ Pomocnik do gry **Marvel Strike Force** — Angular 21 (standalone components, s
 Logowanie kontem Scopely (OAuth2 + PKCE) i dane z [MSF API](https://developer.marvelstrikeforce.com/beta/index.html),
 albo tryb demo na danych testowych.
 
+**Baza wiedzy**: [`docs/knowledge-base.md`](docs/knowledge-base.md) — ustalone fakty o grze, API,
+środowisku i mapa kodu; ściąga API: [`docs/msf-api.md`](docs/msf-api.md) ze specyfikacją
+[`docs/msf-api-spec.json`](docs/msf-api-spec.json).
+
 ## Uruchomienie
 
 ```bash
