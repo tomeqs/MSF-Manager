@@ -4,7 +4,7 @@ import { TeamTab } from '../models';
  * "Plug-and-play" characters that community guides add to many lineups, so one investment
  * pays off in several modes. Updated 9 October 2026 (Crucible Season 25 / Ultimate 32
  * setups, War season of September; see `source`); Sabretooth (Breaker) added 2 November 2026;
- * edit freely.
+ * Crucible stage 6 corrected 4 November 2026; edit freely.
  */
 export interface KeyCharacter {
   /** In-game name; "A|B" accepts alternative spellings. */
@@ -39,7 +39,7 @@ export const KEY_CHARACTERS: KeyCharacter[] = [
   {
     name: 'Sabretooth (Breaker)',
     modes: ['war'],
-    why: 'Oficjalnie „plug-and-play” Breaker do ataku w Wojnie: żadna umiejętność nie zależy od drużyny, pierwszy z Corruption (zdejmuje buffy mimo Safeguard). Odblokowanie od 11.11.',
+    why: 'Controller, oficjalnie „plug-and-play” do ataku w Wojnie: Corruption na Defense Up całej drużyny wroga (mimo Safeguard) i czyszczenie Barrier; kontra na Odina, Mephisto i Retcon. Nie łącz z Mephisto (traci Exhausted). Odblokowanie od 11.11.',
     source: 'https://marvelstrikeforce.com/en/updates/blog-update-10-27-26',
   },
   {
@@ -93,13 +93,13 @@ export const KEY_CHARACTERS: KeyCharacter[] = [
   {
     name: 'Captain Britain',
     modes: ['crucible'],
-    why: 'Częsty dodatek do obron Crucible (np. Fantastic Four (MCU) + Blue Marvel).',
+    why: 'Obrony Crucible S25: z Immortal Weapon na etap 1, z Fantastic Four (MCU) + Nightcrawler na etap 6.',
     source: `${CHURCH}/cosmic-crucible-the-best-defensive-setup/`,
   },
   {
     name: 'Sentry',
     modes: ['crucible'],
-    why: 'Zamiennik w obronach Crucible obok Fantastic Four (MCU).',
+    why: 'Najlepsza obrona etapu 6 Crucible S25: Fantastic Four (MCU) + Sentry + Blue Marvel.',
     source: `${CHURCH}/cosmic-crucible-the-best-defensive-setup/`,
   },
 ];

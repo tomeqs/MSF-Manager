@@ -5,8 +5,10 @@ import { TeamTab } from '../models';
  *
  * Compiled from community guides and official posts (see `source` per team), 9 October 2026
  * (Crucible Season 25, Trepidation raid with Iron Raiders, War season of September); checked
- * again 19 October 2026 — tiers unchanged, Nightreavers added — and 2 November 2026: the new
- * War offense squads Menace and Savage Land added (rated before release, see comments). Research
+ * again 19 October 2026 — tiers unchanged, Nightreavers added — 2 November 2026: the new
+ * War offense squads Menace and Savage Land added (rated before release, see comments) — and
+ * 4 November 2026: squads unchanged, Crucible stage 6 corrected, Menace and Savage Land roles,
+ * line-ups from the guides, Winter Guard and Shadow Conclave added. Research
  * came from search snippets — the guides themselves were not reachable —
  * so treat tiers as a well-informed estimate. It is NOT live data and goes stale as new teams
  * release — edit freely.
@@ -39,7 +41,7 @@ export interface KnownTeam {
   source: string;
 }
 
-export const KNOWN_META_AS_OF = '2 listopada 2026';
+export const KNOWN_META_AS_OF = '4 listopada 2026';
 
 const CHURCH = 'https://www.marvel.church';
 const BLOG = 'https://marvelstrikeforce.com/en/updates';
@@ -64,14 +66,17 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Fantastic Four (MCU)',
     modes: ['arena', 'crucible', 'war'],
     tier: 'S',
-    // Works from a 3-man core; Xavier and Mephisto/Odin/Quasar are common fillers.
+    // Works from a 3-man core; Xavier, Nightcrawler and Mephisto/Odin/Quasar are common
+    // fillers. In War The Thing gets +75% Speed Bar and moves first.
     members: [
       'Mister Fantastic (MCU)',
       'Invisible Woman (MCU)',
       'Franklin Richards',
-      'Human Torch|Professor Xavier',
+      'Human Torch|Professor Xavier|Nightcrawler',
       'The Thing|Thing|Mephisto|Odin|Quasar',
     ],
+    lineup:
+      'Franklin rusza pierwszy, Invisible Woman (MCU) druga; ISO-8: Skirmisher na Franklinie, Striker na Invisible Woman (MCU).',
     source: `${CHURCH}/fantastic-four-mcu/`,
   },
   {
@@ -91,8 +96,11 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Annihilators',
     modes: ['arena', 'war'],
     tier: 'B',
-    // July 2024 team; endgame players swap Silver Surfer / Ultimus for Mythics.
+    // July 2024 team; endgame players swap Silver Surfer / Ultimus for Mythics. Gladiator and
+    // Thanos (Endgame) are the must-haves. The two guides disagree on the line-up.
     members: ['Gorr', 'Ultimus', 'Silver Surfer', 'Thanos (Endgame)', 'Gladiator'],
+    lineup:
+      'Gorr w rogu, Silver Surfer w środku, Thanos (Endgame) między nimi, Ultimus obok Gladiatora (marvel.church); Theria: Gladiator – Ultimus – Silver Surfer – Thanos (Endgame) – Gorr.',
     source: `${CHURCH}/annihilators/`,
   },
   // --- Alliance War ---
@@ -119,6 +127,9 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Brimstone',
     modes: ['war'],
     tier: 'S',
+    // Offense: strong punch-up into Hellfire Club and Accursed, punch-down into Shadow Conclave.
+    // As a defense it is targeted by Nightreavers, West Coast Avengers and Shadow Conclave.
+    lineup: 'Daimon Hellstrom zawsze pierwszy — otwórz jego Ultimate.',
     members: [
       'Daimon Hellstrom|Hellstrom',
       'Living Mummy',
@@ -178,9 +189,10 @@ export const KNOWN_META: KnownTeam[] = [
     tier: 'B',
     war: 'offense',
     // New 3-character War offense (13.10.2026) against Winter Guard, Brimstone and Shadow
-    // Conclave; Dracula only from King of the Night (19.10 – ~2.11.2026) until next year.
-    // Rated B+/A only if the campaign unlocks Dracula; Blade and Bleed characters fill slots 4–5.
-    members: ['Dracula', 'Morbius', 'Oath'],
+    // Conclave; Dracula came only from King of the Night (19.10 – ~2.11.2026), next in 2027.
+    // Rated B+/A only with Dracula; the official post suggests Blade and Kestrel (Zombie) for
+    // slots 4–5. Loses most bonuses on defense.
+    members: ['Dracula', 'Morbius', 'Oath', 'Blade', 'Kestrel (Zombie)'],
     source: `${BLOG}/blog-update-10-13-26`,
   },
   {
@@ -191,7 +203,10 @@ export const KNOWN_META: KnownTeam[] = [
     // War offense (27.10.2026): Sabretooth (Breaker) — first Corruption character, released by
     // the Breaker Event from 2.11, first unlock 11.11 — plus reworked Blob, Toad, Silver
     // Samurai and Stryfe. Rated before anyone could test it: older tier lists rank the
-    // pre-rework members last. From 8.11 a temporary War rule favours it until the chapter ends.
+    // pre-rework members last. From 8.11 a temporary War rule (Sabretooth + 3 Menace allies)
+    // favours it until the chapter ends. Roles: Sabretooth and Toad Controllers, Blob, Silver
+    // Samurai and Stryfe Protectors; Toad draws almost all its power from Blob. No positions given.
+    lineup: 'Toad tylko z Blobem; nie łącz Sabretootha z Mephisto (traci Exhausted).',
     members: ['Sabretooth (Breaker)', 'Blob', 'Toad', 'Silver Samurai', 'Stryfe'],
     source: `${BLOG}/blog-update-10-27-26`,
   },
@@ -202,9 +217,12 @@ export const KNOWN_META: KnownTeam[] = [
     war: 'offense',
     // War offense announced 28.10.2026 as "the new top-tier Alliance War squad" (official
     // marketing, not a community rating): new Ka-Zar (from 6.11), Sauron and Cyclops (Mighty)
-    // with upgraded Rogue and X-23. The exact five is read from the announcement.
+    // with upgraded Rogue and X-23. The five is confirmed by marvel.church (roles of all five)
+    // and the datamined SAVAGE LAND trait. marvel.church says the War bonuses work on defense
+    // too; kept as offense because the official text is about tearing into defenses.
+    lineup: 'Rogue i X-23 obok siebie (osłaniają nowe postacie); Sauron rusza pierwszy.',
     members: ['Ka-Zar', 'Sauron', 'Cyclops (Mighty)', 'Rogue', 'X-23'],
-    source: 'https://marvelstrikeforce.com/en/',
+    source: `${CHURCH}/savage-land/`,
   },
   {
     name: 'Hellfire Club',
@@ -229,6 +247,26 @@ export const KNOWN_META: KnownTeam[] = [
     members: ['Doctor Strange', 'Moondragon', 'Ancient One', 'Emma Frost (X-Men)', 'Shadow King'],
     source: `${CHURCH}/astral/`,
   },
+  {
+    name: 'Winter Guard',
+    modes: ['war', 'crucible'],
+    tier: 'B',
+    // The snippets never listed the full five, so the trait picks them. Until Ursa Major's first
+    // turn the team has +50% Damage Reduction and Resistance and enemies cannot gain Immunity,
+    // Defense Up or Possessed; three official squads were built to counter it. Crucible S25
+    // budget defense for stages 4 and 6. No current tier found (B = budget).
+    traits: ['Winter Guard'],
+    source: `${CHURCH}/winter-guard/`,
+  },
+  {
+    name: 'Shadow Conclave',
+    modes: ['war', 'crucible'],
+    tier: 'B',
+    // Officially built to beat Winter Guard and Brimstone; targeted by West Coast Avengers and
+    // Nightreavers. Crucible S25 budget defense for stage 4. No current tier found (B = budget).
+    members: ['Sylvie', 'Thanos', 'High Evolutionary', 'Executioner', 'Malekith'],
+    source: `${BLOG}/powers-gather-in-shadow`,
+  },
   // --- Cosmic Crucible (Season 25 from 14.10.2026, rule "Artificial Dread") ---
   {
     name: 'A.I. Avengers',
@@ -242,7 +280,8 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Dread',
     modes: ['crucible'],
     tier: 'S',
-    // Offense only (Scorpion (Breaker) has no defensive bonuses); buffed in Season 25.
+    // Offense only (Scorpion (Breaker) has no defensive bonuses); buffed in Season 25. Strong
+    // punch-up into Immortal Weapon + Void Knight, smaller into New Mutants.
     members: ['Scorpion (Breaker)', 'Mister Negative', 'Bullseye', 'Electro', 'Rhino'],
     source: `${CHURCH}/dread/`,
   },
@@ -264,7 +303,8 @@ export const KNOWN_META: KnownTeam[] = [
     name: 'Exalted X-Men',
     modes: ['crucible'],
     tier: 'S',
-    // Stage 4: + Annihilus/Quasar instead of Jubilee or Wolverine.
+    // Stage 4: + Annihilus/Quasar instead of Jubilee or Wolverine. With Odin instead of
+    // Wolverine it is the top-rated counter to Symbiote Six (+ Xavier).
     members: ['Storm (Mighty)', 'Angel', 'Morph', 'Wolverine|Quasar', 'Jubilee|Annihilus'],
     source: `${BLOG}/exalted-x-men`,
   },
@@ -303,6 +343,21 @@ export const KNOWN_META: KnownTeam[] = [
     source: `${CHURCH}/cosmic-crucible-ultimate-32/`,
   },
   {
+    name: 'Fantastic Four (MCU) — etap 6',
+    modes: ['crucible'],
+    tier: 'S',
+    // Season 25 stage 6 defense: best FF (MCU) + Sentry + Blue Marvel, optimal + Captain
+    // Britain + Nightcrawler (corrects the 19.10 "+ Captain Britain + Blue Marvel").
+    members: [
+      'Mister Fantastic (MCU)',
+      'Invisible Woman (MCU)',
+      'Franklin Richards',
+      'Sentry|Captain Britain',
+      'Blue Marvel|Nightcrawler',
+    ],
+    source: `${CHURCH}/cosmic-crucible-the-best-defensive-setup/`,
+  },
+  {
     name: 'New Mutants',
     modes: ['crucible'],
     tier: 'A',
@@ -339,9 +394,10 @@ export const KNOWN_META: KnownTeam[] = [
   },
   {
     name: 'Amazing Avengers',
-    modes: ['raids'],
+    modes: ['raids', 'crucible'],
     tier: 'S',
-    // Mandatory from difficulty 8; also the shared boss.
+    // Mandatory from difficulty 8; also the shared boss. Crucible S25: budget defense for
+    // stage 2 and a punch-up into Starjammers.
     members: ['Blade (Mighty)', 'Spider-Woman (Julia)', 'Rachel Cole-Alves', 'Spider-Man', 'Hulk'],
     source: `${BLOG}/blog-update-9-17-26`,
   },
@@ -361,9 +417,10 @@ export const KNOWN_META: KnownTeam[] = [
   },
   {
     name: 'Immortal Weapon',
-    modes: ['raids'],
+    modes: ['raids', 'crucible'],
     tier: 'A',
-    // The lane can reportedly be cleared without them (Non-Mythic Mystic).
+    // The lane can reportedly be cleared without them (Non-Mythic Mystic). Crucible S25:
+    // + Captain Britain is the budget defense for stage 1.
     members: ['Steel Serpent', 'Lady Bullseye', 'Sword Master', 'Iron Fist (WWII)', 'Iron Fist'],
     source: `${CHURCH}/raid-list/`,
   },

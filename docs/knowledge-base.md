@@ -219,9 +219,11 @@ Raiders. Wąskie gardła bez źródła shardów: Whiplash, Blade (Mighty), Moon 
 
 - **Źródło prawdy w kodzie**: [`known-meta.ts`](../src/app/core/data/known-meta.ts) (drużyny per
   tryb, tier S/A/B, rola w Wojnie `war`, rada ustawienia `lineup`, źródło),
-  [`character-sources.ts`](../src/app/core/data/character-sources.ts) (146 postaci: status
+  [`character-sources.ts`](../src/app/core/data/character-sources.ts) (152 postacie: status
   źródła, skąd shardy, okna `until`/`afterUntil`), [`key-characters.ts`](../src/app/core/data/key-characters.ts).
-  Pełne uzasadnienia: raporty z 14.10, 19.10 i 1.11.
+  Pełne uzasadnienia: raporty z 14.10, 19.10, 1.11 i 4.11. Dane wprowadzone 4.11: etap 6 Crucible,
+  Winter Guard i Shadow Conclave, rady ustawienia (Savage Land, Menace, Brimstone, Annihilators,
+  FF (MCU)), wpisy źródeł Bloba, Toada, Silver Samuraia, Stryfe'a, Rogue i X-23 (`unknown`).
 - Nowe drużyny Wojny (atak): zob. [Składy](#składy-stan-4112026).
 - **Sabretooth (Breaker)**: Villain, Global, Mystic, Controller, Menace; Speed 124 (OFF). Corruption
   znosi premię pozytywnego efektu i nie da się jej oczyścić, odwrócić ani skrócić. Pasywka na War

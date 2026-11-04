@@ -2,7 +2,8 @@
  * Where each character's shards come from and whether that source is open now — the appendix
  * of `reports/Opłacalne drużyny MSF i źródła postaci.md` (14 October 2026) with the changes from
  * `reports/Opłacalne drużyny MSF aktualizacja październik.md` (19 October 2026) and
- * `reports/Ulepszenia aplikacji MSF listopad.md` (2 November 2026). Research from
+ * `reports/Ulepszenia aplikacji MSF listopad.md` (2 November 2026) and
+ * `reports/Składy i postacie MSF listopad.md` (4 November 2026). Research from
  * search snippets; confirm in game with the character's "Find" button, and update by hand when
  * the weekly MSF blog changes a source.
  */
@@ -36,7 +37,7 @@ export interface CharacterSource {
   afterUntil?: SourceStatus;
 }
 
-export const CHARACTER_SOURCES_AS_OF = '2 listopada 2026';
+export const CHARACTER_SOURCES_AS_OF = '4 listopada 2026';
 
 export const SOURCE_STATUS_LABELS: Record<SourceStatus, string> = {
   permanent: 'stałe źródło',
@@ -104,6 +105,15 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     confidence: '3P + OFF',
     next: 'powrót wieży nieznany; reszta AA trafiła do orbów w październiku 2026, więc Blade (Mighty) może dołączyć (szac.)',
     url: 'https://www.marvel.church/mighty-tower-blade/',
+  },
+  {
+    name: 'Blob',
+    teams: 'Menace (W, atak); Protector (3P)',
+    status: 'unknown',
+    source: 'przerobiony 27.10 (Menace); źródła shardów nie podano',
+    confidence: 'OFF',
+    next: 'przerobieni 27.10 — sprawdź przyciskiem „Find”',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-27-26',
   },
   {
     name: 'Blue Marvel',
@@ -546,7 +556,7 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Ka-Zar',
-    teams: 'Savage Land (W, atak)',
+    teams: 'Savage Land (W, atak); Support',
     status: 'orb',
     source: 'Orb za 625 Power Cores od 6.11, 22:00: szansa na do 400 shardów',
     confidence: 'OFF',
@@ -630,7 +640,7 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'brak drużyny w tabeli',
     status: 'event',
     source:
-      'Echoes of Dystopia od 3.11, 22:00: solowy boss Maestro — Character Upgrade Tokens i Red Stars Maestro, do 7 Yellow i 7 Red Stars',
+      'Echoes of Dystopia od 3.11, 22:00: solowy boss Maestro — Character Upgrade Tokens i Red Stars Maestro, do 7 Yellow i 7 Red Stars. Standard 1 = GT16 (rośnie do GT20), Insanity GT20; cecha Maestro Challengers',
     confidence: 'OFF',
     next: 'koniec nieznany — ok. 17.11 (szac., dwa tygodnie)',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
@@ -799,7 +809,7 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'Nightreavers (W), Nightstalkers',
     status: 'permanentUnverified',
     source:
-      'Character Store (Age of Fear) (3P). Do ok. 2.11 fragmenty Nightreaver Orbs i Diamenty z misji bonusowych King of the Night (OFF). Możliwe też The Thirst („postacie Nightstalkers”, lista niepotwierdzona).',
+      'Character Store (Age of Fear) (3P). Do ok. 2.11 fragmenty Nightreaver Orbs i Diamenty z misji bonusowych King of the Night (OFF). The Hunger i The Thirst dają shardy „postaci Nightstalkers” (OFF, dokładna lista nieznana).',
     confidence: '3P + OFF',
     next: 'Przerobiona 13.10; potwierdź przyciskiem „Find”',
     url: 'https://www.marvel.church/nightreaver/',
@@ -936,6 +946,15 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     url: 'https://www.marvel.church/starjammer/',
   },
   {
+    name: 'Rogue',
+    teams: 'Savage Land (W, atak); Protector (3P)',
+    status: 'unknown',
+    source: 'ulepszona (z głosowania graczy) do Savage Land; źródła shardów nie podano',
+    confidence: 'OFF',
+    next: 'ulepszona do Savage Land — sprawdź przyciskiem „Find”',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
+  },
+  {
     name: 'Ronan the Accuser',
     teams: 'Omen (W)',
     status: 'permanent',
@@ -945,12 +964,13 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Sabretooth (Breaker)',
-    teams: 'Menace (W, atak); w evencie kluczowi A.I. Avengers i Iron Raiders',
+    teams:
+      'Menace (W, atak); Controller, oficjalnie plug-and-play; w evencie kluczowi A.I. Avengers i Iron Raiders',
     status: 'event',
     source:
-      'Breaker Event: Sabretooth od 2.11, 22:00 (jedno streszczenie podaje 23:00): 10 misji, 4 poziomy, liczy się najlepszy run; kamienie milowe do 7 Yellow Stars i 2 Diamentów, leaderboard do 5 Diamentów. Bramki: Beginner poz. 50–60, 5★ + 3 RS; Normal poz. 80–100, 7 RS, Blue L5, GT18; Hard poz. 105, 2 Diamenty, Purple L4, GT19, Iron Raiders i A.I. Avengers; Omega poz. 110, 4 Diamenty, Orange L1, GT21',
+      'Breaker Event: Sabretooth od 2.11, 22:00 (jedno streszczenie podaje 23:00): 10 misji, 4 poziomy, liczy się najlepszy run; kamienie milowe do 7 Yellow Stars i 2 Diamentów, leaderboard do 5 Diamentów. Bramki: Beginner poz. 50–60, 5★ + 3 RS; Normal poz. 80–100, 7 RS, Blue L5, GT18; Hard poz. 105, 2 Diamenty, Purple L4 (3P: L3), GT19, Iron Raiders i A.I. Avengers; Omega poz. 110, 4 Diamenty, Orange L1, GT21. 5★ + 5 RS z samej misji 1 na Omega z modami to ścieżka endgame (3P)',
     confidence: 'OFF',
-    next: 'pierwsza szansa na odblokowanie 11.11, 22:00; koniec ok. 16.11 (szac., jak Scorpion: dwa tygodnie)',
+    next: 'pierwsza szansa na odblokowanie 11.11, 22:00; koniec ok. 16.11 (szac., jak Scorpion: dwa tygodnie); zbieraj na raty w kolejnych runach Breakera (OFF)',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-27-26',
     until: '2026-11-16',
     afterUntil: 'unavailable',
@@ -965,7 +985,7 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
   },
   {
     name: 'Sauron',
-    teams: 'Savage Land (W, atak)',
+    teams: 'Savage Land (W, atak); Controller (3P)',
     status: 'unknown',
     source: 'nowa postać (zapowiedź 28.10); źródła shardów nie podano',
     confidence: 'OFF',
@@ -1027,6 +1047,15 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source: 'Venture Orb; Character Store (Age of Annihilus); Heroes 2-9',
     confidence: '3P',
     url: 'https://www.marvel.church/insidious-six/',
+  },
+  {
+    name: 'Silver Samurai',
+    teams: 'Menace (W, atak); Protector (3P)',
+    status: 'unknown',
+    source: 'przerobiony 27.10 (Menace); źródła shardów nie podano',
+    confidence: 'OFF',
+    next: 'przerobieni 27.10 — sprawdź przyciskiem „Find”',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-27-26',
   },
   {
     name: 'Silver Surfer',
@@ -1123,6 +1152,16 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     url: 'https://www.marvel.church/brimstone/',
   },
   {
+    name: 'Stryfe',
+    teams: 'Menace (W, atak); Protector (3P)',
+    status: 'unknown',
+    source:
+      'przerobiony 27.10 (Menace, bez zmian tylko Basic); stare źródła (Blitz Store usunięty 27.10.2025, Alpha Raid Orb) nieaktualne',
+    confidence: 'OFF',
+    next: 'przerobieni 27.10 — sprawdź przyciskiem „Find”',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-27-26',
+  },
+  {
     name: 'Sunspot',
     teams: 'New Mutants (C)',
     status: 'permanent',
@@ -1208,6 +1247,15 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source: 'Character Store (Age of Fear); Heroes Hard 2-9',
     confidence: '3P',
     url: 'https://www.marvel.church/west-coast-avenger/',
+  },
+  {
+    name: 'Toad',
+    teams: 'Menace (W, atak); Controller',
+    status: 'unknown',
+    source: 'przerobiony 27.10 (Menace); źródła shardów nie podano',
+    confidence: 'OFF',
+    next: 'przerobieni 27.10 — sprawdź przyciskiem „Find”',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-27-26',
   },
   {
     name: 'Toxin',
@@ -1331,6 +1379,16 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     source: 'Daily Objectives',
     confidence: '3P',
     url: 'https://www.marvel.church/exalted-x-men/',
+  },
+  {
+    name: 'X-23',
+    teams: 'Savage Land (W, atak); Brawler (3P)',
+    status: 'unknown',
+    source:
+      'ulepszona (z głosowania graczy) do Savage Land; źródła shardów nie podano. Wymagana w kampanii Savage Land od 6.11 (M1 bez wymagań, M2–M5: GT5 → GT10)',
+    confidence: 'OFF',
+    next: 'ulepszona do Savage Land — sprawdź przyciskiem „Find”',
+    url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
   },
   {
     name: 'Yellowjacket',
