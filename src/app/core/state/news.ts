@@ -1,5 +1,7 @@
 import { CharacterKit, EventInfo, RosterEntry } from '../models';
-import { traitKey } from './roster.mapper';
+import { NamedTrait, teamTraits as groupTraits } from './team-traits';
+
+export type { NamedTrait } from './team-traits';
 
 /** What the game looked like at the player's last visit (kept in the browser). */
 export interface GameSnapshot {
@@ -15,13 +17,6 @@ export interface GameSnapshot {
   teamTraits: Record<string, string>;
 }
 
-export interface NamedTrait {
-  id: string;
-  name: string;
-  /** Characters with it, strongest owned first, then locked. */
-  members: RosterEntry[];
-}
-
 /** Changes in the game since the snapshot. */
 export interface GameNews {
   since: number;
@@ -32,53 +27,12 @@ export interface GameNews {
   newTeams: NamedTrait[];
 }
 
-/**
- * Origins, roles, sides and the like are shared by too many characters to be teams; a trait
- * held by this many characters or fewer (and at least `MIN_TEAM`) is treated as a team.
- */
+/** A trait held by this many characters or fewer is treated as a new team. */
 const MAX_TEAM = 10;
-const MIN_TEAM = 3;
-const NOT_TEAMS = new Set(
-  [
-    'Hero',
-    'Villain',
-    'Bio',
-    'Mutant',
-    'Mystic',
-    'Skill',
-    'Tech',
-    'Blaster',
-    'Brawler',
-    'Controller',
-    'Protector',
-    'Support',
-    'Global',
-    'City',
-    'Cosmic',
-    'Legendary',
-    'Minion',
-  ].map(traitKey),
-);
 
 /** Traits that group a handful of characters, like a team ("Symbiote", "Menace"). */
 export function teamTraits(roster: RosterEntry[]): NamedTrait[] {
-  const byId = new Map<string, NamedTrait>();
-  for (const entry of roster) {
-    for (const t of entry.traits) {
-      if (NOT_TEAMS.has(traitKey(t.id)) || NOT_TEAMS.has(traitKey(t.name ?? t.id))) continue;
-      const trait = byId.get(t.id) ?? { id: t.id, name: t.name ?? t.id, members: [] };
-      trait.members.push(entry);
-      byId.set(t.id, trait);
-    }
-  }
-  return [...byId.values()]
-    .filter((t) => t.members.length >= MIN_TEAM && t.members.length <= MAX_TEAM)
-    .map((t) => ({
-      ...t,
-      members: [...t.members].sort(
-        (a, b) => Number(b.unlocked) - Number(a.unlocked) || b.power - a.power,
-      ),
-    }));
+  return groupTraits(roster, MAX_TEAM);
 }
 
 export function snapshotOf(

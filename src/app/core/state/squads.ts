@@ -254,7 +254,17 @@ export function buildAround(
   synergy: SynergyIndex,
   size = TEAM_SIZE,
 ): RosterEntry[] {
-  const members = [seed];
+  return extendSquad([seed], pool, synergy, size);
+}
+
+/** Fills `start` up to `size` from `pool`, each next member adding the most synergy. */
+export function extendSquad(
+  start: RosterEntry[],
+  pool: RosterEntry[],
+  synergy: SynergyIndex,
+  size = TEAM_SIZE,
+): RosterEntry[] {
+  const members = [...start];
   const top = Math.max(1, ...pool.map((e) => e.power));
   while (members.length < size) {
     let best: RosterEntry | undefined;

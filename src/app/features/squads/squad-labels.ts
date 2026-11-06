@@ -1,6 +1,16 @@
-import { AbilityKey } from '../../core/models';
+import { AbilityKey, TeamTab } from '../../core/models';
 import { SquadOption, SquadOrigin } from '../../core/state/squads';
 import { SynergyLink } from '../../core/state/synergy';
+
+export const MODE_LABELS: Record<TeamTab, string> = {
+  arena: 'Arena',
+  war: 'Wojna',
+  raids: 'Raidy',
+  blitz: 'Blitz',
+  tower: 'Wieża',
+  crucible: 'Crucible',
+  roster: 'Roster',
+};
 
 export const ORIGIN_LABELS: Record<SquadOrigin, string> = {
   meta: 'z mety',

@@ -20,7 +20,8 @@ const PASSIVES: Record<string, string> = {
   GhostSpider:
     'Spider-Verse allies gain Evade. Cleanse 1 negative effect from Spider-Verse allies.',
   Wolverine: 'X-Men allies gain Regeneration. Gain Defense Up while Storm is an ally.',
-  Storm: 'X-Men allies gain +10% Speed. Apply Slow to Mystic enemies.',
+  Storm:
+    'X-Men allies gain +10% Speed. Adjacent allies gain Offense Up. Apply Slow to Mystic enemies.',
   Cyclops: 'X-Men allies gain Offense Up on Spawn.',
   Phoenix:
     'X-Men allies are revived once per battle. Omega Red (Phoenix Force) and Magneto (Phoenix Force) gain Charged.',

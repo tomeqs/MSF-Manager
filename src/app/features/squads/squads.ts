@@ -7,18 +7,12 @@ import { TeamsStore } from '../../core/state/teams.store';
 import { AssistantPlan } from './assistant-plan/assistant-plan';
 import { LooseCharacters } from './loose-characters/loose-characters';
 import { SavedSquads } from './saved-squads/saved-squads';
+import { MODE_LABELS } from './squad-labels';
 
 const TAB_KEY = 'msf.squads.tab';
 
 type Section = 'later' | 'farm' | 'saved' | 'free';
-const TAB_LABELS: Record<string, string> = {
-  arena: 'Arena',
-  war: 'Wojna',
-  raids: 'Raidy',
-  blitz: 'Blitz',
-  tower: 'Wieża',
-  crucible: 'Crucible',
-};
+const TAB_LABELS = MODE_LABELS;
 
 /**
  * Squad assistant per game mode: the next squad to save (with its line-up), the ones after

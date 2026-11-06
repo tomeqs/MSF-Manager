@@ -43,12 +43,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/events/events').then((m) => m.Events),
       },
       {
-        // Składy: the squad assistant and the meta teams per mode (with Blitz/Tower events).
+        // Składy: the squad assistant, the teams of the roster and the meta teams per mode.
         path: 'squads',
         loadComponent: () => import('./layout/section/section').then((m) => m.Section),
         data: {
           tabs: [
             { path: '/squads', label: 'Asystent' },
+            { path: '/squads/roster', label: 'Drużyny z rosteru' },
             { path: '/squads/meta', label: 'Drużyny z mety' },
           ],
         },
@@ -57,6 +58,12 @@ export const routes: Routes = [
             path: '',
             title: 'Składy · MSF Assistant',
             loadComponent: () => import('./features/squads/squads').then((m) => m.Squads),
+          },
+          {
+            path: 'roster',
+            title: 'Drużyny z rosteru · MSF Assistant',
+            loadComponent: () =>
+              import('./features/squads/roster-teams/roster-teams').then((m) => m.RosterTeams),
           },
           {
             path: 'meta',

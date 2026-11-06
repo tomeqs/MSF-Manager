@@ -24,7 +24,7 @@ export interface SynergyIndex {
   pair(a: string, b: string): number;
   /** Why a and b fit, strongest first. */
   links(a: string, b: string): SynergyLink[];
-  /** The kit refers to neighbours ("adjacent"), so the squad order matters. */
+  /** The kit acts on neighbouring allies ("adjacent allies"), so the squad order matters. */
   positional(id: string): boolean;
 }
 
@@ -96,7 +96,7 @@ export function buildSynergy(roster: RosterEntry[], kits: CharacterKit[]): Syner
       const text = kit.texts[ability];
       if (!text) continue;
       const words = tokens(text);
-      if (words.includes('adjacent')) positional.add(kit.id);
+      if (actsOnAdjacentAllies(words)) positional.add(kit.id);
       const used = new Array<boolean>(words.length).fill(false);
       for (const n of names) {
         if (n.id === kit.id) continue;
@@ -254,6 +254,17 @@ function scan(words: string[], needle: string[], used: boolean[]): number | unde
     best = Math.max(best ?? 0, weight);
   }
   return best;
+}
+
+/**
+ * "Adjacent allies gain…" ties the kit to its neighbours; "adjacent enemies" / "adjacent
+ * targets" (splash damage) does not depend on the attacker's own position.
+ */
+function actsOnAdjacentAllies(words: string[]): boolean {
+  return words.some(
+    (word, i) =>
+      word === 'adjacent' && contextWeight(words.slice(i + 1, i + 1 + CONTEXT_WORDS)) === 1,
+  );
 }
 
 function contextWeight(after: string[]): number {

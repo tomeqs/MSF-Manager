@@ -1,0 +1,103 @@
+<header class="page-header">
+  <div>
+    <h1>Drużyny z rosteru</h1>
+    <p>
+      Każda drużyna, którą masz w rosterze: najlepsza piątka z siły, synergii umiejętności i tego,
+      czy ktoś leczy, osłania i oczyszcza — kto zostaje w rezerwie i jak ich ustawić.
+    </p>
+  </div>
+</header>
+
+@if (status() === 'error') {
+  <p class="state-message">Nie udało się wczytać rosteru.</p>
+} @else if (status() !== 'loaded') {
+  <p class="state-message">Wczytuję roster…</p>
+} @else {
+  <div class="toolbar small">
+    <input
+      type="search"
+      placeholder="Szukaj drużyny lub postaci"
+      aria-label="Szukaj drużyny lub postaci"
+      [value]="query()"
+      (input)="search($any($event.target).value)"
+    />
+    <button
+      type="button"
+      [class.active]="exclusive()"
+      [attr.aria-pressed]="exclusive()"
+      (click)="toggleExclusive()"
+    >
+      Bez powtórzeń postaci
+    </button>
+  </div>
+  <p class="muted small intro">
+    @if (exclusive()) {
+      {{ result().teams.length }} drużyn naraz: najmocniejsze najpierw, a postać użyta wyżej nie
+      trafia już do kolejnych.
+    } @else {
+      {{ result().teams.length }} drużyn, każda osobno (postać może być w kilku). „Bez powtórzeń”
+      pokaże, ile złożysz naraz.
+    }
+    @if (kitsStatus() === 'loading') {
+      Wczytuję umiejętności — na razie liczą się siła i cechy.
+    }
+  </p>
+
+  <div class="grid">
+    @for (t of shown(); track t.id; let i = $index) {
+      <app-squad-card [option]="t.option" [index]="i + 1" [lineup]="t.arrangement">
+        <div class="extra small">
+          <p>
+            Masz {{ t.owned.length }} z {{ t.inGame }}
+            @if (t.locked.length) {
+              <span class="muted">· do odblokowania: {{ names(t.locked) }}</span>
+            }
+          </p>
+          @if (t.known.length) {
+            <p class="muted">W mecie z tymi postaciami: {{ knownText(t) }}</p>
+          }
+          @if (t.fillers.length) {
+            <p>Dokładki spoza drużyny: {{ names(t.fillers) }}</p>
+          }
+          @if (t.bench.length) {
+            <p>
+              Rezerwa:
+              @for (b of t.bench.slice(0, 4); track b.entry.id; let last = $last) {
+                {{ b.entry.name }} <span class="muted">({{ swapText(b) }})</span
+                >{{ last ? '' : ',' }}
+              }
+              @if (t.bench.length > 4) {
+                <span class="muted">+{{ t.bench.length - 4 }}</span>
+              }
+            </p>
+          }
+          @if (t.elsewhere.length) {
+            <p class="muted">W drużynach wyżej: {{ names(t.elsewhere) }}</p>
+          }
+        </div>
+      </app-squad-card>
+    } @empty {
+      <p class="muted">
+        @if (query()) {
+          Nic nie pasuje do „{{ query() }}”.
+        } @else {
+          Nie masz jeszcze drużyny, z której posiadasz co najmniej 3 postacie.
+        }
+      </p>
+    }
+  </div>
+  @if (hidden() > 0) {
+    <button type="button" class="more" (click)="more()">Pokaż więcej ({{ hidden() }})</button>
+  }
+
+  @if (result().partial.length && !query()) {
+    <details class="partial small">
+      <summary>Drużyny, z których masz 1–2 postacie ({{ result().partial.length }})</summary>
+      <p class="muted">
+        @for (p of result().partial; track p.id; let last = $last) {
+          {{ p.name }} {{ p.owned }}/{{ p.inGame }}{{ last ? '' : ' · ' }}
+        }
+      </p>
+    </details>
+  }
+}

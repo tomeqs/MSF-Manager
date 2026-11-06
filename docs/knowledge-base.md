@@ -257,7 +257,10 @@ bramka GT19 w DD7; czy Boosts działają w PvE (jeden skrawek mówi „Pain, Fea
 Anxiety/Panic); ceny w Shop Credits; czy zakres `m3p.f.ar.ros` jest dostępny; ile drużyn na
 obronę wystawia gracz; cechy per węzeł w Trepidation; listy Tower Challengers 3 i Maestro
 Challengers; premie cech w Blitzu; plotka „Destroyer & Raid Boss Next Week” (YT). Pozycja w
-składzie ma znaczenie przynajmniej w FF (MCU), Annihilators, WCA i Savage Land (3P).
+składzie ma znaczenie przynajmniej w FF (MCU), Annihilators, WCA i Savage Land (3P). Reguły w
+aplikacji (6.11): kit z „adjacent allies” → postać w środku (z kitu); Protector w rogu, bo ataki
+obszarowe trafiają cel i sąsiadów, a róg ma jednego sąsiada (SZAC., wniosek z mechaniki — zgodny z
+radami WCA i Annihilators, ale żadne źródło nie podaje go jako ogólnej zasady).
 
 **Fałszywe tropy** (nie daj się złapać): sezon Wojny „Halloween Showdown” i „rozdział 3 Age of
 Annihilus” to 2025 r.; mapa `maps/raid_incursion` to Incursion, nie Trepidation; nazwy umiejętności
@@ -290,7 +293,8 @@ Uruchomienie: `npx ng serve --port 4200`; build: `npx ng build`. Sprawdzanie w p
 Playwright z `/opt/node22/lib/node_modules/playwright/index.mjs` (Chromium preinstalowany),
 wejście w demo przyciskiem „Wypróbuj na danych testowych” na `/login`.
 
-**Menu** (5): Pulpit (Dziś + Nowości), Roster, Eventy, Składy (Asystent · Drużyny z mety),
+**Menu** (5): Pulpit (Dziś + Nowości), Roster, Eventy, Składy (Asystent · Drużyny z rosteru ·
+Drużyny z mety),
 Rozwój (Farmienie · Kluczowe postacie · Analiza). Stare `/teams`, `/key-characters`, `/analysis`
 przekierowują.
 
@@ -304,8 +308,10 @@ przekierowują.
 | `sources.ts` / `auto-sources.ts` | status źródła shardów: badania (`character-sources.ts`) poprawione danymi gry (węzły, kampanie eventowe, orby) |
 | `event-rewards.ts` | shardy w nagrodach progów eventów (`ShardOffer`) |
 | `goals.ts` / `farming-calc.ts` / `farming.store.ts` | cele farmienia (gwiazdki, umiejętności, gear, poziom), łączenie celów, materiały |
-| `synergy.ts` | synergia z opisów umiejętności (cechy i imiona; rzadkość cechy; bez wzmianek o wrogach) |
-| `squads.ts` / `squad-assistant.ts` / `squads.store.ts` | opcje składów, asystent (gotowe / do dofarmienia, Wojna obrona/atak, ustawienie) |
+| `synergy.ts` | synergia z opisów umiejętności (cechy i imiona; rzadkość cechy; bez wzmianek o wrogach); „pozycyjny” tylko przy „adjacent allies”, nie przy odprysku na wrogów |
+| `team-traits.ts` | które cechy są drużynami (bez strony, pochodzenia, roli, lokacji, rzadkości i cech rozdziału) |
+| `roster-teams.ts` | zakładka „Drużyny z rosteru”: najlepsza piątka każdej cechy-drużyny (3–15 postaci w grze; siła × synergia × pokrycie ochrona/leczenie/oczyszczanie), rezerwa z kosztem zamiany, dokładki, tryb „bez powtórzeń” |
+| `squads.ts` / `squad-assistant.ts` / `squads.store.ts` | opcje składów, asystent (gotowe / do dofarmienia, Wojna obrona/atak, ustawienie: gracze → poradnik → Twoja kolejność → „adjacent allies” w środku, Protector w rogu) |
 | `capabilities.ts` / `insights.ts` | mechaniki z opisów; potencjał, ISO-8 i T4 względem graczy |
 | `news.ts` / `news.store.ts` | Nowości: migawka gry vs ostatnia wizyta |
 | `teams-calc.ts` | dopasowanie drużyn do rosteru; drużyna z cechy, gdy nazw brak w danych |

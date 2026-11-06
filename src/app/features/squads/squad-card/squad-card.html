@@ -80,6 +80,9 @@
     }
     @if (lineup(); as l) {
       <p class="small order lineup-note">Ustawienie: {{ l.note }}</p>
+      @if (l.reason) {
+        <p class="tiny muted order">{{ l.reason }}</p>
+      }
     } @else {
       <p class="tiny muted order">
         {{ orderLabel() }}

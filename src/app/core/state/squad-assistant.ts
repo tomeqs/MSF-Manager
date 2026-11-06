@@ -4,6 +4,7 @@ import { shardsToMax, unlockCost } from './advisor';
 import { MAX_YELLOW_STARS } from './game-rules';
 import { SquadOption, buildAround, standingOf, strongest, synergySquad } from './squads';
 import { SynergyIndex } from './synergy';
+import { hasRole } from './team-traits';
 import { MAX_MISSING, TEAM_SIZE } from './teams-calc';
 
 /** How the members of a proposal should be lined up in game, and why. */
@@ -13,6 +14,8 @@ export interface Arrangement {
   basis: 'community' | 'saved' | 'meta' | 'kits';
   /** What the order is based on, for the player. */
   note: string;
+  /** Why such an order helps (for the details), when it follows a general rule. */
+  reason?: string;
 }
 
 export interface Proposal {
@@ -219,10 +222,10 @@ export function assistantProposals(input: Omit<AssistantInput, 'needsOf'>, limit
 }
 
 /**
- * Line-up for a squad. Most players' order wins when the squad is a popular one, then the
- * guide's own advice, the player's order and the guide's order. Otherwise only kits that act
- * on neighbours ("adjacent") make the order matter: such a character goes in the middle with
- * its best partners beside it.
+ * Line-up for a squad, slots 1–5 left to right (1 and 5 are the corners). Most players' order
+ * wins when the squad is a popular one, then the guide's own advice, then the player's order.
+ * Otherwise two rules decide: a kit acting on neighbouring allies ("adjacent allies") puts its
+ * owner in the middle with its best partners beside it, and a Protector goes to a corner.
  */
 export function arrange(option: SquadOption, synergy: SynergyIndex): Arrangement {
   const members = option.members;
@@ -232,29 +235,79 @@ export function arrange(option: SquadOption, synergy: SynergyIndex): Arrangement
   if (option.lineupNote) {
     return { members, basis: 'meta', note: `Według poradnika: ${option.lineupNote}` };
   }
-  const positional = members.filter((m) => synergy.positional(m.id));
-  if (!positional.length) {
-    if (option.order === 'saved') {
-      return { members, basis: 'saved', note: 'Twoja kolejność z gry.' };
-    }
+  const center = members.find((m) => synergy.positional(m.id));
+  if (!center && option.order === 'saved') {
+    return { members, basis: 'saved', note: 'Twoja kolejność z gry.' };
+  }
+  const tank = byPower(members.filter((m) => m !== center && hasRole(m, 'Protector')))[0];
+  if (!center && !tank) {
     return {
       members,
       basis: option.order === 'meta' ? 'meta' : 'kits',
       note: 'Nic w umiejętnościach tych postaci nie zależy od pozycji — ustaw dowolnie.',
     };
   }
-  const center = positional[0];
+  return center ? aroundCenter(members, center, tank, synergy) : tankInCorner(members, tank!);
+}
+
+/** Splash attacks hit the target and its neighbours; a corner has only one neighbour. */
+const TANK_REASON =
+  'Ataki obszarowe trafiają cel i jego sąsiadów. Protector zwykle ściąga na siebie ataki (Taunt), ' +
+  'a w rogu ma tylko jednego sąsiada — to wniosek z mechaniki gry, nie rada z poradnika.';
+
+function aroundCenter(
+  members: RosterEntry[],
+  center: RosterEntry,
+  tank: RosterEntry | undefined,
+  synergy: SynergyIndex,
+): Arrangement {
   const rest = members
-    .filter((m) => m !== center)
+    .filter((m) => m !== center && m !== tank)
     .sort((a, b) => synergy.pair(center.id, b.id) - synergy.pair(center.id, a.id));
   // Middle slot for the neighbour-dependent kit, its two best partners right beside it.
-  const lineup = [rest[2], rest[0], center, rest[1], rest[3]].filter((m): m is RosterEntry => !!m);
+  const slots = tank
+    ? [tank, rest[0], center, rest[1], rest[2]]
+    : [rest[2], rest[0], center, rest[1], rest[3]];
+  const lineup = [...slots, ...rest.slice(tank ? 3 : 4)].filter((m): m is RosterEntry => !!m);
   const partners = [rest[0], rest[1]].filter((m) => !!m).map((m) => m.name);
   return {
     members: lineup,
     basis: 'kits',
     note:
       `${center.name} ma umiejętność działającą na sąsiadów — w środku` +
-      (partners.length ? `, obok ${partners.join(' i ')}.` : '.'),
+      (partners.length ? `, obok ${partners.join(' i ')}.` : '.') +
+      (tank ? ` ${tank.name} (Protector) w rogu.` : ''),
+    reason: tank ? TANK_REASON : undefined,
   };
+}
+
+function tankInCorner(members: RosterEntry[], tank: RosterEntry): Arrangement {
+  const others = byPower(members.filter((m) => m !== tank));
+  // The tank's only neighbour takes the splash: the sturdiest of the rest.
+  const sturdy =
+    others.find((m) => hasRole(m, 'Protector')) ??
+    others.find((m) => hasRole(m, 'Brawler')) ??
+    others[0];
+  const rest = others.filter((m) => m !== sturdy);
+  // Supports as far from the tank as possible.
+  const lineup = [
+    tank,
+    sturdy,
+    ...rest.filter((m) => !hasRole(m, 'Support')),
+    ...rest.filter((m) => hasRole(m, 'Support')),
+  ].filter((m): m is RosterEntry => !!m);
+  const far = lineup.length > 2 ? lineup[lineup.length - 1] : undefined;
+  return {
+    members: lineup,
+    basis: 'kits',
+    note:
+      `${tank.name} (Protector) w rogu` +
+      (sturdy ? `, obok ${sturdy.name}` : '') +
+      (far && hasRole(far, 'Support') ? `; ${far.name} (Support) na drugim końcu.` : '.'),
+    reason: TANK_REASON,
+  };
+}
+
+function byPower(entries: RosterEntry[]): RosterEntry[] {
+  return [...entries].sort((a, b) => b.power - a.power);
 }
