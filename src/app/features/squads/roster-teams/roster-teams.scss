@@ -17,7 +17,20 @@
 }
 
 .intro {
-  margin: 0 0 16px;
+  margin: 0 0 4px;
+
+  & + .intro {
+    margin-bottom: 16px;
+  }
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-accent);
+  font-size: inherit;
+  text-decoration: underline;
 }
 
 .grid {

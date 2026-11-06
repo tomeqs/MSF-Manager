@@ -310,7 +310,7 @@ przekierowują.
 | `goals.ts` / `farming-calc.ts` / `farming.store.ts` | cele farmienia (gwiazdki, umiejętności, gear, poziom), łączenie celów, materiały |
 | `synergy.ts` | synergia z opisów umiejętności (cechy i imiona; rzadkość cechy; bez wzmianek o wrogach); „pozycyjny” tylko przy „adjacent allies”, nie przy odprysku na wrogów |
 | `team-traits.ts` | które cechy są drużynami (bez strony, pochodzenia, roli, lokacji, rzadkości i cech rozdziału) |
-| `roster-teams.ts` | zakładka „Drużyny z rosteru”: najlepsza piątka każdej cechy-drużyny (3–15 postaci w grze; siła × synergia × pokrycie ochrona/leczenie/oczyszczanie), rezerwa z kosztem zamiany, dokładki, tryb „bez powtórzeń” |
+| `roster-teams.ts` | zakładka „Drużyny z rosteru”: najlepsza piątka każdej cechy-drużyny (3–15 postaci w grze; siła × synergia × pokrycie ochrona/leczenie/oczyszczanie), rezerwa z kosztem zamiany, dokładki, tryb „bez powtórzeń”; domyślnie pomija postacie z zapisanych składów (z gry i „Zapisałem w grze”, wszystkie tryby) |
 | `squads.ts` / `squad-assistant.ts` / `squads.store.ts` | opcje składów, asystent (gotowe / do dofarmienia, Wojna obrona/atak, ustawienie: gracze → poradnik → Twoja kolejność → „adjacent allies” w środku, Protector w rogu) |
 | `capabilities.ts` / `insights.ts` | mechaniki z opisów; potencjał, ISO-8 i T4 względem graczy |
 | `news.ts` / `news.store.ts` | Nowości: migawka gry vs ostatnia wizyta |

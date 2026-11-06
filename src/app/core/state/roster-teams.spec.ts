@@ -75,6 +75,27 @@ describe('rosterTeams', () => {
     expect(teams[0].fillers.map((m) => m.id).sort()).toEqual(['L1', 'L2']);
   });
 
+  it('never proposes characters from saved squads, not even as fillers', () => {
+    const taken = new Set(['H1', 'Mentor', 'T2']);
+    const { teams } = rosterTeams({ roster, synergy, taken });
+    const proposed = teams.flatMap((x) => x.option.members.map((m) => m.id));
+    expect(proposed.filter((id) => taken.has(id))).toEqual([]);
+    const hydra = teams.find((x) => x.name === 'Hydra')!;
+    expect(hydra.inSquads.map((m) => m.id)).toEqual(['H1']);
+    expect(hydra.elsewhere).toEqual([]);
+  });
+
+  it('lists teams whose members are mostly in saved squads as blocked', () => {
+    const { teams, blocked, partial } = rosterTeams({
+      roster,
+      synergy,
+      taken: new Set(['T1', 'T2']),
+    });
+    expect(teams.map((x) => x.name)).toEqual(['Hydra']);
+    expect(blocked).toEqual([{ id: 'Trio', name: 'Trio', owned: 3, free: 1 }]);
+    expect(partial).toEqual([]);
+  });
+
   it('reports teams with too few owned members as partial', () => {
     const few = [owned('P1', 100, ['Pair']), owned('P2', 90, ['Pair']), locked('P3', ['Pair'])];
     const { teams, partial } = rosterTeams({ roster: few, synergy: buildSynergy(few, []) });

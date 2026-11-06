@@ -23,6 +23,15 @@
     />
     <button
       type="button"
+      [class.active]="skipSaved()"
+      [attr.aria-pressed]="skipSaved()"
+      (click)="toggleSkipSaved()"
+      title="Postacie z Twoich składów (z gry i oznaczonych „Zapisałem w grze”) nie trafiają do propozycji"
+    >
+      Pomiń zapisane składy
+    </button>
+    <button
+      type="button"
       [class.active]="exclusive()"
       [attr.aria-pressed]="exclusive()"
       (click)="toggleExclusive()"
@@ -31,12 +40,25 @@
     </button>
   </div>
   <p class="muted small intro">
-    @if (exclusive()) {
-      {{ result().teams.length }} drużyn naraz: najmocniejsze najpierw, a postać użyta wyżej nie
-      trafia już do kolejnych.
+    @if (!skipSaved()) {
+      Liczę z całego rosteru, także z postaci, które masz już w składach.
+    } @else if (savedStatus() === 'loading' || savedStatus() === 'idle') {
+      Wczytuję Twoje składy z gry…
+    } @else if (savedStatus() === 'error') {
+      Nie udało się wczytać składów z gry — pomijam tylko oznaczone „Zapisałem w grze”.
+      <button type="button" class="link" (click)="reloadSaved()">Spróbuj ponownie</button>
     } @else {
-      {{ result().teams.length }} drużyn, każda osobno (postać może być w kilku). „Bez powtórzeń”
-      pokaże, ile złożysz naraz.
+      Pomijam {{ characters(takenCount()) }} z Twoich składów (ze wszystkich trybów).
+      <button type="button" class="link" (click)="reloadSaved()">⟳ Składy z gry</button>
+    }
+  </p>
+  <p class="muted small intro">
+    @if (exclusive()) {
+      {{ teamsCount(result().teams.length) }} naraz: najmocniejsze najpierw, a postać użyta wyżej
+      nie trafia już do kolejnych.
+    } @else {
+      {{ teamsCount(result().teams.length) }}, każda osobno (postać może być w kilku). „Bez
+      powtórzeń” pokaże, ile złożysz naraz.
     }
     @if (kitsStatus() === 'loading') {
       Wczytuję umiejętności — na razie liczą się siła i cechy.
@@ -74,6 +96,9 @@
           @if (t.elsewhere.length) {
             <p class="muted">W drużynach wyżej: {{ names(t.elsewhere) }}</p>
           }
+          @if (t.inSquads.length) {
+            <p class="muted">Już w Twoich składach: {{ names(t.inSquads) }}</p>
+          }
         </div>
       </app-squad-card>
     } @empty {
@@ -90,6 +115,18 @@
     <button type="button" class="more" (click)="more()">Pokaż więcej ({{ hidden() }})</button>
   }
 
+  @if (result().blocked.length && !query()) {
+    <details class="partial small">
+      <summary>
+        Drużyny, których postacie są już w Twoich składach ({{ result().blocked.length }})
+      </summary>
+      <p class="muted">
+        @for (b of result().blocked; track b.id; let last = $last) {
+          {{ b.name }} (wolne {{ b.free }} z {{ b.owned }}){{ last ? '' : ' · ' }}
+        }
+      </p>
+    </details>
+  }
   @if (result().partial.length && !query()) {
     <details class="partial small">
       <summary>Drużyny, z których masz 1–2 postacie ({{ result().partial.length }})</summary>

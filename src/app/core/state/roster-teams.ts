@@ -57,6 +57,8 @@ export interface RosterTeam {
   bench: BenchMember[];
   /** Owned members already used by a better team (only with `exclusive`). */
   elsewhere: RosterEntry[];
+  /** Owned members in the player's saved squads (never proposed). */
+  inSquads: RosterEntry[];
   arrangement: Arrangement;
   known: KnownMatch[];
   /** Power × cohesion × coverage of the five. */
@@ -71,6 +73,15 @@ export interface PartialTeam {
   inGame: number;
 }
 
+/** A team the player could build, but its members are mostly in saved squads already. */
+export interface BlockedTeam {
+  id: string;
+  name: string;
+  owned: number;
+  /** Owned members not in a saved squad. */
+  free: number;
+}
+
 export interface RosterTeamsInput {
   roster: RosterEntry[];
   synergy: SynergyIndex;
@@ -79,12 +90,16 @@ export interface RosterTeamsInput {
   known?: KnownTeam[];
   /** Every character in one team only: best teams first, the next ones from what is left. */
   exclusive?: boolean;
+  /** Characters in the player's saved squads: never proposed, not even as fillers. */
+  taken?: ReadonlySet<string>;
 }
 
 export interface RosterTeams {
   teams: RosterTeam[];
   /** Teams with 1–2 owned members (fewer than `MIN_CORE`). */
   partial: PartialTeam[];
+  /** Teams left out because fewer than `MIN_CORE` members are free of saved squads. */
+  blocked: BlockedTeam[];
 }
 
 /**
@@ -94,6 +109,7 @@ export interface RosterTeams {
  */
 export function rosterTeams(input: RosterTeamsInput): RosterTeams {
   const { roster, synergy, kitOf } = input;
+  const taken = input.taken ?? new Set<string>();
   const groups = teamTraits(roster, MAX_TEAM_TRAIT);
   const known = matchKnown(groups, input.known ?? [], roster);
   const pool = strongest(roster);
@@ -161,7 +177,8 @@ export function rosterTeams(input: RosterTeamsInput): RosterTeams {
       option: named,
       fillers,
       bench,
-      elsewhere: all.filter((e) => used.has(e.id)),
+      elsewhere: all.filter((e) => used.has(e.id) && !taken.has(e.id)),
+      inSquads: all.filter((e) => taken.has(e.id)),
       arrangement: arrange(named, synergy),
       known: matches.map(({ name, tier, modes }) => ({ name, tier, modes })),
       score: best,
@@ -169,11 +186,11 @@ export function rosterTeams(input: RosterTeamsInput): RosterTeams {
   };
 
   const separate = groups
-    .map((g) => ({ group: g, team: build(g, none) }))
+    .map((g) => ({ group: g, team: build(g, taken) }))
     .sort((a, b) => (b.team?.score ?? 0) - (a.team?.score ?? 0));
   let teams: RosterTeam[];
   if (input.exclusive) {
-    const used = new Set<string>();
+    const used = new Set(taken);
     const order = separate.filter(({ team }) => !!team);
     teams = [];
     for (let i = 0; i < order.length; i++) {
@@ -186,17 +203,27 @@ export function rosterTeams(input: RosterTeamsInput): RosterTeams {
   } else {
     teams = separate.flatMap(({ team }) => (team ? [team] : []));
   }
-  const partial = separate
+  const left = separate
     .filter(({ team }) => !team)
-    .map(({ group }) => ({
-      id: group.id,
-      name: group.name,
-      owned: group.members.filter((e) => e.unlocked).length,
-      inGame: group.members.length,
-    }))
-    .filter((p) => p.owned > 0)
+    .map(({ group }) => {
+      const owned = group.members.filter((e) => e.unlocked);
+      return {
+        id: group.id,
+        name: group.name,
+        owned: owned.length,
+        free: owned.filter((e) => !taken.has(e.id)).length,
+        inGame: group.members.length,
+      };
+    });
+  const partial = left
+    .filter((p) => p.owned > 0 && p.owned < MIN_CORE)
+    .map(({ id, name, owned, inGame }) => ({ id, name, owned, inGame }))
     .sort((a, b) => b.owned / b.inGame - a.owned / a.inGame || a.name.localeCompare(b.name));
-  return { teams, partial };
+  const blocked = left
+    .filter((p) => p.owned >= MIN_CORE)
+    .map(({ id, name, owned, free }) => ({ id, name, owned, free }))
+    .sort((a, b) => b.owned - a.owned || a.name.localeCompare(b.name));
+  return { teams, partial, blocked };
 }
 
 /** The five candidates with the highest value (every combination; candidates ≤ 10). */

@@ -9,6 +9,7 @@ import { SquadCard } from '../squad-card/squad-card';
 import { MODE_LABELS } from '../squad-labels';
 
 const EXCLUSIVE_KEY = 'msf.rosterTeams.exclusive';
+const SKIP_SAVED_KEY = 'msf.rosterTeams.skipSaved';
 const PAGE = 12;
 /** Names listed before "+N". */
 const NAMES_SHOWN = 4;
@@ -17,6 +18,7 @@ const NAMES_SHOWN = 4;
  * Every team (trait) the player can build from the roster, mode by mode aside: the best five
  * by power, kit synergy and essential mechanics, the bench and why, fillers when the team is
  * short, and the line-up. "Bez powtórzeń" builds them all at once, one character per team.
+ * Characters in the player's saved squads (any mode) are left out unless the player opts out.
  */
 @Component({
   selector: 'app-roster-teams',
@@ -32,7 +34,14 @@ export class RosterTeams {
 
   protected readonly status = this.roster.status;
   protected readonly kitsStatus = this.kits.status;
-  protected readonly exclusive = signal(readFlag());
+  protected readonly savedStatus = this.squads.savedStatus;
+  protected readonly exclusive = signal(readFlag(EXCLUSIVE_KEY, false));
+  protected readonly skipSaved = signal(readFlag(SKIP_SAVED_KEY, true));
+  /** Owned characters in saved squads (left out while `skipSaved` is on). */
+  protected readonly takenCount = computed(() => {
+    const taken = this.squads.inSquads();
+    return this.roster.entries().filter((e) => e.unlocked && taken.has(e.id)).length;
+  });
   protected readonly query = signal('');
   protected readonly limit = signal(PAGE);
 
@@ -44,6 +53,7 @@ export class RosterTeams {
       kitOf: kits.size ? (id) => kits.get(id) : undefined,
       known: KNOWN_META,
       exclusive: this.exclusive(),
+      taken: this.skipSaved() ? this.squads.inSquads() : undefined,
     });
   });
   /** Teams matching the search (team or member name). */
@@ -64,6 +74,7 @@ export class RosterTeams {
   constructor() {
     this.roster.load();
     this.kits.load();
+    this.squads.loadSaved();
   }
 
   protected search(value: string): void {
@@ -72,13 +83,28 @@ export class RosterTeams {
   }
 
   protected toggleExclusive(): void {
-    const value = !this.exclusive();
-    this.exclusive.set(value);
-    try {
-      localStorage.setItem(EXCLUSIVE_KEY, JSON.stringify(value));
-    } catch {
-      // Remembering the choice is optional.
-    }
+    this.exclusive.set(!this.exclusive());
+    writeFlag(EXCLUSIVE_KEY, this.exclusive());
+  }
+
+  protected toggleSkipSaved(): void {
+    this.skipSaved.set(!this.skipSaved());
+    writeFlag(SKIP_SAVED_KEY, this.skipSaved());
+  }
+
+  /** After saving or deleting squads in game. */
+  protected reloadSaved(): void {
+    this.squads.reloadSaved();
+  }
+
+  /** "1 postać", "3 postacie", "12 postaci". */
+  protected characters(n: number): string {
+    return plural(n, 'postać', 'postacie', 'postaci');
+  }
+
+  /** "1 drużyna", "3 drużyny", "12 drużyn". */
+  protected teamsCount(n: number): string {
+    return plural(n, 'drużyna', 'drużyny', 'drużyn');
   }
 
   protected more(): void {
@@ -105,10 +131,24 @@ export class RosterTeams {
   }
 }
 
-function readFlag(): boolean {
+function plural(n: number, one: string, few: string, many: string): string {
+  const isFew = n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14);
+  return `${n} ${n === 1 ? one : isFew ? few : many}`;
+}
+
+function readFlag(key: string, fallback: boolean): boolean {
   try {
-    return JSON.parse(localStorage.getItem(EXCLUSIVE_KEY) ?? 'false') === true;
+    const raw = localStorage.getItem(key);
+    return raw === null ? fallback : JSON.parse(raw) === true;
   } catch {
-    return false;
+    return fallback;
+  }
+}
+
+function writeFlag(key: string, value: boolean): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Remembering the choice is optional.
   }
 }

@@ -163,16 +163,22 @@ export class SquadsStore {
     return result;
   });
 
+  /** Characters in any of the player's squads (every mode; from the game and marked here). */
+  readonly inSquads = computed<ReadonlySet<string>>(
+    () =>
+      new Set(
+        [...this.mine().values()].flatMap(({ game, local }) => [
+          ...game.flat(),
+          ...local.flatMap((l) => l.squad),
+        ]),
+      ),
+  );
+
   private readonly byTab = computed(() => {
     const roster = this.roster.entries();
     const synergy = this.synergy();
     const mine = this.mine();
-    const everywhere = new Set(
-      [...mine.values()].flatMap(({ game, local }) => [
-        ...game.flat(),
-        ...local.flatMap((l) => l.squad),
-      ]),
-    );
+    const everywhere = this.inSquads();
     const needsOf = this.needsOf();
     const result = new Map<TeamTab, TabSquads>();
     for (const tab of SQUAD_TABS) {
@@ -297,6 +303,12 @@ export class SquadsStore {
     // Shards, inventory and the gear stage behind "ready" and "to farm".
     this.advisor.load();
     for (const tab of SQUAD_TABS) this.teams.load(tab);
+    this.loadSaved();
+    this.kits.load();
+  }
+
+  /** Only the player's saved squads (for pages that need nothing else from here). */
+  loadSaved(): void {
     if (this._savedStatus() === 'idle' || this._savedStatus() === 'error') {
       this._savedStatus.set('loading');
       this.data.getSquads().subscribe({
@@ -319,7 +331,13 @@ export class SquadsStore {
         error: () => this._savedStatus.set('error'),
       });
     }
-    this.kits.load();
+  }
+
+  /** Reloads only the game's saved squads. */
+  reloadSaved(): void {
+    if (this._savedStatus() === 'loading') return;
+    this._savedStatus.set('idle');
+    this.loadSaved();
   }
 
   /** Reloads the game's saved squads (after saving or deleting squads in game). */
