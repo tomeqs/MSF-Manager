@@ -1,0 +1,60 @@
+<header class="page-header">
+  <div>
+    <h1>Wojna: meta a Twój roster</h1>
+    <p>
+      Drużyny polecane teraz do Wojny porównane z Twoimi postaciami: co złożysz od razu, co z
+      zamiennikiem z Twojego rosteru, co rozwinąć — i czym bić obrony, które spotkasz.
+    </p>
+  </div>
+</header>
+
+<p class="small season card">
+  <strong>Dane z {{ asOf }}.</strong> {{ seasonNote }}
+</p>
+
+<nav class="views" aria-label="Widok">
+  @for (v of views; track v.id) {
+    <button type="button" [class.active]="view() === v.id" (click)="select(v.id)">
+      {{ v.label }}
+    </button>
+  }
+</nav>
+
+@if (status() === 'error') {
+  <p class="state-message">Nie udało się wczytać rosteru.</p>
+} @else if (status() !== 'loaded') {
+  <p class="state-message">Wczytuję roster…</p>
+} @else {
+  <p class="muted small">
+    Złożysz teraz {{ summary().defense }} z {{ plan().defense.length }} obron i
+    {{ summary().offense }} z {{ plan().offense.length }} ataków z mety; masz odpowiedź na
+    {{ summary().answered }} z {{ summary().defenses }} typowych obron.
+  </p>
+
+  @if (view() === 'counters') {
+    <app-war-counters [answers]="plan().answers" />
+  } @else {
+    <div class="grid">
+      @for (f of teams(); track f.name; let i = $index) {
+        <app-war-team [fit]="f" [index]="i + 1" />
+      }
+    </div>
+    @if (alternatives().length) {
+      <section class="card alt small">
+        <strong>Mocne drużyny z Twojego rosteru spoza mety</strong>
+        <p class="muted">
+          Gdy drużyny z mety są daleko, te możesz wystawić od razu (bez gwarancji przeciw mecie):
+        </p>
+        <ul>
+          @for (t of alternatives(); track t.id) {
+            <li>
+              {{ t.name }} — {{ t.option.power | compactNumber }}, synergia
+              {{ (t.option.cohesion * 100).toFixed(0) }}%
+            </li>
+          }
+        </ul>
+        <a routerLink="/squads/roster">Wszystkie drużyny z rosteru →</a>
+      </section>
+    }
+  }
+}

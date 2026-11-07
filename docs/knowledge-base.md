@@ -1,7 +1,7 @@
 # Baza wiedzy MSF Assistant
 
 Jedno miejsce na to, co już ustalono — o grze Marvel Strike Force, o MSF API, o środowisku
-pracy i o samej aplikacji — żeby nie szukać tego od nowa w sieci. **Stan: 4 listopada 2026.**
+pracy i o samej aplikacji — żeby nie szukać tego od nowa w sieci. **Stan: 7 listopada 2026.**
 
 ## Jak z niej korzystać
 
@@ -97,6 +97,13 @@ Każdy rozdział Age of Fear zeruje Chapter Boosts i Roster Rank (rozdział 3 �
   rozdziale; Combat Mods zerują się z końcem rozdziału (3P) — więc najpewniej 2.11 (SZAC.). Wpis
   o nowym sezonie Wojny zapowiedziany na 2–6.11, 4.11 jeszcze niezaindeksowany; stream twórców
   4.11 o 20:00. 27.10 zmieniono też Assist Chance Silver Samuraia w Wojnie (liczb brak).
+- **Nowy sezon Wojny** ogłoszony 5.11.2026 wpisem „New War Season and War Tech Updates”: nowe
+  reguły Wojny, nowe koszty War Tech Mods, shardy Wasp (Janet) w nagrodach (OFF, tylko tytuł i
+  zapowiedź — treść nieindeksowana 7.11; reguł pokojów nie znamy).
+- Menace w ataku w Wojnie: +3000% Resistance (3P, jeden skrawek, 7.11).
+- **Dane Wojny w aplikacji** (7.11): [`war-meta.ts`](../src/app/core/data/war-meta.ts) — obrony z
+  kontrami (punch-up, pewność), kogo zabijać pierwszego, status drużyn (nowa / trzyma się /
+  słabnie) i notka o sezonie. Kontry poniżej są tam przepisane — zmieniaj oba miejsca.
 - Tymczasowa reguła od 8.11.2026 do końca rozdziału: gdy Sabretooth (Breaker) ma 3 sojuszników
   Menace, wrogi Blue Marvel po Ultimate i Xavier po Special dostają 2 Exhausted, Menace ma Revive
   Once; Xavier nie może używać Mind Control.
@@ -128,7 +135,7 @@ listopada podawane 13:00 PST = **22:00 w Polsce (CET)** — ta sama chwila 21:00
 | 2.11, 22:00 | rozdział 3 Age of Fear „Terror” (Dreadmarks, reset Boosts i Roster Rank); Wasp (Janet) pass #4 — ostatni; Breaker Event: Sabretooth | OFF |
 | 3.11, 22:00 | Echoes of Dystopia — Maestro (do 7 Yellow + 7 Red Stars), drugi run (pierwszy od 20.10) | OFF |
 | 4.11, 20:00 | stream twórców (Breaker, Wojna) | OFF |
-| 2–6.11 | wpis o nowym sezonie Alliance War (reguły, War Tech Mods) | OFF (zapowiedź) |
+| 5.11 | wpis „New War Season and War Tech Updates” (reguły, koszty War Tech Mods, shardy Wasp (Janet)) — treści brak | OFF (tytuł) |
 | ok. 6.11 | koniec Kyln: Code Blazes (Human Torch (Jim)) | SZAC. |
 | 6.11, 22:00 | Ka-Zar (orb 625 PC, do 400 shardów); kampania Savage Land (X-23 GT0 → GT10) — wstęp do Tower Cyclopsa (Mighty, bez daty) | OFF |
 | 8.11 | tymczasowa reguła Wojny dla Menace; nowy sezon Wojny najpewniej od pierwszej Wojny po 8.11 | OFF; sezon SZAC. |
@@ -250,7 +257,7 @@ Czego nie udało się ustalić (nie szukaj w ciemno — sprawdź datę, może ju
 lista postaci z cechą Terror; źródła shardów Saurona, Cyclopsa (Mighty), Hawkeye (Robot), X-23 i
 przerobionych weteranów Menace/Savage Land; kity Saurona i Cyclopsa (Mighty) z OFF; data Tower
 Cyclopsa (Mighty) (wcześniejsze wieże 2026: 6 pięter tygodniowo, 12 lub 24 piętra); końce The
-Hunger, Candy Store i A.I. Takeover (w danych są szacunki); reguły nowego sezonu Wojny; nagrody
+Hunger, Candy Store i A.I. Takeover (w danych są szacunki); reguły nowego sezonu Wojny (wpis 5.11 — treść); nagrody
 samego Beginner u Sabretootha i czy lista misji M1–M10 dotyczy też Beginner/Normal; Hard Purple
 L3 czy L4; Kyln 3 czy 5 postaci; Savage Land także w obronie?; pozycje w Menace, Symbiote Six;
 bramka GT19 w DD7; czy Boosts działają w PvE (jeden skrawek mówi „Pain, Fear, Terror” zamiast
@@ -293,7 +300,7 @@ Uruchomienie: `npx ng serve --port 4200`; build: `npx ng build`. Sprawdzanie w p
 Playwright z `/opt/node22/lib/node_modules/playwright/index.mjs` (Chromium preinstalowany),
 wejście w demo przyciskiem „Wypróbuj na danych testowych” na `/login`.
 
-**Menu** (5): Pulpit (Dziś + Nowości), Roster, Eventy, Składy (Asystent · Drużyny z rosteru ·
+**Menu** (5): Pulpit (Dziś + Nowości), Roster, Eventy, Składy (Asystent · Wojna · Drużyny z rosteru ·
 Drużyny z mety),
 Rozwój (Farmienie · Kluczowe postacie · Analiza). Stare `/teams`, `/key-characters`, `/analysis`
 przekierowują.
@@ -310,6 +317,7 @@ przekierowują.
 | `goals.ts` / `farming-calc.ts` / `farming.store.ts` | cele farmienia (gwiazdki, umiejętności, gear, poziom), łączenie celów, materiały |
 | `synergy.ts` | synergia z opisów umiejętności (cechy i imiona; rzadkość cechy; bez wzmianek o wrogach); „pozycyjny” tylko przy „adjacent allies”, nie przy odprysku na wrogów |
 | `team-traits.ts` | które cechy są drużynami (bez strony, pochodzenia, roli, lokacji, rzadkości i cech rozdziału) |
+| `war-plan.ts` | zakładka „Wojna”: drużyny mety (obrona/atak) vs roster — gotowa / do rozwoju / z zamiennikiem / daleko; zamienniki brakujących (synergia + ta sama rola + plug-and-play z `key-characters` + siła, kara za niegotowych); kontry z `war-meta.ts` z najlepszym wyborem gracza |
 | `roster-teams.ts` | zakładka „Drużyny z rosteru”: najlepsza piątka każdej cechy-drużyny (3–15 postaci w grze; siła × synergia × pokrycie ochrona/leczenie/oczyszczanie), rezerwa z kosztem zamiany, dokładki, tryb „bez powtórzeń”; domyślnie pomija postacie z zapisanych składów (z gry i „Zapisałem w grze”, wszystkie tryby) |
 | `squads.ts` / `squad-assistant.ts` / `squads.store.ts` | opcje składów, asystent (gotowe / do dofarmienia, Wojna obrona/atak, ustawienie: gracze → poradnik → Twoja kolejność → „adjacent allies” w środku, Protector w rogu) |
 | `capabilities.ts` / `insights.ts` | mechaniki z opisów; potencjał, ISO-8 i T4 względem graczy |

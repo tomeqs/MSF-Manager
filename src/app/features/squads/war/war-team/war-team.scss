@@ -1,0 +1,46 @@
+.extra {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+
+  p {
+    margin: 0;
+  }
+}
+
+.small {
+  font-size: 0.82rem;
+}
+
+.tiny {
+  font-size: 0.72rem;
+}
+
+.verdict,
+.trend {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--c-surface-3);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.verdict[data-v='ready'],
+.trend[data-trend='holds'] {
+  color: var(--c-success);
+}
+
+.verdict[data-v='develop'],
+.verdict[data-v='substitute'],
+.trend[data-trend='new'] {
+  color: var(--c-warning);
+}
+
+.verdict[data-v='far'],
+.trend[data-trend='fading'] {
+  color: var(--c-star-red);
+}

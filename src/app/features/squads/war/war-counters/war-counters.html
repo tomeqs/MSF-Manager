@@ -1,0 +1,60 @@
+@for (a of answers(); track a.defense.team) {
+  <section class="card answer">
+    <header>
+      <strong>{{ a.defense.team }}</strong>
+      @if (a.tier) {
+        <span class="chip">{{ a.tier }}</span>
+      }
+      <a class="tiny muted" [href]="a.defense.source" target="_blank" rel="noopener">źródło ↗</a>
+    </header>
+    @if (a.defense.focus) {
+      <p class="small focus">{{ a.defense.focus }}</p>
+    }
+    <ul class="counters">
+      @for (c of a.counters; track c.counter.label; let i = $index) {
+        <li [class.best]="i === a.best">
+          <span class="label">
+            {{ c.counter.label }}
+            @if (c.counter.punch) {
+              <span class="punch" [title]="punchTitle(c.counter.punch)">{{ c.counter.punch }}</span>
+            }
+          </span>
+          <span class="small">
+            <span class="verdict" [attr.data-v]="c.fit.verdict">{{ verdicts[c.fit.verdict] }}</span>
+            @if (c.fit.verdict !== 'far') {
+              · {{ c.fit.power | compactNumber }}
+            }
+            @if (i === a.best) {
+              <strong class="pick">Twój najlepszy wybór</strong>
+            }
+          </span>
+          <span class="tiny muted">
+            {{ c.counter.confidence }}
+            @if (c.counter.note) {
+              · {{ c.counter.note }}
+            }
+            @if (c.fit.swaps.length && c.fit.verdict !== 'far') {
+              · {{ swaps(c.fit) }}
+            }
+          </span>
+        </li>
+      }
+    </ul>
+    @if (a.best !== undefined) {
+      <app-squad-card
+        [option]="a.counters[a.best].fit.option"
+        [lineup]="lineup(a.counters[a.best].fit)"
+        [flat]="true"
+      />
+    } @else {
+      @if (nearest(a); as n) {
+        <p class="small muted">
+          Żadnej z tych kontr nie złożysz teraz. Najbliżej: {{ n.label }} (masz {{ n.owned }} z 5)
+          @if (n.missing.length) {
+            — brakuje {{ n.missing.join(', ') }}
+          }
+        </p>
+      }
+    }
+  </section>
+}

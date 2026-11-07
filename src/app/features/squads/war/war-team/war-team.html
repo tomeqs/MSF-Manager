@@ -1,0 +1,37 @@
+<app-squad-card [option]="fit().option" [index]="index()" [lineup]="lineup()">
+  <div class="extra small">
+    <p>
+      <span class="verdict" [attr.data-v]="fit().verdict">{{ verdictLabel() }}</span>
+      {{ verdict() }}
+    </p>
+    @if (status(); as st) {
+      <p class="muted">
+        <span class="trend" [attr.data-trend]="st.trend">{{ trendLabels[st.trend] }}</span>
+        {{ st.note }} <span class="tiny">({{ st.confidence }})</span>
+      </p>
+    }
+    @for (s of fit().swaps; track s.slot.label) {
+      <p>
+        Zamiast <strong>{{ s.slot.label }}</strong> ({{ stateText(s.slot.state) }}):
+        <strong>{{ s.by.entry.name }}</strong> — {{ reasons(s.by) }}
+        @if (s.slot.substitutes.length > 1) {
+          <span class="muted"> · też: {{ others(s.slot.substitutes) }}</span>
+        }
+      </p>
+    }
+    @for (slot of weak(); track slot.label) {
+      <p>
+        {{ slot.label }}: {{ slot.needs[0].text }}
+        @if (slot.substitutes.length) {
+          <span class="muted"> · gotowi teraz zamiast: {{ others(slot.substitutes, 0) }}</span>
+        }
+      </p>
+    }
+    @if (missing().length) {
+      <p class="muted">Brakuje: {{ missing().join(', ') }}</p>
+    }
+    @if (fit().dropped.length) {
+      <p class="muted">Poza składem: {{ names(fit().dropped) }}</p>
+    }
+  </div>
+</app-squad-card>

@@ -37,7 +37,7 @@ export interface CharacterSource {
   afterUntil?: SourceStatus;
 }
 
-export const CHARACTER_SOURCES_AS_OF = '4 listopada 2026';
+export const CHARACTER_SOURCES_AS_OF = '7 listopada 2026';
 
 export const SOURCE_STATUS_LABELS: Record<SourceStatus, string> = {
   permanent: 'stałe źródło',
@@ -1348,7 +1348,7 @@ export const CHARACTER_SOURCES: CharacterSource[] = [
     teams: 'West Coast Avengers (W)',
     status: 'event',
     source:
-      'Chapter Battle Passy: #4, ostatni, od 2.11, 22:00 — 45 shardów za darmo, +160 w Premium (razem 205); wcześniej #3 od 19.10 (łącznie darmowo 4★ + 4 RS, Premium 7★ + 1 Diament)',
+      'Chapter Battle Passy: #4, ostatni, od 2.11, 22:00 — 45 shardów za darmo, +160 w Premium (razem 205); wcześniej #3 od 19.10 (łącznie darmowo 4★ + 4 RS, Premium 7★ + 1 Diament). Wpis o nowym sezonie Wojny (5.11) zapowiada shardy Wasp (Janet) w nagrodach — szczegółów nie znaleziono',
     confidence: 'OFF',
     next: 'po #4 źródło się kończy; koniec #4 ok. 16.11 (szac., rytm dwutygodniowy); zapowiedziano oferty dla spóźnionych',
     url: 'https://marvelstrikeforce.com/en/updates/blog-update-10-30-26',
